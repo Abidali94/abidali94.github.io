@@ -28,8 +28,20 @@ a.btn:hover {
   transform: translateY(-2px);
 }
   </style>
+<style>
+  /* Dark theme styles */
+  body.dark { background:#121212; color:#e8e8e8; }
+  body.dark a.btn { background:#444; border-color:#666; }
+  /* Toggle button style */
+  .theme-toggle {
+    position:fixed; top:12px; right:12px;
+    background:#ff8800; color:#fff; border:none;
+    padding:8px 12px; border-radius:6px; font-size:14px;
+    z-index: 9999;
+  }
+</style>
 </head>
-<body>
+<body><button class="theme-toggle" onclick="toggleTheme()">🌙</button>
   
   <body style="font-family: Arial, sans-serif; background:#FAFAFA; text-align:center; padding:40px;">
 
