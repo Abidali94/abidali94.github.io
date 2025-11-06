@@ -1,62 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+<!-- Dark Mode -->
+<style>
+body.dark { background:#121212; color:#e8e8e8; }
+body.dark h1, body.dark h2, body.dark p, body.dark li { color:#e8e8e8; }
+body.dark a.btn { background:#444; }
+body.dark a.btn:hover { background:#666; }
+.theme-toggle {
+  position:fixed; top:12px; right:12px;
+  background:#ff8800; color:#fff; border:none;
+  padding:8px 12px; border-radius:6px; font-size:14px; z-index:9999;
+}
+</style>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>How to Split Grocery Expenses Fairly | KharchaSaathi Guide</title>
+
 <style>
-body { font-family: Arial, sans-serif; background:#fffaf0; padding:25px; line-height:1.7; }
-h1 { color:#d35400; }
+body {
+  font-family: Arial, sans-serif;
+  background:#FAFAFA;
+  padding:25px;
+  line-height:1.75;
+  color:#222;
+  max-width:800px;
+  margin:auto;
+}
+
+h1 {
+  font-size:32px;
+  font-weight:800;
+  color:#ff7a00;
+  margin-bottom:18px;
+}
+
+h2 {
+  margin-top:32px;
+  font-size:22px;
+  color:#444;
+}
+
+pre {
+  background:#fff3e6;
+  padding:12px;
+  border-radius:8px;
+  border:1px solid #ffd4b3;
+  font-size:15px;
+}
+
+ul { margin-top:10px; padding-left:20px; }
+
+a.btn{
+  display:inline-block;
+  margin-top:22px;
+  padding:12px 20px;
+  border-radius:8px;
+  background:#ff7a00;
+  color:#fff;
+  font-weight:600;
+  text-decoration:none;
+  transition:0.25s;
+}
+a.btn:hover{
+  background:#cc6300;
+  transform:translateY(-2px);
+}
 </style>
 </head>
+
 <body>
+
+<button class="theme-toggle" onclick="toggleTheme()">🌙</button>
 
 <h1>🛒 How to Split Grocery Expenses Fairly?</h1>
 
 <p>
-Grocery spending is a shared responsibility when people live together — roommates, friends, PG students or family groups.
-But often, everyone does not contribute equally. Some buy more items, some use more items.
-So it is important to calculate a fair settlement.
+When roommates / PG friends / shared flats buy groceries together, not everyone spends the same amount — but everyone eats.  
+So we need **fair settlement** to avoid misunderstandings.
 </p>
 
 <h2>✅ Simple Equal Split</h2>
 
 <p>If everyone uses groceries equally:</p>
+
 <pre>Total Grocery Bill ÷ Number of People</pre>
 
-<h2>⚖️ When contributions are different?</h2>
+<h2>⚖️ When everyone spent different amounts?</h2>
 
-<p>
-Example:  
-Person A spent ₹1200  
-Person B spent ₹400  
-Person C spent ₹0  
-Total = ₹1600  
-Each share = ₹533  
-</p>
-
-<p>So final settlement:</p>
+<p>Example:</p>
 
 <ul>
-<li>A receives ₹667</li>
-<li>B pays ₹133</li>
-<li>C pays ₹533</li>
+<li>Person A spent: ₹1200</li>
+<li>Person B spent: ₹400</li>
+<li>Person C spent: ₹0</li>
 </ul>
 
-<h2>🧮 Use our Grocery Split Calculator</h2>
+<p>
+Total = ₹1600  
+Each person’s fair share = ₹533
+</p>
+
+<p>So settlement becomes:</p>
+
+<ul>
+<li>Person A receives ₹667</li>
+<li>Person B pays ₹133</li>
+<li>Person C pays ₹533</li>
+</ul>
+
+<h2>🧮 Easiest Way?</h2>
+<p>Use our calculator — it does this automatically:</p>
 
 <p>
-<a href="tools/grocery-split-pro.html">➡️ Grocery Split Pro Tool (Unlimited People)</a>
+<a class="btn" href="tools/grocery-split-pro.html">➡️ Open Grocery Split Pro (Unlimited people)</a>
 </p>
 
 <p>
-This ensures fairness and avoids arguments among friends and roommates.
+No confusion. No arguments. Clear & fair.
 </p>
 
 <p><b>Fair share = Peaceful living ✅</b></p>
-  <p style="margin-top:40px;">
+
+<p style="margin-top:40px;">
   <a class="btn" href="index.html">← Back to Home</a>
 </p>
+
+<script>
+(function(){
+  const t=localStorage.getItem('ks-theme');
+  if(t==='dark'){
+    document.body.classList.add('dark');
+    document.querySelector('.theme-toggle').textContent='☀️';
+  }
+})();
+function toggleTheme(){
+  const d=document.body.classList.toggle('dark');
+  localStorage.setItem('ks-theme',d?'dark':'light');
+  document.querySelector('.theme-toggle').textContent=d?'☀️':'🌙';
+}
+</script>
 
 </body>
 </html>
