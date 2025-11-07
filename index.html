@@ -4,10 +4,12 @@
   <meta name="google-adsense-account" content="ca-pub-2914631277707668">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="KharchaSaathi - Smart tools to manage rent, expenses, stock, sales, and invoices with dark mode. Ideal for personal use and any business.">
-  <title>KharchaSaathi — Smart Tools Hub</title>
+  <meta name="description" content="KharchaSaathi — Smart tools to manage rent, expenses, stock, sales, invoices & more with built-in dark mode. Perfect for personal or business use.">
+  <meta name="theme-color" content="#ff7a00">
+  <link rel="manifest" href="manifest.json">
+  <title>💰 KharchaSaathi — Smart Tools Hub</title>
 
-  <!-- ✅ Google AdSense Auto Ads Script -->
+  <!-- ✅ Google AdSense Auto Ads -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2914631277707668"
      crossorigin="anonymous"></script>
 
@@ -22,8 +24,12 @@
       --card-light: #ffffff;
       --card-dark: #1e1e1e;
       --border-light: rgba(0,0,0,0.05);
-      --border-dark: rgba(255,255,255,0.1);
+      --border-dark: rgba(255,255,255,0.15);
+      --shadow-light: rgba(0,0,0,0.08);
+      --shadow-dark: rgba(255,255,255,0.05);
     }
+
+    * { box-sizing: border-box; }
 
     body {
       font-family: "Poppins", Arial, sans-serif;
@@ -32,7 +38,7 @@
       background: var(--bg-light);
       color: var(--text-dark);
       text-align: center;
-      transition: background 0.3s, color 0.3s;
+      transition: background 0.4s ease, color 0.4s ease;
     }
 
     body.dark {
@@ -46,6 +52,7 @@
       margin-top: 40px;
       margin-bottom: 10px;
       color: var(--orange);
+      letter-spacing: 0.5px;
     }
 
     p.subtitle {
@@ -63,12 +70,13 @@
       background: var(--orange);
       color: white;
       border: none;
-      border-radius: 6px;
-      padding: 8px 12px;
-      font-size: 14px;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 15px;
       cursor: pointer;
       transition: 0.3s;
-      z-index: 100;
+      z-index: 1000;
+      box-shadow: 0 2px 6px var(--shadow-light);
     }
     .theme-toggle:hover { background: var(--orange-dark); }
 
@@ -76,7 +84,7 @@
     .section-title {
       font-size: 20px;
       font-weight: 700;
-      margin: 30px 0 15px;
+      margin: 40px 0 20px;
       text-transform: uppercase;
       letter-spacing: 1px;
       color: var(--orange);
@@ -85,52 +93,53 @@
     /* Tools Grid */
     .tools-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 18px;
-      max-width: 900px;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 20px;
+      max-width: 960px;
       margin: auto;
       padding: 0 20px;
     }
 
     .tool-card {
       background: var(--card-light);
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 2px 10px var(--border-light);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 12px var(--shadow-light);
       text-decoration: none;
       color: var(--text-dark);
       font-weight: 600;
-      transition: 0.25s;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 160px;
     }
 
     .tool-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      transform: translateY(-6px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
       background: #fff3e6;
     }
 
     .tool-card span {
-      font-size: 32px;
-      margin-bottom: 8px;
+      font-size: 34px;
+      margin-bottom: 10px;
     }
 
     body.dark .tool-card {
       background: var(--card-dark);
       color: var(--text-light);
-      box-shadow: 0 2px 8px var(--border-dark);
+      box-shadow: 0 3px 8px var(--shadow-dark);
     }
 
     body.dark .tool-card:hover {
       background: #2a2a2a;
-      box-shadow: 0 3px 12px rgba(255,255,255,0.08);
+      box-shadow: 0 3px 14px rgba(255,255,255,0.08);
     }
 
     footer {
-      margin-top: 40px;
-      padding: 20px;
+      margin-top: 50px;
+      padding: 25px 0;
       font-size: 13px;
       color: #888;
       border-top: 1px solid var(--border-light);
@@ -144,8 +153,10 @@
     small.desc {
       color: #777;
       font-size: 13px;
-      margin-top: 6px;
+      margin-top: 8px;
+      text-align: center;
       display: block;
+      line-height: 1.4em;
     }
     body.dark small.desc { color: #bbb; }
 
@@ -153,6 +164,7 @@
     @media (max-width: 600px) {
       h1 { font-size: 30px; }
       .section-title { font-size: 18px; }
+      .tool-card { padding: 18px; }
     }
   </style>
 </head>
@@ -225,6 +237,7 @@
   <footer>© 2025 KharchaSaathi • Built by Abid Ali</footer>
 
   <script>
+    // 🌗 Theme Initialization
     (function(){
       const t = localStorage.getItem('ks-theme');
       if(t === 'dark'){
@@ -233,6 +246,7 @@
       }
     })();
 
+    // 🌙 Toggle Logic
     function toggleTheme(){
       const d = document.body.classList.toggle('dark');
       localStorage.setItem('ks-theme', d ? 'dark' : 'light');
