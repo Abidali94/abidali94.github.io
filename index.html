@@ -4,12 +4,17 @@
   <meta name="google-adsense-account" content="ca-pub-2914631277707668">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="KharchaSaathi — Smart tools to manage rent, expenses, stock, sales, invoices & more with built-in dark mode. Perfect for personal or business use.">
+  <meta name="description" content="KharchaSaathi — Smart tools to manage rent, expenses, stock, sales, and invoices with dark mode support. Perfect for both personal and business use.">
   <meta name="theme-color" content="#ff7a00">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <link rel="apple-touch-icon" href="icon-512.png">
   <link rel="manifest" href="manifest.json">
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" as="style">
   <title>💰 KharchaSaathi — Smart Tools Hub</title>
 
-  <!-- ✅ Google AdSense Auto Ads -->
+  <!-- ✅ Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2914631277707668"
      crossorigin="anonymous"></script>
 
@@ -39,6 +44,9 @@
       color: var(--text-dark);
       text-align: center;
       transition: background 0.4s ease, color 0.4s ease;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
     body.dark {
@@ -98,6 +106,7 @@
       max-width: 960px;
       margin: auto;
       padding: 0 20px;
+      flex: 1;
     }
 
     .tool-card {
@@ -108,7 +117,7 @@
       text-decoration: none;
       color: var(--text-dark);
       font-weight: 600;
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      transition: all 0.25s ease;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -144,7 +153,6 @@
       color: #888;
       border-top: 1px solid var(--border-light);
     }
-
     body.dark footer {
       color: #aaa;
       border-top: 1px solid var(--border-dark);
@@ -160,7 +168,7 @@
     }
     body.dark small.desc { color: #bbb; }
 
-    /* Responsive Fix */
+    /* Responsive */
     @media (max-width: 600px) {
       h1 { font-size: 30px; }
       .section-title { font-size: 18px; }
@@ -169,8 +177,7 @@
   </style>
 </head>
 
-<body>
-
+<body data-theme>
   <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
 
   <h1>💰 KharchaSaathi</h1>
@@ -206,14 +213,12 @@
   <div class="tools-grid">
     <a class="tool-card" href="tools/business-dashboard.html" title="Manage stock, sales, and wanting list with type-based grouping.">
       <span>📦</span> Business Dashboard
-      <small class="desc">Add item types, manage stock, sales & wanting list — fully dark mode compatible.</small>
+      <small class="desc">Add item types, manage stock, sales & wanting list — with PDF export & dark mode.</small>
     </a>
-
     <a class="tool-card" href="tools/invoice-pro.html">
       <span>🧾</span> Invoice Pro (Smart Billing)
       <small class="desc">Create, print & share invoices instantly.</small>
     </a>
-
     <a class="tool-card" href="tools/gst-bill.html">
       <span>📄</span> GST Reverse Calculator
       <small class="desc">Find GST components from total amount.</small>
@@ -223,36 +228,29 @@
   <!-- 📘 Guides -->
   <div class="section-title">Guides & Help</div>
   <div class="tools-grid">
-    <a class="tool-card" href="about-rent-split.html">
-      <span>📘</span> Split Rent Fairly
-    </a>
-    <a class="tool-card" href="about-water-bill-split.html">
-      <span>📘</span> Split Water Bill Fairly
-    </a>
-    <a class="tool-card" href="about-grocery-split.html">
-      <span>📘</span> Split Grocery Fairly
-    </a>
+    <a class="tool-card" href="about-rent-split.html"><span>📘</span> Split Rent Fairly</a>
+    <a class="tool-card" href="about-water-bill-split.html"><span>📘</span> Split Water Bill Fairly</a>
+    <a class="tool-card" href="about-grocery-split.html"><span>📘</span> Split Grocery Fairly</a>
   </div>
 
   <footer>© 2025 KharchaSaathi • Built by Abid Ali</footer>
 
   <script>
-    // 🌗 Theme Initialization
     (function(){
       const t = localStorage.getItem('ks-theme');
       if(t === 'dark'){
         document.body.classList.add('dark');
         document.querySelector('.theme-toggle').textContent = '☀️';
+        document.body.dataset.theme = 'dark';
       }
     })();
 
-    // 🌙 Toggle Logic
     function toggleTheme(){
-      const d = document.body.classList.toggle('dark');
-      localStorage.setItem('ks-theme', d ? 'dark' : 'light');
-      document.querySelector('.theme-toggle').textContent = d ? '☀️' : '🌙';
+      const isDark = document.body.classList.toggle('dark');
+      localStorage.setItem('ks-theme', isDark ? 'dark' : 'light');
+      document.querySelector('.theme-toggle').textContent = isDark ? '☀️' : '🌙';
+      document.body.dataset.theme = isDark ? 'dark' : 'light';
     }
   </script>
-
 </body>
 </html>
