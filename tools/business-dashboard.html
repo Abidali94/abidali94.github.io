@@ -6,91 +6,42 @@
 <title>📦 Business Dashboard — KharchaSaathi</title>
 <style>
   :root {
-    --orange: #ff7a00;
-    --orange-dark: #cc6300;
-    --bg-light: #f8f9fa;
-    --bg-dark: #121212;
-    --card-light: #ffffff;
-    --card-dark: #1e1e1e;
-    --text-dark: #222;
-    --text-light: #e8e8e8;
-    --border-light: #ddd;
-    --border-dark: #333;
+    --orange:#ff7a00;--orange-dark:#cc6300;
+    --bg-light:#f8f9fa;--bg-dark:#121212;
+    --card-light:#fff;--card-dark:#1e1e1e;
+    --text-dark:#222;--text-light:#e8e8e8;
+    --border-light:#ddd;--border-dark:#333;
   }
-
-  body {
-    font-family: "Poppins", Arial, sans-serif;
-    background: var(--bg-light);
-    margin: 0;
-    padding: 20px;
-    color: var(--text-dark);
-    transition: 0.3s;
-  }
-
-  body.dark { background: var(--bg-dark); color: var(--text-light); }
-
-  h2 { text-align: center; color: var(--orange); }
-
-  .theme-toggle {
-    position: fixed; top: 14px; right: 14px;
-    background: var(--orange); color: white;
-    border: none; border-radius: 6px;
-    padding: 8px 12px; cursor: pointer; transition: 0.3s;
-  }
-  .theme-toggle:hover { background: var(--orange-dark); }
-
-  .tabs { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
-  .tab {
-    background: #ddd; padding: 10px 18px; border-radius: 8px;
-    cursor: pointer; font-weight: 600; transition: 0.3s;
-  }
-  body.dark .tab { background: #333; color: var(--text-light); }
-  .tab.active { background: var(--orange); color: #fff; }
-
-  .section {
-    display: none; background: var(--card-light); padding: 20px;
-    border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  }
-  body.dark .section { background: var(--card-dark); box-shadow: 0 2px 8px rgba(255,255,255,0.05); }
-  .section.active { display: block; }
-
-  input, button, select {
-    padding: 8px; margin: 6px; border-radius: 6px;
-    border: 1px solid var(--border-light); background: inherit; color: inherit;
-  }
-  body.dark input, body.dark select { border: 1px solid var(--border-dark); background: #2b2b2b; color: var(--text-light); }
-
-  button { background: var(--orange); color: white; border: none; cursor: pointer; }
-  button:hover { background: var(--orange-dark); }
-
-  table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-  th, td { border: 1px solid var(--border-light); padding: 8px; text-align: center; }
-  body.dark th, body.dark td { border: 1px solid var(--border-dark); }
-  th { background: var(--orange); color: white; }
-
-  .clear-btn { background: #d9534f; }
-  .clear-btn:hover { background: #b52b27; }
-
-  .remove-btn, .restock-btn {
-    border-radius: 5px; padding: 5px 10px; color: white;
-  }
-  .remove-btn { background: #dc3545; }
-  .remove-btn:hover { background: #a71d2a; }
-  .restock-btn { background: #28a745; }
-  .restock-btn:hover { background: #1e7e34; }
-
-  a.back-link {
-    background: #444; color: #fff; padding: 10px 18px;
-    border-radius: 8px; text-decoration: none;
-    display: inline-block; margin-top: 20px;
-  }
-  a.back-link:hover { background: #222; }
+  body{font-family:"Poppins",Arial,sans-serif;background:var(--bg-light);margin:0;padding:20px;color:var(--text-dark);transition:.3s;}
+  body.dark{background:var(--bg-dark);color:var(--text-light);}
+  h2{text-align:center;color:var(--orange);}
+  .theme-toggle{position:fixed;top:14px;right:14px;background:var(--orange);color:white;border:none;border-radius:6px;padding:8px 12px;cursor:pointer;transition:.3s;}
+  .theme-toggle:hover{background:var(--orange-dark);}
+  .tabs{display:flex;justify-content:center;gap:10px;margin:20px 0;}
+  .tab{background:#ddd;padding:10px 18px;border-radius:8px;cursor:pointer;font-weight:600;}
+  body.dark .tab{background:#333;color:var(--text-light);}
+  .tab.active{background:var(--orange);color:#fff;}
+  .section{display:none;background:var(--card-light);padding:20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+  body.dark .section{background:var(--card-dark);}
+  .section.active{display:block;}
+  input,button,select{padding:8px;margin:6px;border-radius:6px;border:1px solid var(--border-light);background:inherit;color:inherit;}
+  body.dark input,body.dark select{border:1px solid var(--border-dark);background:#2b2b2b;color:var(--text-light);}
+  button{background:var(--orange);color:white;border:none;cursor:pointer;}
+  button:hover{background:var(--orange-dark);}
+  table{width:100%;border-collapse:collapse;margin-top:15px;}
+  th,td{border:1px solid var(--border-light);padding:8px;text-align:center;}
+  body.dark th,body.dark td{border:1px solid var(--border-dark);}
+  th{background:var(--orange);color:white;}
+  .clear-btn{background:#d9534f;}
+  .clear-btn:hover{background:#b52b27;}
+  .remove-btn,.restock-btn{border-radius:5px;padding:5px 10px;color:white;}
+  .remove-btn{background:#dc3545;}
+  .restock-btn{background:#28a745;}
+  a.back-link{background:#444;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:20px;}
 </style>
 </head>
 <body>
-
 <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-
 <h2>📦 Business Dashboard</h2>
 
 <div class="tabs">
@@ -113,28 +64,19 @@
 <!-- STOCK -->
 <div id="stock" class="section">
   <h3>📦 Current Stock</h3>
-
-  <div>
-    <label><strong>View Stock by Type:</strong></label>
-    <select id="viewTypeFilter" onchange="renderStock(this.value)">
-      <option value="All">All Types</option>
-    </select>
-  </div>
-
+  <label><strong>View by Type:</strong></label>
+  <select id="viewTypeFilter" onchange="renderStock(this.value)">
+    <option value="All">All Types</option>
+  </select>
   <table id="stockTable">
     <thead><tr><th>Date</th><th>Type</th><th>Product</th><th>Qty</th><th>Sold</th><th>Remaining</th></tr></thead>
     <tbody></tbody>
   </table>
-
-  <hr style="margin:25px 0;border-color:#ccc;opacity:0.3;">
-
-  <h4>➕ Add New Stock</h4>
-  <input id="pdate" type="date">
-  <select id="ptype"></select>
-  <input id="pname" placeholder="Product name">
-  <input id="pqty" type="number" placeholder="Quantity">
+  <hr>
+  <h4>➕ Add Stock</h4>
+  <input id="pdate" type="date"><select id="ptype"></select>
+  <input id="pname" placeholder="Product name"><input id="pqty" type="number" placeholder="Qty">
   <button onclick="addStock()">Add</button>
-  <button class="clear-btn" onclick="clearStock()">🧹 Clear Stock</button>
 </div>
 
 <!-- SALES -->
@@ -143,37 +85,40 @@
   <table id="salesTable">
     <thead><tr><th>Date</th><th>Type</th><th>Product</th><th>Qty</th><th>Price ₹</th><th>Total ₹</th></tr></thead>
     <tbody></tbody>
-    <tfoot><tr><td colspan="5" style="text-align:right;font-weight:bold;">Day Total:</td><td id="dayTotal" style="font-weight:bold;color:var(--orange);">0</td></tr></tfoot>
+    <tfoot><tr><td colspan="5" style="text-align:right;font-weight:bold;">Day Total:</td><td id="dayTotal" style="color:var(--orange);font-weight:bold;">0</td></tr></tfoot>
   </table>
-
   <h4>Add Sale</h4>
   <input id="sdate" type="date"><select id="stype"></select>
   <input id="sname" placeholder="Product name"><input id="sqty" type="number" placeholder="Qty">
   <input id="sprice" type="number" placeholder="Price ₹">
   <button onclick="addSale()">Add Sale</button>
-  <button class="clear-btn" onclick="clearSales()">🧹 Clear Sales</button>
 </div>
 
 <!-- WANTING -->
 <div id="wanting" class="section">
   <h3>🛒 Wanting Items</h3>
   <table id="wantTable">
-    <thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Restocked Qty</th><th>Actions</th></tr></thead>
+    <thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Qty</th><th>Actions</th></tr></thead>
     <tbody></tbody>
   </table>
+  <h4>Add Want</h4>
+  <input id="wdate" type="date"><select id="wtype"></select>
+  <input id="witem" placeholder="Item name">
+  <button onclick="addWant()">Add</button>
 </div>
 
 <div style="text-align:center;">
-  <a href="../index.html" class="back-link">← Back to Home</a>
+  <a href="../index.html" class="back-link">← Back</a>
 </div>
 
 <script>
-let types = JSON.parse(localStorage.getItem('item-types')||'[]');
-let stock = JSON.parse(localStorage.getItem('stock-data')||'[]');
+let types=JSON.parse(localStorage.getItem('item-types')||'[]');
+let stock=JSON.parse(localStorage.getItem('stock-data')||'[]');
+let sales=JSON.parse(localStorage.getItem('sales-data')||'[]');
+let want=JSON.parse(localStorage.getItem('wanting-data')||'[]');
 
-// Theme
 (function(){
-  const t = localStorage.getItem('ks-theme');
+  const t=localStorage.getItem('ks-theme');
   if(t==='dark'){document.body.classList.add('dark');document.querySelector('.theme-toggle').textContent='☀️';}
 })();
 function toggleTheme(){
@@ -181,8 +126,6 @@ function toggleTheme(){
   localStorage.setItem('ks-theme',d?'dark':'light');
   document.querySelector('.theme-toggle').textContent=d?'☀️':'🌙';
 }
-
-// Tabs
 function openTab(tab){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
@@ -190,47 +133,82 @@ function openTab(tab){
   document.getElementById(tab).classList.add('active');
 }
 
-// Types
+// TYPES
 function addType(){let name=document.getElementById('typeName').value.trim();
   if(!name)return alert("Enter type!");
   if(types.includes(name))return alert("Type exists!");
   types.push(name);localStorage.setItem('item-types',JSON.stringify(types));
   renderTypes();updateDropdowns();document.getElementById('typeName').value='';
 }
-function clearTypes(){if(confirm("Clear all types?")){types=[];localStorage.removeItem('item-types');renderTypes();updateDropdowns();}}
+function clearTypes(){if(confirm("Clear types?")){types=[];localStorage.removeItem('item-types');renderTypes();updateDropdowns();}}
 function renderTypes(){document.getElementById('typeList').innerHTML=types.length?types.map(t=>`<li>${t}</li>`).join(''):"<li>No types yet.</li>";}
 function updateDropdowns(){
-  const selects=[document.getElementById('ptype'),document.getElementById('stype'),document.getElementById('wtype'),document.getElementById('viewTypeFilter')];
-  selects.forEach(sel=>{
-    if(!sel) return;
-    sel.innerHTML='<option value="">Select Type</option>'+types.map(t=>`<option>${t}</option>`).join('');
-    if(sel.id==='viewTypeFilter') sel.insertAdjacentHTML('afterbegin','<option value="All">All Types</option>');
+  ['ptype','stype','wtype','viewTypeFilter'].forEach(id=>{
+    const el=document.getElementById(id); if(!el)return;
+    el.innerHTML='<option value="">Select Type</option>'+types.map(t=>`<option>${t}</option>`).join('');
+    if(id==='viewTypeFilter') el.insertAdjacentHTML('afterbegin','<option value="All">All Types</option>');
   });
 }
 
-// Stock
+// STOCK
 function addStock(){
-  let type=document.getElementById('ptype').value,
-      name=document.getElementById('pname').value.trim(),
-      qty=parseInt(document.getElementById('pqty').value),
-      date=document.getElementById('pdate').value;
+  const type=document.getElementById('ptype').value,name=document.getElementById('pname').value.trim(),
+  qty=parseInt(document.getElementById('pqty').value),date=document.getElementById('pdate').value;
   if(!type||!name||!qty||!date)return alert("Fill all fields!");
-  stock.push({type,name,qty,sold:0,date});
-  localStorage.setItem('stock-data',JSON.stringify(stock));
+  stock.push({type,name,qty,sold:0,date});localStorage.setItem('stock-data',JSON.stringify(stock));
   renderStock(document.getElementById('viewTypeFilter').value);
 }
-function renderStock(filter="All"){
+function renderStock(f="All"){
   const tb=document.querySelector('#stockTable tbody');
-  let data = filter==="All"||!filter ? stock : stock.filter(s=>s.type===filter);
+  let data=f==="All"||!f?stock:stock.filter(s=>s.type===f);
   tb.innerHTML=data.length?data.map(s=>{
-    let remaining=s.qty-(s.sold||0);
-    return `<tr><td>${s.date}</td><td>${s.type}</td><td>${s.name}</td><td>${s.qty}</td><td>${s.sold||0}</td><td>${remaining}</td></tr>`;
-  }).join(''):"<tr><td colspan=6>No stock available.</td></tr>";
+    let rem=s.qty-(s.sold||0);
+    return `<tr><td>${s.date}</td><td>${s.type}</td><td>${s.name}</td><td>${s.qty}</td><td>${s.sold||0}</td><td>${rem}</td></tr>`;
+  }).join(''):"<tr><td colspan=6>No stock.</td></tr>";
 }
-function clearStock(){if(confirm("Clear all stock?")){stock=[];localStorage.removeItem('stock-data');renderStock();}}
 
-// Init
-renderTypes();updateDropdowns();renderStock();
+// SALES
+function addSale(){
+  let type=document.getElementById('stype').value,name=document.getElementById('sname').value.trim(),
+  qty=parseInt(document.getElementById('sqty').value),price=parseFloat(document.getElementById('sprice').value),
+  date=document.getElementById('sdate').value;
+  if(!type||!name||!qty||!price||!date)return alert("Fill all fields!");
+  sales.push({type,product:name,qty,price,amount:qty*price,date});
+  localStorage.setItem('sales-data',JSON.stringify(sales));
+  let item=stock.find(s=>s.name.toLowerCase()===name.toLowerCase());
+  if(item){item.sold=(item.sold||0)+qty;localStorage.setItem('stock-data',JSON.stringify(stock));}
+  renderStock();renderSales();
+}
+function renderSales(){
+  const tb=document.querySelector('#salesTable tbody');
+  if(!sales.length){tb.innerHTML="<tr><td colspan=6>No sales.</td></tr>";document.getElementById('dayTotal').textContent='0';return;}
+  let total=0;tb.innerHTML=sales.map(s=>{total+=s.amount;return `<tr><td>${s.date}</td><td>${s.type}</td><td>${s.product}</td><td>${s.qty}</td><td>${s.price}</td><td>${s.amount}</td></tr>`;}).join('');
+  document.getElementById('dayTotal').textContent=total.toFixed(2);
+}
+
+// WANTING
+function addWant(){
+  const type=document.getElementById('wtype').value,item=document.getElementById('witem').value.trim(),date=document.getElementById('wdate').value;
+  if(!type||!item||!date)return alert("Fill all fields!");
+  want.push({type,item,date});localStorage.setItem('wanting-data',JSON.stringify(want));renderWant();
+}
+function restock(i){
+  const qty=prompt("Restocked Qty:");if(!qty)return;
+  const today=new Date().toISOString().split('T')[0];const w=want[i];
+  stock.push({type:w.type,name:w.item,qty:parseInt(qty),sold:0,date:today});
+  localStorage.setItem('stock-data',JSON.stringify(stock));
+  want.splice(i,1);localStorage.setItem('wanting-data',JSON.stringify(want));
+  renderWant();renderStock();
+}
+function removeWant(i){want.splice(i,1);localStorage.setItem('wanting-data',JSON.stringify(want));renderWant();}
+function renderWant(){
+  const tb=document.querySelector('#wantTable tbody');
+  tb.innerHTML=want.length?want.map((w,i)=>`<tr><td>${w.date}</td><td>${w.type}</td><td>${w.item}</td><td>-</td>
+  <td><button class='restock-btn' onclick='restock(${i})'>✔</button><button class='remove-btn' onclick='removeWant(${i})'>🗑</button></td></tr>`).join(''):"<tr><td colspan=5>No items.</td></tr>";
+}
+
+// INIT
+renderTypes();updateDropdowns();renderStock();renderSales();renderWant();
 </script>
 </body>
 </html>
