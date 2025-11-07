@@ -1,40 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Version: KharchaSaathi v3.0 | Updated Nov 2025 -->
   <meta name="google-adsense-account" content="ca-pub-2914631277707668">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="KharchaSaathi — Smart tools to manage rent, expenses, stock, sales, invoices & daily splits with full dark mode and offline PWA support.">
+  <meta name="description" content="KharchaSaathi — Smart tools to manage rent, expenses, stock, sales, and invoices with dark mode support. Perfect for both personal and business use.">
   <meta name="theme-color" content="#ff7a00">
-  <meta property="og:title" content="KharchaSaathi — Smart Tools for Business & Life">
-  <meta property="og:description" content="Manage stock, sales, expenses, rent & invoices — all in one dashboard. Built for both business & roommates.">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="icon-512.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-
-  <!-- ✅ Icons & Manifest -->
-  <link rel="icon" type="image/png" href="icon-192.png">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <link rel="apple-touch-icon" href="icon-512.png">
   <link rel="manifest" href="manifest.json">
-
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" as="style">
   <title>💰 KharchaSaathi — Smart Tools Hub</title>
 
   <!-- ✅ Google AdSense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2914631277707668" crossorigin="anonymous"></script>
-
-  <!-- 📊 Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XXXXXXXXXX');
-  </script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2914631277707668"
+     crossorigin="anonymous"></script>
 
   <style>
     :root {
@@ -56,68 +38,90 @@
 
     body {
       font-family: "Poppins", Arial, sans-serif;
-      margin: 0; padding: 0;
+      margin: 0;
+      padding: 0;
       background: var(--bg-light);
       color: var(--text-dark);
       text-align: center;
       transition: background 0.4s ease, color 0.4s ease;
       min-height: 100vh;
-      display: flex; flex-direction: column;
+      display: flex;
+      flex-direction: column;
     }
-    body.dark { background: var(--bg-dark); color: var(--text-light); }
+
+    body.dark {
+      background: var(--bg-dark);
+      color: var(--text-light);
+    }
 
     h1 {
-      font-size: 38px; font-weight: 800;
-      margin-top: 40px; margin-bottom: 10px;
-      color: var(--orange); letter-spacing: 0.5px;
+      font-size: 38px;
+      font-weight: 800;
+      margin-top: 40px;
+      margin-bottom: 10px;
+      color: var(--orange);
+      letter-spacing: 0.5px;
     }
-    p.subtitle { font-size: 16px; color: #666; margin-bottom: 30px; }
+
+    p.subtitle {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 30px;
+    }
     body.dark p.subtitle { color: #bbb; }
 
     /* 🌗 Theme Toggle */
     .theme-toggle {
-      position: fixed; top: 14px; right: 14px;
-      background: var(--orange); color: white;
-      border: none; border-radius: 8px;
-      padding: 8px 14px; font-size: 15px;
-      cursor: pointer; transition: 0.3s;
-      z-index: 1000; box-shadow: 0 2px 6px var(--shadow-light);
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      background: var(--orange);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.3s;
+      z-index: 1000;
+      box-shadow: 0 2px 6px var(--shadow-light);
     }
     .theme-toggle:hover { background: var(--orange-dark); }
 
-    /* 🧭 Install Button */
-    .install-btn {
-      position: fixed; bottom: 20px; right: 20px;
-      background: #2a9d8f; color: #fff;
-      border: none; border-radius: 30px;
-      padding: 12px 18px; font-weight: 600;
-      cursor: pointer; display: none;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-      transition: transform 0.2s ease;
-    }
-    .install-btn:hover { transform: scale(1.05); }
-
     /* Section Titles */
     .section-title {
-      font-size: 20px; font-weight: 700;
-      margin: 40px 0 20px; text-transform: uppercase;
-      letter-spacing: 1px; color: var(--orange);
+      font-size: 20px;
+      font-weight: 700;
+      margin: 40px 0 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--orange);
     }
 
     /* Tools Grid */
     .tools-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 20px; max-width: 960px;
-      margin: auto; padding: 0 20px; flex: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 20px;
+      max-width: 960px;
+      margin: auto;
+      padding: 0 20px;
+      flex: 1;
     }
 
     .tool-card {
-      background: var(--card-light); border-radius: 16px;
-      padding: 24px; box-shadow: 0 4px 12px var(--shadow-light);
-      text-decoration: none; color: var(--text-dark);
-      font-weight: 600; transition: all 0.25s ease;
-      display: flex; flex-direction: column;
-      align-items: center; min-height: 160px;
+      background: var(--card-light);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 12px var(--shadow-light);
+      text-decoration: none;
+      color: var(--text-dark);
+      font-weight: 600;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 160px;
     }
 
     .tool-card:hover {
@@ -126,25 +130,42 @@
       background: #fff3e6;
     }
 
-    .tool-card span { font-size: 34px; margin-bottom: 10px; }
+    .tool-card span {
+      font-size: 34px;
+      margin-bottom: 10px;
+    }
 
     body.dark .tool-card {
-      background: var(--card-dark); color: var(--text-light);
+      background: var(--card-dark);
+      color: var(--text-light);
       box-shadow: 0 3px 8px var(--shadow-dark);
     }
+
     body.dark .tool-card:hover {
       background: #2a2a2a;
       box-shadow: 0 3px 14px rgba(255,255,255,0.08);
     }
 
     footer {
-      margin-top: 50px; padding: 25px 0;
-      font-size: 13px; color: #888;
+      margin-top: 50px;
+      padding: 25px 0;
+      font-size: 13px;
+      color: #888;
       border-top: 1px solid var(--border-light);
     }
-    body.dark footer { color: #aaa; border-top: 1px solid var(--border-dark); }
+    body.dark footer {
+      color: #aaa;
+      border-top: 1px solid var(--border-dark);
+    }
 
-    small.desc { color: #777; font-size: 13px; margin-top: 8px; display: block; }
+    small.desc {
+      color: #777;
+      font-size: 13px;
+      margin-top: 8px;
+      text-align: center;
+      display: block;
+      line-height: 1.4em;
+    }
     body.dark small.desc { color: #bbb; }
 
     /* Responsive */
@@ -158,7 +179,6 @@
 
 <body data-theme>
   <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-  <button class="install-btn" id="installBtn">📲 Install App</button>
 
   <h1>💰 KharchaSaathi</h1>
   <p class="subtitle">Your Smart Companion for Daily & Business Calculations</p>
@@ -166,22 +186,43 @@
   <!-- 🏠 Personal Tools -->
   <div class="section-title">Personal Tools</div>
   <div class="tools-grid">
-    <a class="tool-card" href="tools/rent-split.html"><span>🏠</span> Rent Split Calculator <small class="desc">Split rent among friends easily.</small></a>
-    <a class="tool-card" href="tools/trip-expense-splitter.html"><span>🚗</span> Trip Expense Splitter <small class="desc">Manage shared trip expenses smartly.</small></a>
-    <a class="tool-card" href="tools/water-bill-split.html"><span>💧</span> Water Bill Splitter <small class="desc">Fairly split household water bills.</small></a>
-    <a class="tool-card" href="tools/grocery-split-pro.html"><span>🛒</span> Grocery Split (Pro) <small class="desc">Divide grocery costs with clarity.</small></a>
-    <a class="tool-card" href="tools/roomshare-ledger.html"><span>📒</span> RoomShare Ledger Pro <small class="desc">Track shared daily expenses room-wise.</small></a>
+    <a class="tool-card" href="tools/rent-split.html">
+      <span>🏠</span> Rent Split Calculator
+      <small class="desc">Split rent among friends easily.</small>
+    </a>
+    <a class="tool-card" href="tools/trip-expense-splitter.html">
+      <span>🚗</span> Trip Expense Splitter
+      <small class="desc">Manage shared trip expenses smartly.</small>
+    </a>
+    <a class="tool-card" href="tools/water-bill-split.html">
+      <span>💧</span> Water Bill Splitter
+      <small class="desc">Fairly split household water bills.</small>
+    </a>
+    <a class="tool-card" href="tools/grocery-split-pro.html">
+      <span>🛒</span> Grocery Split (Pro)
+      <small class="desc">Divide grocery costs with clarity.</small>
+    </a>
+    <a class="tool-card" href="tools/roomshare-ledger.html">
+      <span>📒</span> RoomShare Ledger Pro
+      <small class="desc">Track shared daily expenses room-wise.</small>
+    </a>
   </div>
 
   <!-- 💼 Business Tools -->
   <div class="section-title">Business Tools</div>
   <div class="tools-grid">
-    <a class="tool-card" href="tools/business-dashboard.html" title="Manage stock, sales, and wanting list with smart filters.">
+    <a class="tool-card" href="tools/business-dashboard.html" title="Manage stock, sales, and wanting list with type-based grouping.">
       <span>📦</span> Business Dashboard
-      <small class="desc">Manage stock, sales & wanting list by Type — with PDF export, dark mode & smart filters.</small>
+      <small class="desc">Add item types, manage stock, sales & wanting list — with PDF export & dark mode.</small>
     </a>
-    <a class="tool-card" href="tools/invoice-pro.html"><span>🧾</span> Invoice Pro (Smart Billing) <small class="desc">Create, print & share invoices instantly.</small></a>
-    <a class="tool-card" href="tools/gst-bill.html"><span>📄</span> GST Reverse Calculator <small class="desc">Find GST components from total amount.</small></a>
+    <a class="tool-card" href="tools/invoice-pro.html">
+      <span>🧾</span> Invoice Pro (Smart Billing)
+      <small class="desc">Create, print & share invoices instantly.</small>
+    </a>
+    <a class="tool-card" href="tools/gst-bill.html">
+      <span>📄</span> GST Reverse Calculator
+      <small class="desc">Find GST components from total amount.</small>
+    </a>
   </div>
 
   <!-- 📘 Guides -->
@@ -194,7 +235,7 @@
 
   <footer>© 2025 KharchaSaathi • Built by Abid Ali</footer>
 
-  <script defer>
+  <script>
     (function(){
       const t = localStorage.getItem('ks-theme');
       if(t === 'dark'){
@@ -210,23 +251,6 @@
       document.querySelector('.theme-toggle').textContent = isDark ? '☀️' : '🌙';
       document.body.dataset.theme = isDark ? 'dark' : 'light';
     }
-
-    // 📲 PWA Install Prompt
-    let deferredPrompt;
-    const installBtn = document.getElementById('installBtn');
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installBtn.style.display = 'block';
-    });
-    installBtn.addEventListener('click', async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') installBtn.style.display = 'none';
-        deferredPrompt = null;
-      }
-    });
   </script>
 </body>
 </html>
