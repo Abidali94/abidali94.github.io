@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🔗 Trust Ledger — KharchaSaathi</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #fafafa;
+  color: #222;
+  text-align: center;
+  margin: 0; padding: 20px;
+}
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  max-width: 720px;
+  margin: auto;
+  text-align: left;
+}
+label { font-weight: 600; display:block; margin-top:12px; }
+textarea {
+  width:100%; height:120px; border-radius:8px;
+  border:1px solid #ccc; padding:10px; font-family:monospace;
+}
+button {
+  background:#ff7a00; color:white; border:none;
+  border-radius:8px; padding:10px 16px;
+  font-weight:600; margin:8px 4px; cursor:pointer;
+}
+button:hover { background:#cc6300; }
+pre {
+  background:#f6f6f6; padding:10px; border-radius:6px; overflow:auto;
+}
+</style>
+</head>
+<body>
+
+<h2>🔗 Trust Ledger — Proof of Invoice</h2>
+<p>Every invoice entry you add here is securely hashed & linked, forming a verifiable chain of trust.</p>
+
+<div class="card">
+  <label>Enter Invoice JSON:</label>
+  <textarea id="input" placeholder='{"invoiceNo":"INV-001","amount":1180,"buyer":"Rahim"}'></textarea>
+  <div style="text-align:center;margin-top:10px;">
+    <button onclick="addEntry()">Add Entry</button>
+    <button onclick="verifyChain()">Verify</button>
+    <button onclick="exportData()">Export</button>
+    <button onclick="importData()">Import</button>
+    <button onclick="showProof()">Proof</button>
+    <button onclick="clearLedger()">Clear</button>
+  </div>
+  <pre id="out"></pre>
+</div>
+
+<p style="margin-top:20px;">
+  <a href="../index.html" style="text-decoration:none;color:#ff7a00;font-weight:600;">← Back to Home</a>
+</p>
+
+<script src="trust-ledger.js"></script>
+<script>
+const out = document.getElementById('out');
+
+function log(x){
+  out.textContent = typeof x === 'string' ? x : JSON.stringify(x, null, 2);
+}
+
+async function addEntry(){
+  try {
+    const data = JSON.parse(document.getElementById('input').value);
+    const e = await TrustLedger.addEntry(data);
+    log({added:e});
+  } catch {
+    alert('Invalid JSON!');
+  }
+}
+
+async function verifyChain(){
+  const v = await TrustLedger.verify();
+  log(v);
+}
+
+function exportData(){
+  const blob = new Blob([TrustLedger.exportChain()], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'trust-ledger.json'; a.click();
+  URL.revokeObjectURL(url);
+  log("Exported ledger as JSON");
+}
+
+function importData(){
+  const txt = prompt("Paste JSON to import:");
+  if(txt && TrustLedger.importChain(txt)) log("Imported successfully");
+  else log("Import failed");
+}
+
+function showProof(){
+  const p = TrustLedger.lastProof();
+  log(p || "No entries yet");
+}
+
+function clearLedger(){
+  if(confirm("Clear all ledger entries?")) {
+    TrustLedger.clear();
+    log("Ledger cleared");
+  }
+}
+</script>
+
+</body>
+</html>
