@@ -6,54 +6,106 @@
 <title>🔗 Trust Ledger — KharchaSaathi</title>
 <style>
 body {
-  font-family: Arial, sans-serif;
-  background: #fafafa;
+  font-family: "Poppins", Arial, sans-serif;
+  background: #f5f6fa;
   color: #222;
+  margin: 0; padding: 0;
+}
+.container {
+  max-width: 800px;
+  margin: 50px auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  padding: 30px;
+}
+h2 {
   text-align: center;
-  margin: 0; padding: 20px;
+  color: #ff7a00;
+  font-size: 28px;
+  margin-bottom: 8px;
 }
-.card {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  max-width: 720px;
-  margin: auto;
-  text-align: left;
+p.desc {
+  text-align: center;
+  color: #666;
+  margin-top: 0;
+  font-size: 14px;
 }
-label { font-weight: 600; display:block; margin-top:12px; }
+label {
+  font-weight: 600;
+  font-size: 15px;
+  margin-top: 16px;
+  display: block;
+}
 textarea {
-  width:100%; height:160px; border-radius:8px;
-  border:1px solid #ccc; padding:10px; font-family:monospace;
-}
-button {
-  background:#ff7a00; color:white; border:none;
-  border-radius:8px; padding:10px 16px;
-  font-weight:600; margin:8px 4px; cursor:pointer;
-}
-button:hover { background:#cc6300; }
-pre {
-  background:#f6f6f6; padding:10px; border-radius:6px; overflow:auto;
+  width: 100%;
+  height: 160px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-family: monospace;
+  padding: 12px;
+  font-size: 15px;
+  box-sizing: border-box;
+  resize: vertical;
+  background: #fafafa;
 }
 .demo-note {
-  font-size:13px;
-  color:#777;
-  margin-top:6px;
-  text-align:center;
+  font-size: 13px;
+  text-align: center;
+  color: #777;
+  margin-top: 6px;
+}
+.btns {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+button {
+  background: #ff7a00;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s;
+}
+button:hover {
+  background: #cc6300;
+  transform: translateY(-2px);
+}
+pre {
+  background: #1e1e1e;
+  color: #00ff9c;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  overflow-x: auto;
+  margin-top: 20px;
+}
+.back-home {
+  display: block;
+  text-align: center;
+  margin-top: 25px;
+  color: #ff7a00;
+  text-decoration: none;
+  font-weight: 600;
 }
 </style>
 </head>
 <body>
 
-<h2>🔗 Trust Ledger — Proof of Invoice</h2>
-<p>Every invoice entry you add here is securely hashed & linked, forming a verifiable chain of trust.</p>
+<div class="container">
+  <h2>🔗 Trust Ledger — Proof of Invoice</h2>
+  <p class="desc">Each invoice entry is hashed & chained securely to form a verifiable ledger.</p>
 
-<div class="card">
   <label>Enter Invoice JSON:</label>
   <textarea id="input"></textarea>
-  <p class="demo-note">👇 Example Demo Data (you can edit & test):</p>
+  <p class="demo-note">👇 Example Demo Data (you can edit & test)</p>
 
-  <div style="text-align:center;margin-top:10px;">
+  <div class="btns">
     <button onclick="addEntry()">Add Entry</button>
     <button onclick="verifyChain()">Verify</button>
     <button onclick="exportData()">Export</button>
@@ -61,19 +113,18 @@ pre {
     <button onclick="showProof()">Proof</button>
     <button onclick="clearLedger()">Clear</button>
   </div>
-  <pre id="out"></pre>
+
+  <pre id="out">Result will appear here...</pre>
 </div>
 
-<p style="margin-top:20px;">
-  <a href="../index.html" style="text-decoration:none;color:#ff7a00;font-weight:600;">← Back to Home</a>
-</p>
+<a href="../index.html" class="back-home">← Back to Home</a>
 
 <script src="trust-ledger.js"></script>
 <script>
 const out = document.getElementById('out');
 const input = document.getElementById('input');
 
-// ✅ Pre-fill demo JSON
+// ✅ Default demo JSON
 const demoJSON = {
   "invoiceNo": "INV-001",
   "amount": 1180,
@@ -86,49 +137,49 @@ const demoJSON = {
 };
 input.value = JSON.stringify(demoJSON, null, 2);
 
-function log(x){
+function log(x) {
   out.textContent = typeof x === 'string' ? x : JSON.stringify(x, null, 2);
 }
 
-async function addEntry(){
+async function addEntry() {
   try {
     const data = JSON.parse(input.value);
     const e = await TrustLedger.addEntry(data);
-    log({added:e});
+    log({ added: e });
   } catch {
-    alert('Invalid JSON!');
+    alert("⚠️ Invalid JSON format!");
   }
 }
 
-async function verifyChain(){
+async function verifyChain() {
   const v = await TrustLedger.verify();
   log(v);
 }
 
-function exportData(){
-  const blob = new Blob([TrustLedger.exportChain()], {type:'application/json'});
+function exportData() {
+  const blob = new Blob([TrustLedger.exportChain()], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = 'trust-ledger.json'; a.click();
   URL.revokeObjectURL(url);
-  log("Exported ledger as JSON");
+  log("Ledger exported successfully ✅");
 }
 
-function importData(){
-  const txt = prompt("Paste JSON to import:");
-  if(txt && TrustLedger.importChain(txt)) log("Imported successfully");
-  else log("Import failed");
+function importData() {
+  const txt = prompt("Paste JSON ledger data:");
+  if (txt && TrustLedger.importChain(txt)) log("Imported successfully ✅");
+  else log("❌ Import failed");
 }
 
-function showProof(){
+function showProof() {
   const p = TrustLedger.lastProof();
-  log(p || "No entries yet");
+  log(p || "No entries yet ⚠️");
 }
 
-function clearLedger(){
-  if(confirm("Clear all ledger entries?")) {
+function clearLedger() {
+  if (confirm("⚠️ Clear all ledger entries?")) {
     TrustLedger.clear();
-    log("Ledger cleared");
+    log("Ledger cleared 🧹");
   }
 }
 </script>
