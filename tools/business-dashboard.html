@@ -24,7 +24,7 @@
     margin: 0;
     padding: 20px;
     color: var(--text-dark);
-    transition: background 0.3s, color 0.3s;
+    transition: 0.3s;
   }
 
   body.dark {
@@ -50,9 +50,7 @@
     transition: 0.3s;
   }
 
-  .theme-toggle:hover {
-    background: var(--orange-dark);
-  }
+  .theme-toggle:hover { background: var(--orange-dark); }
 
   .tabs {
     display: flex;
@@ -77,7 +75,7 @@
 
   .tab.active {
     background: var(--orange);
-    color: white;
+    color: #fff;
   }
 
   .section {
@@ -86,7 +84,6 @@
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: 0.3s;
   }
 
   body.dark .section {
@@ -94,9 +91,7 @@
     box-shadow: 0 2px 8px rgba(255,255,255,0.05);
   }
 
-  .section.active {
-    display: block;
-  }
+  .section.active { display: block; }
 
   input, button, select {
     padding: 8px;
@@ -120,9 +115,7 @@
     cursor: pointer;
   }
 
-  button:hover {
-    background: var(--orange-dark);
-  }
+  button:hover { background: var(--orange-dark); }
 
   table {
     width: 100%;
@@ -145,13 +138,8 @@
     color: white;
   }
 
-  .clear-btn {
-    background: #d9534f;
-  }
-
-  .clear-btn:hover {
-    background: #b52b27;
-  }
+  .clear-btn { background: #d9534f; }
+  .clear-btn:hover { background: #b52b27; }
 
   .remove-btn, .restock-btn {
     border-radius: 5px;
@@ -159,21 +147,11 @@
     color: white;
   }
 
-  .remove-btn {
-    background: #dc3545;
-  }
+  .remove-btn { background: #dc3545; }
+  .remove-btn:hover { background: #a71d2a; }
 
-  .remove-btn:hover {
-    background: #a71d2a;
-  }
-
-  .restock-btn {
-    background: #28a745;
-  }
-
-  .restock-btn:hover {
-    background: #1e7e34;
-  }
+  .restock-btn { background: #28a745; }
+  .restock-btn:hover { background: #1e7e34; }
 
   a.back-link {
     background: #444;
@@ -185,14 +163,9 @@
     margin-top: 20px;
   }
 
-  a.back-link:hover {
-    background: #222;
-  }
+  a.back-link:hover { background: #222; }
 
-  body.dark a.back-link {
-    background: #222;
-  }
-
+  body.dark a.back-link { background: #222; }
 </style>
 </head>
 <body>
@@ -211,10 +184,9 @@
 <!-- TYPES SECTION -->
 <div id="types" class="section active">
   <h3>🗂 Manage Item Types</h3>
-  <input id="typeName" placeholder="Enter new type (e.g. Mobiles, Grocery, Accessories)">
+  <input id="typeName" placeholder="Enter new type (Mobiles, Accessories, etc.)">
   <button onclick="addType()">Add Type</button>
   <button class="clear-btn" onclick="clearTypes()">🧹 Clear All Types</button>
-
   <h4>📋 Available Types</h4>
   <ul id="typeList"></ul>
 </div>
@@ -224,7 +196,7 @@
   <h3>🧾 Current Stock</h3>
   <table id="stockTable">
     <thead>
-      <tr><th>Date</th><th>Type</th><th>Product</th><th>Qty</th></tr>
+      <tr><th>Date</th><th>Type</th><th>Product</th><th>Qty</th><th>Sold</th><th>Remaining</th></tr>
     </thead>
     <tbody></tbody>
   </table>
@@ -247,7 +219,15 @@
     </thead>
     <tbody></tbody>
   </table>
-  <button class="clear-btn" onclick="clearSales()">🧹 Clear All Sales</button>
+
+  <h4>Add Sale</h4>
+  <input id="sdate" type="date">
+  <select id="stype"></select>
+  <input id="sname" placeholder="Product name">
+  <input id="sqty" type="number" placeholder="Qty">
+  <input id="sprice" type="number" placeholder="Price ₹">
+  <button onclick="addSale()">Add Sale</button>
+  <button class="clear-btn" onclick="clearSales()">🧹 Clear Sales</button>
 </div>
 
 <!-- WANTING SECTION -->
@@ -280,16 +260,16 @@ let want = JSON.parse(localStorage.getItem('wanting-data')||'[]');
 
 // Theme
 (function(){
-  const theme = localStorage.getItem('ks-theme');
-  if(theme === 'dark'){
+  const t = localStorage.getItem('ks-theme');
+  if(t === 'dark'){
     document.body.classList.add('dark');
     document.querySelector('.theme-toggle').textContent = '☀️';
   }
 })();
 function toggleTheme(){
-  const isDark = document.body.classList.toggle('dark');
-  localStorage.setItem('ks-theme', isDark ? 'dark' : 'light');
-  document.querySelector('.theme-toggle').textContent = isDark ? '☀️' : '🌙';
+  const d = document.body.classList.toggle('dark');
+  localStorage.setItem('ks-theme', d ? 'dark' : 'light');
+  document.querySelector('.theme-toggle').textContent = d ? '☀️' : '🌙';
 }
 
 // Tabs
@@ -300,11 +280,11 @@ function openTab(tab) {
   document.getElementById(tab).classList.add('active');
 }
 
-// Type Management
+// Types
 function addType(){
-  const name=document.getElementById('typeName').value.trim();
-  if(!name) return alert("Enter type name!");
-  if(types.includes(name)) return alert("Type already exists!");
+  let name=document.getElementById('typeName').value.trim();
+  if(!name) return alert("Enter type!");
+  if(types.includes(name)) return alert("Type exists!");
   types.push(name);
   localStorage.setItem('item-types',JSON.stringify(types));
   renderTypes(); updateDropdowns();
@@ -312,18 +292,16 @@ function addType(){
 }
 function clearTypes(){
   if(confirm("Clear all types?")){
-    localStorage.removeItem('item-types');
-    types=[]; renderTypes(); updateDropdowns();
+    types=[]; localStorage.removeItem('item-types'); renderTypes(); updateDropdowns();
   }
 }
 function renderTypes(){
-  const ul=document.getElementById('typeList');
-  ul.innerHTML=types.length?types.map(t=>`<li>${t}</li>`).join(''):"<li>No types added yet.</li>";
+  document.getElementById('typeList').innerHTML=types.length?types.map(t=>`<li>${t}</li>`).join(''):"<li>No types yet.</li>";
 }
 function updateDropdowns(){
-  const selects=[document.getElementById('ptype'),document.getElementById('wtype')];
+  const selects=[document.getElementById('ptype'),document.getElementById('stype'),document.getElementById('wtype')];
   selects.forEach(sel=>{
-    sel.innerHTML='<option value="">Select Type</option>' + types.map(t=>`<option>${t}</option>`).join('');
+    sel.innerHTML='<option value="">Select Type</option>'+types.map(t=>`<option>${t}</option>`).join('');
   });
 }
 
@@ -334,13 +312,41 @@ function addStock(){
   let qty=parseInt(document.getElementById('pqty').value);
   let date=document.getElementById('pdate').value;
   if(!type||!name||!qty||!date) return alert("Fill all fields!");
-  stock.push({type,name,qty,date});
+  stock.push({type,name,qty,sold:0,date});
   localStorage.setItem('stock-data',JSON.stringify(stock));
   renderStock();
   document.getElementById('pname').value='';
   document.getElementById('pqty').value='';
 }
-function clearStock(){ if(confirm("Clear all stock?")){localStorage.removeItem('stock-data');stock=[];renderStock();}}
+function renderStock(){
+  const tb=document.querySelector('#stockTable tbody');
+  tb.innerHTML=stock.length?stock.map(s=>{
+    let remaining=s.qty - (s.sold||0);
+    return `<tr><td>${s.date}</td><td>${s.type}</td><td>${s.name}</td><td>${s.qty}</td><td>${s.sold||0}</td><td>${remaining}</td></tr>`;
+  }).join(''):"<tr><td colspan=6>No stock available.</td></tr>";
+}
+function clearStock(){ if(confirm("Clear all stock?")){stock=[];localStorage.removeItem('stock-data');renderStock();}}
+
+// Sales
+function addSale(){
+  let type=document.getElementById('stype').value;
+  let name=document.getElementById('sname').value.trim();
+  let qty=parseInt(document.getElementById('sqty').value);
+  let price=parseFloat(document.getElementById('sprice').value);
+  let date=document.getElementById('sdate').value;
+  if(!type||!name||!qty||!price||!date) return alert("Fill all fields!");
+  sales.push({type,product:name,qty,price,amount:qty*price,date});
+  localStorage.setItem('sales-data',JSON.stringify(sales));
+
+  let item=stock.find(s=>s.name.toLowerCase()===name.toLowerCase());
+  if(item){ item.sold=(item.sold||0)+qty; localStorage.setItem('stock-data',JSON.stringify(stock)); }
+  renderStock(); renderSales();
+}
+function renderSales(){
+  const tb=document.querySelector('#salesTable tbody');
+  tb.innerHTML=sales.length?sales.map(s=>`<tr><td>${s.date}</td><td>${s.type}</td><td>${s.product}</td><td>${s.qty}</td><td>${s.price}</td><td>${s.amount}</td></tr>`).join(''):"<tr><td colspan=6>No sales yet.</td></tr>";
+}
+function clearSales(){ if(confirm("Clear sales?")){sales=[];localStorage.removeItem('sales-data');renderSales();}}
 
 // Wanting
 function addWant(){
@@ -353,51 +359,33 @@ function addWant(){
   renderWant();
   document.getElementById('witem').value='';
 }
-function removeWant(i){ if(confirm("Remove this item?")){ want.splice(i,1); localStorage.setItem('wanting-data',JSON.stringify(want)); renderWant(); } }
+function removeWant(i){ want.splice(i,1); localStorage.setItem('wanting-data',JSON.stringify(want)); renderWant(); }
 function restockFromWant(i){
-  let qty=prompt("Enter restocked quantity:");
-  if(!qty || isNaN(qty)) return;
+  let qty=prompt("Enter restocked qty:");
+  if(!qty||isNaN(qty)) return;
   const today=new Date().toISOString().split('T')[0];
   const item=want[i];
-  stock.push({type:item.type,name:item.item,qty:parseInt(qty),date:today});
+  stock.push({type:item.type,name:item.item,qty:parseInt(qty),sold:0,date:today});
   localStorage.setItem('stock-data',JSON.stringify(stock));
   want.splice(i,1);
   localStorage.setItem('wanting-data',JSON.stringify(want));
   renderStock(); renderWant();
 }
-function clearWant(){ if(confirm("Clear wanting list?")){localStorage.removeItem('wanting-data');want=[];renderWant();}}
-
-// Render
-function renderStock(){
-  const tb=document.querySelector('#stockTable tbody');
-  tb.innerHTML=stock.length?stock.map(s=>`<tr><td>${s.date}</td><td>${s.type}</td><td>${s.name}</td><td>${s.qty}</td></tr>`).join(''):"<tr><td colspan=4>No stock available.</td></tr>";
-}
+function clearWant(){ if(confirm("Clear all wanting list?")){want=[];localStorage.removeItem('wanting-data');renderWant();}}
 function renderWant(){
   const tb=document.querySelector('#wantTable tbody');
-  if(!want.length){tb.innerHTML="<tr><td colspan=5>No wanting items.</td></tr>";return;}
+  if(!want.length){tb.innerHTML="<tr><td colspan=5>No items.</td></tr>";return;}
   let grouped={};
-  want.forEach(w=>{
-    if(!grouped[w.type]) grouped[w.type]=[];
-    grouped[w.type].push(w);
-  });
+  want.forEach(w=>{ if(!grouped[w.type]) grouped[w.type]=[]; grouped[w.type].push(w); });
   tb.innerHTML=Object.entries(grouped).map(([type,items])=>`
     <tr><th colspan="5" style="background:#ffe0b3;">${type}</th></tr>
-    ${items.map((w,i)=>`<tr><td>${w.date}</td><td>${w.type}</td><td>${w.item}</td>
-      <td>-</td>
-      <td>
-        <button class='restock-btn' onclick='restockFromWant(${want.indexOf(w)})'>✔ Restocked</button>
-        <button class='remove-btn' onclick='removeWant(${want.indexOf(w)})'>🗑 Remove</button>
-      </td>
-    </tr>`).join('')}
+    ${items.map((w,i)=>`<tr><td>${w.date}</td><td>${w.type}</td><td>${w.item}</td><td>-</td>
+      <td><button class='restock-btn' onclick='restockFromWant(${want.indexOf(w)})'>✔ Restock</button>
+      <button class='remove-btn' onclick='removeWant(${want.indexOf(w)})'>🗑 Remove</button></td></tr>`).join('')}
   `).join('');
 }
-function renderSales(){
-  const tb=document.querySelector('#salesTable tbody');
-  tb.innerHTML=sales.length?sales.map(s=>`<tr><td>${s.date}</td><td>${s.type||'-'}</td><td>${s.product}</td><td>${s.qty}</td><td>${s.price||'-'}</td><td>${(s.amount||0).toFixed(2)}</td></tr>`).join(''):"<tr><td colspan=6>No sales yet.</td></tr>";
-}
-function clearSales(){ if(confirm("Clear all sales?")){localStorage.removeItem('sales-data');sales=[];renderSales();}}
 
-// Initial
+// Init
 renderTypes(); updateDropdowns(); renderStock(); renderSales(); renderWant();
 </script>
 </body>
