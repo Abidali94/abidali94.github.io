@@ -42,7 +42,7 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
   .section.active { display: block; }
-  input, button {
+  input, button, select {
     padding: 8px;
     margin: 6px;
     border-radius: 6px;
@@ -66,18 +66,8 @@
     text-align: center;
   }
   th { background: #ff7a00; color: white; }
-  .clear-btn {
-    background: #d9534f;
-  }
+  .clear-btn { background: #d9534f; }
   .clear-btn:hover { background: #b52b27; }
-  .restock-btn {
-    background: #28a745;
-    color: white;
-    border-radius: 5px;
-    padding: 5px 10px;
-    cursor: pointer;
-  }
-  .restock-btn:hover { background: #1e7e34; }
   .remove-btn {
     background: #dc3545;
     color: white;
@@ -85,6 +75,13 @@
     padding: 5px 10px;
   }
   .remove-btn:hover { background: #a71d2a; }
+  .restock-btn {
+    background: #28a745;
+    color: white;
+    border-radius: 5px;
+    padding: 5px 10px;
+  }
+  .restock-btn:hover { background: #1e7e34; }
 </style>
 </head>
 <body>
@@ -99,16 +96,25 @@
 
 <!-- STOCK SECTION -->
 <div id="stock" class="section active">
-  <h3>🧾 Stock Inventory</h3>
+  <h3>🧾 Current Stock</h3>
   <table id="stockTable">
     <thead>
-      <tr><th>Date</th><th>Product</th><th>Qty</th><th>Action</th></tr>
+      <tr><th>Date</th><th>Type</th><th>Product</th><th>Qty</th><th>Action</th></tr>
     </thead>
     <tbody></tbody>
   </table>
 
   <h4>Add New Stock</h4>
   <input id="pdate" type="date">
+  <select id="ptype">
+    <option value="">Select Type</option>
+    <option>Mobile</option>
+    <option>Charger</option>
+    <option>Pouch</option>
+    <option>6D Glass</option>
+    <option>Earphones</option>
+    <option>Other</option>
+  </select>
   <input id="pname" placeholder="Product name">
   <input id="pqty" type="number" placeholder="Quantity">
   <button onclick="addStock()">Add</button>
@@ -120,7 +126,7 @@
   <h3>💰 Sales Ledger</h3>
   <table id="salesTable">
     <thead>
-      <tr><th>Date</th><th>Product</th><th>Qty</th><th>Price ₹</th><th>Total ₹</th></tr>
+      <tr><th>Date</th><th>Type</th><th>Product</th><th>Qty</th><th>Price ₹</th><th>Total ₹</th></tr>
     </thead>
     <tbody></tbody>
   </table>
@@ -132,14 +138,24 @@
   <h3>🛒 Wanting Items</h3>
   <table id="wantTable">
     <thead>
-      <tr><th>Date</th><th>Item</th><th>Actions</th></tr>
+      <tr><th>Date</th><th>Type</th><th>Item</th><th>Qty</th><th>Actions</th></tr>
     </thead>
     <tbody></tbody>
   </table>
 
   <h4>Add New Wanting Item</h4>
   <input id="wdate" type="date">
+  <select id="wtype">
+    <option value="">Select Type</option>
+    <option>Mobile</option>
+    <option>Charger</option>
+    <option>Pouch</option>
+    <option>6D Glass</option>
+    <option>Earphones</option>
+    <option>Other</option>
+  </select>
   <input id="witem" placeholder="Item name">
+  <input id="wqty" type="number" placeholder="Qty">
   <button onclick="addWant()">Add</button>
   <button class="clear-btn" onclick="clearWant()">🧹 Clear Entire List</button>
 </div>
@@ -160,47 +176,37 @@ function openTab(tab) {
   document.getElementById(tab).classList.add('active');
 }
 
+// ADD STOCK
 function addStock() {
+  let type=document.getElementById('ptype').value;
   let name=document.getElementById('pname').value.trim();
   let qty=parseInt(document.getElementById('pqty').value);
   let date=document.getElementById('pdate').value;
-  if(!name||!qty||!date) return alert("Fill all fields!");
-  stock.push({name,qty,date});
+  if(!type||!name||!qty||!date) return alert("Fill all fields!");
+  stock.push({type,name,qty,date});
   localStorage.setItem('stock-data',JSON.stringify(stock));
-  
-  // also remove from wanting if restocked
   want = want.filter(w => w.item.toLowerCase() !== name.toLowerCase());
   localStorage.setItem('wanting-data',JSON.stringify(want));
-
-  renderStock(); renderSales(); renderWant();
+  renderStock(); renderWant();
   document.getElementById('pname').value='';
   document.getElementById('pqty').value='';
 }
 
-function recordSale(name, date, qty, price) {
-  if(!name || !qty || !price || !date) return alert("Please fill all sale details!");
-  sales.push({product:name, qty, price, amount:qty*price, date});
-  localStorage.setItem('sales-data',JSON.stringify(sales));
-  let item=stock.find(s=>s.name.toLowerCase()===name.toLowerCase());
-  if(item){item.qty=Math.max(0,item.qty-qty);}
-  if(item && item.qty===0 && !want.find(w=>w.item===name)){
-    want.push({item:name, date:date});
-  }
-  localStorage.setItem('stock-data',JSON.stringify(stock));
-  localStorage.setItem('wanting-data',JSON.stringify(want));
-  renderStock(); renderSales(); renderWant();
-}
-
+// ADD WANTING ITEM
 function addWant() {
+  let type=document.getElementById('wtype').value;
   let item=document.getElementById('witem').value.trim();
+  let qty=parseInt(document.getElementById('wqty').value);
   let date=document.getElementById('wdate').value;
-  if(!item||!date) return alert("Enter item and date!");
-  want.push({item,date});
+  if(!type||!item||!qty||!date) return alert("Enter all fields!");
+  want.push({type,item,qty,date});
   localStorage.setItem('wanting-data',JSON.stringify(want));
   renderWant();
   document.getElementById('witem').value='';
+  document.getElementById('wqty').value='';
 }
 
+// REMOVE ITEM FROM WANTING
 function removeWant(index){
   if(confirm("Remove this item from wanting list?")){
     want.splice(index,1);
@@ -209,29 +215,38 @@ function removeWant(index){
   }
 }
 
+// RESTOCK FROM WANTING
+function restockFromWant(i){
+  const item = want[i];
+  const today = new Date().toISOString().split('T')[0];
+  stock.push({type:item.type,name:item.item,qty:item.qty,date:today});
+  want.splice(i,1);
+  localStorage.setItem('stock-data',JSON.stringify(stock));
+  localStorage.setItem('wanting-data',JSON.stringify(want));
+  renderStock(); renderWant();
+}
+
+// CLEAR FUNCTIONS
 function clearStock(){ if(confirm("Clear all stock?")){localStorage.removeItem('stock-data');stock=[];renderStock();}}
 function clearSales(){ if(confirm("Clear all sales?")){localStorage.removeItem('sales-data');sales=[];renderSales();}}
 function clearWant(){ if(confirm("Clear the entire wanting list?")){localStorage.removeItem('wanting-data');want=[];renderWant();}}
 
+// RENDER TABLES
 function renderStock(){
   const tb=document.querySelector('#stockTable tbody');
   tb.innerHTML=stock.length?stock.map((s,i)=>`
   <tr>
     <td>${s.date}</td>
+    <td>${s.type}</td>
     <td>${s.name}</td>
     <td>${s.qty}</td>
-    <td>
-      <input type='number' id='qty${i}' placeholder='Qty' style='width:60px'>
-      <input type='number' id='price${i}' placeholder='Price' style='width:80px'>
-      <input type='date' id='date${i}' style='width:130px'>
-      <button onclick="recordSale('${s.name}',document.getElementById('date${i}').value,parseInt(document.getElementById('qty${i}').value),parseFloat(document.getElementById('price${i}').value))">Sell</button>
-    </td>
-  </tr>`).join(''):"<tr><td colspan=4>No stock available</td></tr>";
+    <td>-</td>
+  </tr>`).join(''):"<tr><td colspan=5>No stock available</td></tr>";
 }
 
 function renderSales(){
   const tb=document.querySelector('#salesTable tbody');
-  tb.innerHTML=sales.length?sales.map(s=>`<tr><td>${s.date}</td><td>${s.product}</td><td>${s.qty}</td><td>${s.price}</td><td>₹${(s.amount||0).toFixed(2)}</td></tr>`).join(''):"<tr><td colspan=5>No sales recorded.</td></tr>";
+  tb.innerHTML=sales.length?sales.map(s=>`<tr><td>${s.date}</td><td>${s.type||'-'}</td><td>${s.product}</td><td>${s.qty}</td><td>${s.price||'-'}</td><td>₹${(s.amount||0).toFixed(2)}</td></tr>`).join(''):"<tr><td colspan=6>No sales recorded.</td></tr>";
 }
 
 function renderWant(){
@@ -239,22 +254,14 @@ function renderWant(){
   tb.innerHTML=want.length?want.map((w,i)=>`
   <tr>
     <td>${w.date}</td>
+    <td>${w.type}</td>
     <td>${w.item}</td>
+    <td>${w.qty}</td>
     <td>
-      <button class='restock-btn' onclick='addStockFromWant(${i})'>✔️ Restocked</button>
+      <button class='restock-btn' onclick='restockFromWant(${i})'>✔️ Restocked</button>
       <button class='remove-btn' onclick='removeWant(${i})'>🗑 Remove</button>
     </td>
-  </tr>`).join(''):"<tr><td colspan=3>No items in wanting list.</td></tr>";
-}
-
-function addStockFromWant(i){
-  const item = want[i];
-  const today = new Date().toISOString().split('T')[0];
-  stock.push({name:item.item, qty:1, date:today});
-  want.splice(i,1);
-  localStorage.setItem('stock-data',JSON.stringify(stock));
-  localStorage.setItem('wanting-data',JSON.stringify(want));
-  renderStock(); renderWant();
+  </tr>`).join(''):"<tr><td colspan=5>No items in wanting list.</td></tr>";
 }
 
 renderStock(); renderSales(); renderWant();
