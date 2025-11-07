@@ -4,6 +4,7 @@
   <meta name="google-adsense-account" content="ca-pub-2914631277707668">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="KharchaSaathi - Smart Tools for daily & business use. Manage your rent, expenses, stock, sales and invoices efficiently.">
   <title>KharchaSaathi — Smart Tools Hub</title>
 
   <!-- ✅ Google AdSense Auto Ads Script -->
@@ -30,10 +31,7 @@
       transition: 0.3s;
     }
 
-    body.dark {
-      background: var(--bg-dark);
-      color: var(--text-light);
-    }
+    body.dark { background: var(--bg-dark); color: var(--text-light); }
 
     h1 {
       font-size: 38px;
@@ -48,7 +46,7 @@
       margin-bottom: 30px;
     }
 
-    /* Theme Toggle */
+    /* 🌗 Theme Toggle */
     .theme-toggle {
       position: fixed;
       top: 14px;
@@ -109,12 +107,12 @@
       margin-bottom: 8px;
     }
 
-    /* Dark Mode */
     body.dark .tool-card {
       background: #1e1e1e;
       color: var(--text-light);
       box-shadow: 0 2px 8px rgba(255,255,255,0.05);
     }
+
     body.dark .tool-card:hover {
       background: #2a2a2a;
       box-shadow: 0 3px 12px rgba(255,255,255,0.08);
@@ -125,6 +123,13 @@
       padding: 20px;
       font-size: 13px;
       color: #888;
+    }
+
+    small.desc {
+      color: #777;
+      font-size: 13px;
+      margin-top: 6px;
+      display: block;
     }
   </style>
 </head>
@@ -139,40 +144,54 @@
   <!-- 🏠 Personal Tools -->
   <div class="section-title">Personal Tools</div>
   <div class="tools-grid">
-    <a class="tool-card" href="tools/rent-split.html">
+    <a class="tool-card" href="tools/rent-split.html" title="Split monthly rent fairly among roommates.">
       <span>🏠</span> Rent Split Calculator
+      <small class="desc">Split rent among friends easily.</small>
     </a>
-    <a class="tool-card" href="tools/trip-expense-splitter.html">
+    <a class="tool-card" href="tools/trip-expense-splitter.html" title="Track and split trip expenses among group.">
       <span>🚗</span> Trip Expense Splitter
+      <small class="desc">Manage shared trip expenses smartly.</small>
     </a>
     <a class="tool-card" href="tools/water-bill-split.html">
       <span>💧</span> Water Bill Splitter
+      <small class="desc">Fairly split household water bills.</small>
     </a>
     <a class="tool-card" href="tools/grocery-split-pro.html">
       <span>🛒</span> Grocery Split (Pro)
+      <small class="desc">Divide grocery costs with clarity.</small>
     </a>
     <a class="tool-card" href="tools/roomshare-ledger.html">
       <span>📒</span> RoomShare Ledger Pro
+      <small class="desc">Track shared daily spending room-wise.</small>
     </a>
   </div>
 
   <!-- 💼 Business Tools -->
   <div class="section-title">Business Tools</div>
   <div class="tools-grid">
-    <a class="tool-card" href="tools/stock-manager.html">
+    <a class="tool-card" href="tools/stock-manager.html" title="Add, manage and update shop inventory.">
       <span>📦</span> Stock Manager (Inventory)
+      <small class="desc">Track all products & quantities.</small>
     </a>
-    <a class="tool-card" href="tools/sales.html">
+
+    <a class="tool-card" href="tools/sales.html" title="View all daily sales records.">
       <span>📈</span> Sales Ledger (Daily Sales)
+      <small class="desc">Auto-generated record of all sold items.</small>
     </a>
-    <a class="tool-card" href="tools/wanting.html">
+
+    <a class="tool-card" href="tools/wanting.html" title="Keep track of low or out-of-stock items.">
       <span>🛒</span> Wanting List (Restock Items)
+      <small class="desc">Maintain list of products to restock.</small>
     </a>
+
     <a class="tool-card" href="tools/invoice-pro.html">
       <span>🧾</span> Invoice Pro (Smart Billing)
+      <small class="desc">Create, print & share invoices instantly.</small>
     </a>
+
     <a class="tool-card" href="tools/gst-bill.html">
       <span>📄</span> GST Reverse Calculator
+      <small class="desc">Find GST components from total amount.</small>
     </a>
   </div>
 
