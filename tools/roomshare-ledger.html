@@ -5,55 +5,100 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🏠 RoomShare Ledger Pro — Daily Expense Splitter</title>
 <style>
+  :root {
+    --orange: #ff7a00;
+    --orange-dark: #cc6300;
+    --bg-light: #f8f9fa;
+    --bg-dark: #121212;
+    --card-light: #ffffff;
+    --card-dark: #1e1e1e;
+    --text-dark: #222;
+    --text-light: #e8e8e8;
+    --border-light: #ddd;
+    --border-dark: #333;
+  }
+
   body {
     font-family: "Poppins", Arial, sans-serif;
-    background: #f8f9fa;
+    background: var(--bg-light);
     margin: 0;
     padding: 20px;
-    color: #222;
+    color: var(--text-dark);
+    transition: 0.3s;
   }
+
+  body.dark {
+    background: var(--bg-dark);
+    color: var(--text-light);
+  }
+
   h2 {
     text-align: center;
-    color: #ff7a00;
+    color: var(--orange);
   }
+
   .section {
-    background: #fff;
+    background: var(--card-light);
     border-radius: 12px;
     padding: 15px;
     margin-bottom: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: 0.3s;
   }
+
+  body.dark .section {
+    background: var(--card-dark);
+    box-shadow: 0 2px 8px rgba(255,255,255,0.05);
+  }
+
   input, button, select {
     padding: 8px 12px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-light);
     border-radius: 8px;
     font-size: 14px;
     margin: 5px;
+    background: inherit;
+    color: inherit;
   }
+
+  body.dark input, body.dark select {
+    border: 1px solid var(--border-dark);
+    background: #2a2a2a;
+    color: var(--text-light);
+  }
+
   button {
-    background: #ff7a00;
+    background: var(--orange);
     color: white;
     font-weight: 600;
     cursor: pointer;
     transition: 0.25s;
   }
   button:hover {
-    background: #cc6300;
+    background: var(--orange-dark);
   }
+
   table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
   }
+
   th, td {
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-light);
     padding: 8px;
     text-align: center;
   }
+
+  body.dark th, body.dark td {
+    border: 1px solid var(--border-dark);
+  }
+
   th {
-    background: #ff7a00;
+    background: var(--orange);
     color: #fff;
   }
+
   .summary {
     background: #fff3e6;
     padding: 15px;
@@ -62,10 +107,17 @@
     text-align: center;
     margin-top: 15px;
   }
+
+  body.dark .summary {
+    background: #2b2b2b;
+    color: var(--text-light);
+  }
+
   .footer-buttons {
     text-align: center;
     margin-top: 25px;
   }
+
   .footer-buttons a {
     text-decoration: none;
     color: white;
@@ -77,18 +129,42 @@
     display: inline-block;
     transition: 0.3s;
   }
+
   .footer-buttons a:hover {
     background: #666;
   }
+
+  body.dark .footer-buttons a {
+    background: #222;
+  }
+
   .clear-btn {
     background: #d9534f;
   }
   .clear-btn:hover {
     background: #b52b27;
   }
+
+  /* 🌗 Theme Toggle Button */
+  .theme-toggle {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    background: var(--orange);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  .theme-toggle:hover { background: var(--orange-dark); }
 </style>
 </head>
 <body>
+
+<button class="theme-toggle" onclick="toggleTheme()">🌙</button>
 
 <h2>🏠 RoomShare Ledger Pro</h2>
 
@@ -133,6 +209,21 @@
 <script>
 let persons = JSON.parse(localStorage.getItem('roomshare-persons') || '[]');
 let expenses = JSON.parse(localStorage.getItem('roomshare-expenses') || '[]');
+
+// 🌗 Load Theme (Sync with Index)
+(function(){
+  const t = localStorage.getItem('ks-theme');
+  if(t === 'dark'){
+    document.body.classList.add('dark');
+    document.querySelector('.theme-toggle').textContent = '☀️';
+  }
+})();
+
+function toggleTheme(){
+  const d = document.body.classList.toggle('dark');
+  localStorage.setItem('ks-theme', d ? 'dark' : 'light');
+  document.querySelector('.theme-toggle').textContent = d ? '☀️' : '🌙';
+}
 
 function addPerson() {
   const name = document.getElementById('personName').value.trim();
