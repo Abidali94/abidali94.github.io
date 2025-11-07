@@ -23,7 +23,7 @@ body {
 }
 label { font-weight: 600; display:block; margin-top:12px; }
 textarea {
-  width:100%; height:120px; border-radius:8px;
+  width:100%; height:160px; border-radius:8px;
   border:1px solid #ccc; padding:10px; font-family:monospace;
 }
 button {
@@ -35,6 +35,12 @@ button:hover { background:#cc6300; }
 pre {
   background:#f6f6f6; padding:10px; border-radius:6px; overflow:auto;
 }
+.demo-note {
+  font-size:13px;
+  color:#777;
+  margin-top:6px;
+  text-align:center;
+}
 </style>
 </head>
 <body>
@@ -44,7 +50,9 @@ pre {
 
 <div class="card">
   <label>Enter Invoice JSON:</label>
-  <textarea id="input" placeholder='{"invoiceNo":"INV-001","amount":1180,"buyer":"Rahim"}'></textarea>
+  <textarea id="input"></textarea>
+  <p class="demo-note">👇 Example Demo Data (you can edit & test):</p>
+
   <div style="text-align:center;margin-top:10px;">
     <button onclick="addEntry()">Add Entry</button>
     <button onclick="verifyChain()">Verify</button>
@@ -63,6 +71,20 @@ pre {
 <script src="trust-ledger.js"></script>
 <script>
 const out = document.getElementById('out');
+const input = document.getElementById('input');
+
+// ✅ Pre-fill demo JSON
+const demoJSON = {
+  "invoiceNo": "INV-001",
+  "amount": 1180,
+  "buyer": "Rahim",
+  "gst": 18,
+  "items": [
+    {"name":"Washing Powder","qty":2,"price":200},
+    {"name":"Soap","qty":4,"price":60}
+  ]
+};
+input.value = JSON.stringify(demoJSON, null, 2);
 
 function log(x){
   out.textContent = typeof x === 'string' ? x : JSON.stringify(x, null, 2);
@@ -70,7 +92,7 @@ function log(x){
 
 async function addEntry(){
   try {
-    const data = JSON.parse(document.getElementById('input').value);
+    const data = JSON.parse(input.value);
     const e = await TrustLedger.addEntry(data);
     log({added:e});
   } catch {
