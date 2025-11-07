@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📦 Stock Manager — KharchaSaathi</title>
+<style>
+  body {
+    font-family: "Poppins", Arial, sans-serif;
+    background: #f8f9fa;
+    margin: 0;
+    padding: 20px;
+    color: #222;
+  }
+  h2 {
+    text-align: center;
+    color: #ff7a00;
+  }
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+  }
+  .tab {
+    background: #ddd;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s;
+  }
+  .tab.active {
+    background: #ff7a00;
+    color: #fff;
+  }
+  .section {
+    display: none;
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .section.active { display: block; }
+  input, button {
+    padding: 8px;
+    margin: 6px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+  button {
+    background: #ff7a00;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  button:hover { background: #cc6300; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+  }
+  th { background: #ff7a00; color: white; }
+  .clear-btn {
+    background: #d9534f;
+  }
+  .clear-btn:hover { background: #b52b27; }
+</style>
+</head>
+<body>
+
+<h2>📦 Stock Manager Dashboard</h2>
+
+<div class="tabs">
+  <div class="tab active" onclick="openTab('stock')">📦 Current Stock</div>
+  <div class="tab" onclick="openTab('sales')">📈 Sales Ledger</div>
+  <div class="tab" onclick="openTab('wanting')">🛒 Wanting List</div>
+</div>
+
+<!-- STOCK SECTION -->
+<div id="stock" class="section active">
+  <h3>🧾 Add New Stock</h3>
+  <input id="pname" placeholder="Product name">
+  <input id="pqty" type="number" placeholder="Quantity">
+  <input id="pdate" type="date">
+  <button onclick="addStock()">Add</button>
+  <button class="clear-btn" onclick="clearStock()">🧹 Clear Stock</button>
+
+  <h3>📋 Current Stock</h3>
+  <table id="stockTable">
+    <thead>
+      <tr><th>Date</th><th>Product</th><th>Qty</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<!-- SALES SECTION -->
+<div id="sales" class="section">
+  <h3>💰 Record Sale</h3>
+  <input id="sname" placeholder="Product name">
+  <input id="sqty" type="number" placeholder="Quantity">
+  <input id="sprice" type="number" placeholder="Price ₹">
+  <input id="sdate" type="date">
+  <button onclick="addSale()">Add Sale</button>
+  <button class="clear-btn" onclick="clearSales()">🧹 Clear Sales</button>
+
+  <h3>📈 Sales Ledger</h3>
+  <table id="salesTable">
+    <thead>
+      <tr><th>Date</th><th>Product</th><th>Qty</th><th>Total ₹</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<!-- WANTING SECTION -->
+<div id="wanting" class="section">
+  <h3>🛒 Add Wanting Item</h3>
+  <input id="witem" placeholder="Item name">
+  <input id="wdate" type="date">
+  <button onclick="addWant()">Add</button>
+  <button class="clear-btn" onclick="clearWant()">🧹 Clear Wanting List</button>
+
+  <h3>📦 Wanting Items</h3>
+  <table id="wantTable">
+    <thead>
+      <tr><th>Date</th><th>Item</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div style="text-align:center;margin-top:20px;">
+  <a href="../index.html" style="background:#444;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;">← Back to Home</a>
+</div>
+
+<script>
+let stock = JSON.parse(localStorage.getItem('stock-data')||'[]');
+let sales = JSON.parse(localStorage.getItem('sales-data')||'[]');
+let want = JSON.parse(localStorage.getItem('wanting-data')||'[]');
+
+function openTab(tab) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelector(`[onclick="openTab('${tab}')"]`).classList.add('active');
+  document.getElementById(tab).classList.add('active');
+}
+
+function addStock() {
+  let name=document.getElementById('pname').value.trim();
+  let qty=document.getElementById('pqty').value;
+  let date=document.getElementById('pdate').value;
+  if(!name||!qty||!date) return alert("Fill all fields!");
+  stock.push({name,qty,date});
+  localStorage.setItem('stock-data',JSON.stringify(stock));
+  renderStock();
+  document.getElementById('pname').value='';
+  document.getElementById('pqty').value='';
+}
+
+function addSale() {
+  let name=document.getElementById('sname').value.trim();
+  let qty=parseInt(document.getElementById('sqty').value);
+  let price=parseFloat(document.getElementById('sprice').value);
+  let date=document.getElementById('sdate').value;
+  if(!name||!qty||!price||!date) return alert("Fill all fields!");
+  sales.push({product:name,qty,amount:qty*price,date});
+  localStorage.setItem('sales-data',JSON.stringify(sales));
+  // deduct from stock if exists
+  let item=stock.find(s=>s.name.toLowerCase()===name.toLowerCase());
+  if(item){item.qty=Math.max(0,item.qty-qty);}
+  localStorage.setItem('stock-data',JSON.stringify(stock));
+  renderStock(); renderSales();
+}
+
+function addWant() {
+  let item=document.getElementById('witem').value.trim();
+  let date=document.getElementById('wdate').value;
+  if(!item||!date) return alert("Enter item and date!");
+  want.push({item,date});
+  localStorage.setItem('wanting-data',JSON.stringify(want));
+  renderWant();
+  document.getElementById('witem').value='';
+}
+
+function clearStock(){ if(confirm("Clear all stock?")){localStorage.removeItem('stock-data');stock=[];renderStock();}}
+function clearSales(){ if(confirm("Clear all sales?")){localStorage.removeItem('sales-data');sales=[];renderSales();}}
+function clearWant(){ if(confirm("Clear wanting list?")){localStorage.removeItem('wanting-data');want=[];renderWant();}}
+
+function renderStock(){
+  const tb=document.querySelector('#stockTable tbody');
+  tb.innerHTML=stock.length?stock.map(s=>`<tr><td>${s.date}</td><td>${s.name}</td><td>${s.qty}</td></tr>`).join(''):"<tr><td colspan=3>No stock available</td></tr>";
+}
+function renderSales(){
+  const tb=document.querySelector('#salesTable tbody');
+  tb.innerHTML=sales.length?sales.map(s=>`<tr><td>${s.date}</td><td>${s.product}</td><td>${s.qty}</td><td>₹${s.amount.toFixed(2)}</td></tr>`).join(''):"<tr><td colspan=4>No sales recorded yet.</td></tr>";
+}
+function renderWant(){
+  const tb=document.querySelector('#wantTable tbody');
+  tb.innerHTML=want.length?want.map(w=>`<tr><td>${w.date}</td><td>${w.item}</td></tr>`).join(''):"<tr><td colspan=2>No items added.</td></tr>";
+}
+
+renderStock(); renderSales(); renderWant();
+</script>
+</body>
+</html>
