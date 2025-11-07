@@ -121,13 +121,28 @@ pre {
   text-align: center;
   margin-top: 10px;
 }
+.video-demo {
+  max-width: 800px;
+  margin: 30px auto;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  padding: 20px;
+  text-align: center;
+}
+.video-demo iframe {
+  width: 100%;
+  height: 315px;
+  border-radius: 10px;
+  border: none;
+}
 </style>
 </head>
 <body>
 
 <div class="container">
   <h2>🔗 Trust Ledger — Proof of Invoice</h2>
-  <p class="desc">Each invoice entry is hashed & chained securely to form a verifiable ledger.</p>
+  <p class="desc">Each invoice entry is securely hashed & linked to form a verifiable chain of trust.</p>
 
   <label>Enter Invoice JSON:</label>
   <textarea id="input"></textarea>
@@ -147,33 +162,39 @@ pre {
 
 <!-- 🧭 GUIDE SECTION -->
 <div class="guide-box">
-  <h3>🧭 How It Works — ఇది ఎలా పనిచేస్తుంది?</h3>
+  <h3>🧭 How Trust Ledger Works</h3>
   <p>
-    <b>Trust Ledger</b> అనేది ఒక mini blockchain system. ఇది మీ invoice data ని tamper-proofగా (ఎవరూ మార్చలేని విధంగా) secure చేస్తుంది.  
-    మీరు ప్రతి invoice add చేసినప్పుడు, అది <b>SHA-256 hash</b> రూపంలో ఒక proof సృష్టిస్తుంది.  
-    ప్రతి entry ముందున్న entry కి link అవుతుంది — ఇలా ఒక <b>Chain of Trust</b> తయారవుతుంది.
+    The <b>Trust Ledger</b> is a mini blockchain-based system that ensures your invoices remain <b>tamper-proof</b>.  
+    Every invoice you add gets converted into a <b>unique SHA-256 hash</b> and is linked to the previous one —  
+    forming an unbreakable <b>chain of trust</b>.
   </p>
 
-  <h4>💡 Example Usage:</h4>
+  <h4>💡 Step-by-Step Guide:</h4>
   <ul>
-    <li>Step 1️⃣ — Example JSON ని చూడండి (ముందే ఇవ్వబడి ఉంది)</li>
-    <li>Step 2️⃣ — <b>Add Entry</b> క్లిక్ చేయండి → invoice blockchain లో చేరుతుంది</li>
-    <li>Step 3️⃣ — <b>Proof</b> క్లిక్ చేయండి → unique proof hash కనపడుతుంది</li>
-    <li>Step 4️⃣ — <b>Verify</b> క్లిక్ చేయండి → మొత్తం ledger chain సరిగ్గా ఉందా చెక్ చేస్తుంది</li>
-    <li>Step 5️⃣ — <b>Export</b> ద్వారా ledger ఫైల్ save చేసుకోవచ్చు</li>
+    <li>1️⃣ Paste or edit your invoice JSON data in the box above.</li>
+    <li>2️⃣ Click <b>Add Entry</b> — it will be securely hashed and stored locally.</li>
+    <li>3️⃣ Click <b>Proof</b> — see your unique hash (proof of authenticity).</li>
+    <li>4️⃣ Click <b>Verify</b> — ensures all records are linked and valid.</li>
+    <li>5️⃣ Click <b>Export</b> — save your full ledger as a .json proof file.</li>
   </ul>
 
-  <h4>🛡️ Why Use This?</h4>
+  <h4>🛡️ Why Use This Tool?</h4>
   <ul>
-    <li>✅ Proof that your invoice data is <b>genuine and unchanged</b></li>
-    <li>✅ Works without internet — browser లోనే blockchain structure</li>
-    <li>✅ Useful for business owners to create <b>verifiable proof of authenticity</b></li>
-    <li>✅ Transparent and immutable (once added, cannot be altered)</li>
+    <li>✅ Proves that your invoice data has not been altered or faked.</li>
+    <li>✅ Works completely offline — no server or database needed.</li>
+    <li>✅ Perfect for business audits, invoice verification, and transparency.</li>
+    <li>✅ Based on <b>SHA-256 cryptographic hashing</b> (used in blockchain).</li>
   </ul>
 
-  <p class="guide-note">
-    — Built with <b>SHA-256 cryptographic hashing</b> for offline trust verification —
-  </p>
+  <p class="guide-note">— Built by KharchaSaathi • Local Blockchain Proof System —</p>
+</div>
+
+<!-- 🎥 VIDEO DEMO SECTION -->
+<div class="video-demo">
+  <h3>🎥 Watch How It Works</h3>
+  <p style="color:#555;">Learn how to add invoices, generate proof, and verify the ledger in this quick demo.</p>
+  <!-- 🔗 Replace the YouTube link below with your own video link -->
+  <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
 </div>
 
 <a href="../index.html" class="back-home">← Back to Home</a>
