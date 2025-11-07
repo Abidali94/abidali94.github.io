@@ -27,53 +27,31 @@
     transition: 0.3s;
   }
 
-  body.dark {
-    background: var(--bg-dark);
-    color: var(--text-light);
-  }
+  body.dark { background: var(--bg-dark); color: var(--text-light); }
 
-  h2 {
-    text-align: center;
-    color: var(--orange);
-  }
+  h2 { text-align: center; color: var(--orange); }
 
   .theme-toggle {
-    position: fixed;
-    top: 14px;
-    right: 14px;
-    background: var(--orange);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 12px;
-    cursor: pointer;
-    transition: 0.3s;
+    position: fixed; top: 14px; right: 14px;
+    background: var(--orange); color: white;
+    border: none; border-radius: 6px;
+    padding: 8px 12px; cursor: pointer; transition: 0.3s;
   }
   .theme-toggle:hover { background: var(--orange-dark); }
 
   .tabs {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin: 20px 0;
+    display: flex; justify-content: center; gap: 10px; margin: 20px 0;
   }
   .tab {
-    background: #ddd;
-    padding: 10px 18px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: 0.3s;
+    background: #ddd; padding: 10px 18px; border-radius: 8px;
+    cursor: pointer; font-weight: 600; transition: 0.3s;
   }
   body.dark .tab { background: #333; color: var(--text-light); }
   .tab.active { background: var(--orange); color: #fff; }
 
   .section {
-    display: none;
-    background: var(--card-light);
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: none; background: var(--card-light); padding: 20px;
+    border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
   body.dark .section {
     background: var(--card-dark);
@@ -82,36 +60,23 @@
   .section.active { display: block; }
 
   input, button, select {
-    padding: 8px;
-    margin: 6px;
-    border-radius: 6px;
-    border: 1px solid var(--border-light);
-    background: inherit;
-    color: inherit;
+    padding: 8px; margin: 6px;
+    border-radius: 6px; border: 1px solid var(--border-light);
+    background: inherit; color: inherit;
   }
   body.dark input, body.dark select {
     border: 1px solid var(--border-dark);
-    background: #2b2b2b;
-    color: var(--text-light);
+    background: #2b2b2b; color: var(--text-light);
   }
 
   button {
-    background: var(--orange);
-    color: white;
-    border: none;
-    cursor: pointer;
+    background: var(--orange); color: white; border: none; cursor: pointer;
   }
   button:hover { background: var(--orange-dark); }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-  }
+  table { width: 100%; border-collapse: collapse; margin-top: 15px; }
   th, td {
-    border: 1px solid var(--border-light);
-    padding: 8px;
-    text-align: center;
+    border: 1px solid var(--border-light); padding: 8px; text-align: center;
   }
   body.dark th, body.dark td { border: 1px solid var(--border-dark); }
   th { background: var(--orange); color: white; }
@@ -120,9 +85,7 @@
   .clear-btn:hover { background: #b52b27; }
 
   .remove-btn, .restock-btn {
-    border-radius: 5px;
-    padding: 5px 10px;
-    color: white;
+    border-radius: 5px; padding: 5px 10px; color: white;
   }
   .remove-btn { background: #dc3545; }
   .remove-btn:hover { background: #a71d2a; }
@@ -130,13 +93,9 @@
   .restock-btn:hover { background: #1e7e34; }
 
   a.back-link {
-    background: #444;
-    color: #fff;
-    padding: 10px 18px;
-    border-radius: 8px;
-    text-decoration: none;
-    display: inline-block;
-    margin-top: 20px;
+    background: #444; color: #fff; padding: 10px 18px;
+    border-radius: 8px; text-decoration: none;
+    display: inline-block; margin-top: 20px;
   }
   a.back-link:hover { background: #222; }
 </style>
@@ -171,9 +130,22 @@
     <thead><tr><th>Date</th><th>Type</th><th>Product</th><th>Qty</th><th>Sold</th><th>Remaining</th></tr></thead>
     <tbody></tbody>
   </table>
-  <h4>Add New Stock</h4>
-  <input id="pdate" type="date"><select id="ptype"></select>
-  <input id="pname" placeholder="Product name"><input id="pqty" type="number" placeholder="Quantity">
+
+  <h4 style="margin-top:25px;">➕ Add New Stock</h4>
+  <div>
+    <label>Type:</label>
+    <select id="ptype" onchange="updateProductList()"></select>
+  </div>
+  <div>
+    <label>Existing Products:</label>
+    <select id="pnameSelect"><option value="">-- Select Type First --</option></select>
+  </div>
+  <div>
+    <label>Or Add New Product:</label>
+    <input id="pname" placeholder="Enter new product name">
+  </div>
+  <input id="pqty" type="number" placeholder="Quantity">
+  <input id="pdate" type="date">
   <button onclick="addStock()">Add</button>
   <button class="clear-btn" onclick="clearStock()">🧹 Clear Stock</button>
 </div>
@@ -242,7 +214,8 @@ function openTab(tab){
 }
 
 // Types
-function addType(){let name=document.getElementById('typeName').value.trim();
+function addType(){
+  let name=document.getElementById('typeName').value.trim();
   if(!name)return alert("Enter type!");
   if(types.includes(name))return alert("Type exists!");
   types.push(name);localStorage.setItem('item-types',JSON.stringify(types));
@@ -255,17 +228,41 @@ function updateDropdowns(){
   selects.forEach(sel=>{sel.innerHTML='<option value="">Select Type</option>'+types.map(t=>`<option>${t}</option>`).join('');});
 }
 
-// Stock
-function addStock(){let type=document.getElementById('ptype').value,name=document.getElementById('pname').value.trim(),
-qty=parseInt(document.getElementById('pqty').value),date=document.getElementById('pdate').value;
-  if(!type||!name||!qty||!date)return alert("Fill all fields!");
-  stock.push({type,name,qty,sold:0,date});localStorage.setItem('stock-data',JSON.stringify(stock));
-  renderStock();document.getElementById('pname').value='';document.getElementById('pqty').value='';
+// STOCK dynamic filtering
+function updateProductList(){
+  const type=document.getElementById('ptype').value;
+  const pnameSelect=document.getElementById('pnameSelect');
+  if(!type){pnameSelect.innerHTML='<option>-- Select Type First --</option>';return;}
+  const items=stock.filter(s=>s.type===type).map(s=>s.name);
+  const uniqueItems=[...new Set(items)];
+  if(uniqueItems.length>0){
+    pnameSelect.innerHTML=uniqueItems.map(p=>`<option value="${p}">${p}</option>`).join('');
+    pnameSelect.insertAdjacentHTML('afterbegin','<option value="">-- Select Product --</option>');
+  } else {
+    pnameSelect.innerHTML='<option value="">No products yet — add below 👇</option>';
+  }
 }
+
+function addStock(){
+  const type=document.getElementById('ptype').value;
+  const selectedProduct=document.getElementById('pnameSelect').value;
+  const newProduct=document.getElementById('pname').value.trim();
+  const name=selectedProduct || newProduct;
+  const qty=parseInt(document.getElementById('pqty').value);
+  const date=document.getElementById('pdate').value;
+  if(!type||!name||!qty||!date)return alert("Fill all fields!");
+  stock.push({type,name,qty,sold:0,date});
+  localStorage.setItem('stock-data',JSON.stringify(stock));
+  renderStock();updateProductList();
+  document.getElementById('pname').value='';document.getElementById('pqty').value='';
+}
+
 function renderStock(){
   const tb=document.querySelector('#stockTable tbody');
-  tb.innerHTML=stock.length?stock.map(s=>{let remaining=s.qty-(s.sold||0);
-    return `<tr><td>${s.date}</td><td>${s.type}</td><td>${s.name}</td><td>${s.qty}</td><td>${s.sold||0}</td><td>${remaining}</td></tr>`;}).join(''):"<tr><td colspan=6>No stock available.</td></tr>";
+  tb.innerHTML=stock.length?stock.map(s=>{
+    let remaining=s.qty-(s.sold||0);
+    return `<tr><td>${s.date}</td><td>${s.type}</td><td>${s.name}</td><td>${s.qty}</td><td>${s.sold||0}</td><td>${remaining}</td></tr>`;
+  }).join(''):"<tr><td colspan=6>No stock available.</td></tr>";
 }
 function clearStock(){if(confirm("Clear all stock?")){stock=[];localStorage.removeItem('stock-data');renderStock();}}
 
@@ -323,21 +320,3 @@ function renderWant(){
   tb.innerHTML=Object.entries(grouped).map(([type,items])=>`
   <tr><th colspan="5" style="background:#ffe0b3;">${type}</th></tr>
   ${items.map((w)=>`<tr><td>${w.date}</td><td>${w.type}</td><td>${w.item}</td><td>-</td>
-  <td><button class='restock-btn' onclick='restockFromWant(${want.indexOf(w)})'>✔ Restock</button>
-  <button class='remove-btn' onclick='removeWant(${want.indexOf(w)})'>🗑 Remove</button></td></tr>`).join('')}
-  `).join('');
-}
-
-async function downloadWantingPDF(){
-  const { jsPDF } = window.jspdf;const doc=new jsPDF();
-  doc.setFontSize(18);doc.text("🛒 Wanting List Report",14,18);
-  doc.setFontSize(12);doc.text(`Date: ${new Date().toLocaleDateString()}`,14,28);
-  let y=40;want.forEach(w=>{doc.text(`${w.type} - ${w.item}`,14,y);y+=8;});
-  doc.save(`WantingList_${new Date().toLocaleDateString().replace(/\//g,'-')}.pdf`);
-}
-
-// Init
-renderTypes();updateDropdowns();renderStock();renderSales();renderWant();
-</script>
-</body>
-</html>
