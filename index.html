@@ -2,81 +2,197 @@
 <html lang="en">
 <head>
   <meta name="google-adsense-account" content="ca-pub-2914631277707668">
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KharchaSaathi</title>
+  <title>KharchaSaathi — Smart Tools Hub</title>
 
   <style>
-    /* Light theme (default) */
-    body { font-family: Arial, sans-serif; background:#FAFAFA; margin:0; padding:40px; text-align:center; color:#222; }
-    h1 { color:#222; margin-bottom:12px; font-size:36px; font-weight:800; }
-    p  { color:#444; margin:6px 0; }
-
-    a.btn{
-      display:inline-block; margin:10px 0; padding:12px 20px;
-      border-radius:8px; background:#ff7a00; color:#fff;
-      font-weight:600; text-decoration:none; transition:0.25s;
+    /* 🌙 Theme Styles */
+    :root {
+      --orange: #ff7a00;
+      --orange-dark: #cc6300;
+      --bg-light: #fafafa;
+      --bg-dark: #121212;
+      --text-dark: #222;
+      --text-light: #e8e8e8;
     }
-    a.btn:hover{ background:#cc6300; transform:translateY(-2px); }
 
-    /* Dark theme */
-    body.dark{ background:#121212; color:#e8e8e8; }
-    body.dark h1 { color:#ffd27f; } /* Title glow */
-    body.dark p{ color:#cfcfcf; }
-    body.dark a.btn{ background:#444; }
-    body.dark a.btn:hover{ background:#666; }
+    body {
+      font-family: "Poppins", Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: var(--bg-light);
+      color: var(--text-dark);
+      text-align: center;
+      transition: 0.3s;
+    }
 
-    /* Toggle button */
-    .theme-toggle{
-      position:fixed; top:12px; right:12px;
-      background:#ff8800; color:#fff; border:none;
-      padding:8px 12px; border-radius:6px; font-size:14px; z-index:9999;
+    body.dark {
+      background: var(--bg-dark);
+      color: var(--text-light);
+    }
+
+    h1 {
+      font-size: 38px;
+      font-weight: 800;
+      margin-top: 40px;
+      margin-bottom: 10px;
+    }
+
+    p.subtitle {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    /* 🌗 Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      background: var(--orange);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .theme-toggle:hover {
+      background: var(--orange-dark);
+    }
+
+    /* 🧩 Section Titles */
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 30px 0 15px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--orange);
+    }
+
+    /* 🧮 Tool Grid */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      max-width: 900px;
+      margin: auto;
+      padding: 0 20px;
+    }
+
+    .tool-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      text-decoration: none;
+      color: var(--text-dark);
+      font-weight: 600;
+      transition: 0.25s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .tool-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      background: #fff3e6;
+    }
+
+    .tool-card span {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    /* Dark mode cards */
+    body.dark .tool-card {
+      background: #1e1e1e;
+      color: var(--text-light);
+      box-shadow: 0 2px 8px rgba(255,255,255,0.05);
+    }
+
+    body.dark .tool-card:hover {
+      background: #2a2a2a;
+      box-shadow: 0 3px 12px rgba(255,255,255,0.08);
+    }
+
+    footer {
+      margin-top: 40px;
+      padding: 20px;
+      font-size: 13px;
+      color: #888;
     }
   </style>
 </head>
 <body>
+
   <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
 
-  <h1>
-    🧠 KharchaSaathi 💰
-  </h1>
+  <h1>💰 KharchaSaathi</h1>
+  <p class="subtitle">Your Smart Companion for Daily & Business Calculations</p>
 
-  <p style="font-size:16px; margin-bottom:35px;">
-    Smart Tools for Shared Expenses
-  </p>
+  <!-- 🏠 Personal Tools -->
+  <div class="section-title">Personal Tools</div>
+  <div class="tools-grid">
+    <a class="tool-card" href="tools/rent-split.html">
+      <span>🏠</span> Rent Split Calculator
+    </a>
+    <a class="tool-card" href="tools/trip-expense-splitter.html">
+      <span>🚗</span> Trip Expense Splitter
+    </a>
+    <a class="tool-card" href="tools/water-bill-split.html">
+      <span>💧</span> Water Bill Splitter
+    </a>
+    <a class="tool-card" href="tools/grocery-split-pro.html">
+      <span>🛒</span> Grocery Split (Pro)
+    </a>
+  </div>
 
-  <p><a class="btn" href="tools/rent-split.html">🏠 Open Rent Split Calculator</a></p>
-  <p><a class="btn" href="tools/trip-expense-splitter.html">🚗 Trip Expense Splitter</a></p>
-  <p><a class="btn" href="tools/water-bill-split.html">💧 Water Bill Splitter</a></p>
-  <p><a class="btn" href="tools/grocery-split-pro.html">🛒 Grocery Split (Pro)</a></p>
-  <p style="margin-top:10px">
-  <a class="btn" href="tools/gst-bill.html">📄 GST Reverse Calculator</a>
-</p>
-  <p style="margin-top:10px">
-  <a class="btn" href="tools/invoice-pro.html">🧾 Invoice Pro (Multi-Item)</a>
-</p>
-  <p><a class="btn" href="about-rent-split.html">📘 How to split rent fairly?</a></p>
-  <p><a class="btn" href="about-water-bill-split.html">📘 How to split water bill fairly?</a></p>
-  <p><a class="btn" href="about-grocery-split.html">📘 How to split grocery expenses fairly?</a></p>
+  <!-- 💼 Business Tools -->
+  <div class="section-title">Business Tools</div>
+  <div class="tools-grid">
+    <a class="tool-card" href="tools/gst-bill.html">
+      <span>📄</span> GST Reverse Calculator
+    </a>
+    <a class="tool-card" href="tools/trust-ledger.html">
+      <span>🔗</span> Trust Ledger (Proof of Invoice)
+    </a>
+  </div>
 
-  <p style="margin-top:24px; color:#777; font-size:13px;">© 2025 KharchaSaathi • Tools by Abid Ali</p>
+  <!-- 📘 Guides -->
+  <div class="section-title">Guides & Help</div>
+  <div class="tools-grid">
+    <a class="tool-card" href="about-rent-split.html">
+      <span>📘</span> Split Rent Fairly
+    </a>
+    <a class="tool-card" href="about-water-bill-split.html">
+      <span>📘</span> Split Water Bill Fairly
+    </a>
+    <a class="tool-card" href="about-grocery-split.html">
+      <span>📘</span> Split Grocery Fairly
+    </a>
+  </div>
+
+  <footer>© 2025 KharchaSaathi • Built by Abid Ali</footer>
 
   <script>
-    // Load saved theme on first paint
-    (function initTheme(){
-      const saved = localStorage.getItem('ks-theme');
-      if(saved === 'dark'){ 
+    (function(){
+      const t=localStorage.getItem('ks-theme');
+      if(t==='dark'){
         document.body.classList.add('dark');
-        document.querySelector('.theme-toggle').textContent = '☀️';
+        document.querySelector('.theme-toggle').textContent='☀️';
       }
     })();
-
     function toggleTheme(){
-      const dark = document.body.classList.toggle('dark');
-      localStorage.setItem('ks-theme', dark ? 'dark' : 'light');
-      document.querySelector('.theme-toggle').textContent = dark ? '☀️' : '🌙';
+      const d=document.body.classList.toggle('dark');
+      localStorage.setItem('ks-theme', d?'dark':'light');
+      document.querySelector('.theme-toggle').textContent = d?'☀️':'🌙';
     }
   </script>
+
 </body>
 </html>
