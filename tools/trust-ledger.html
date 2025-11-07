@@ -93,6 +93,34 @@ pre {
   text-decoration: none;
   font-weight: 600;
 }
+.guide-box {
+  max-width: 800px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+.guide-box h3 {
+  color: #ff7a00;
+  text-align: center;
+}
+.guide-box ul {
+  color: #444;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.guide-box p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #333;
+}
+.guide-note {
+  font-size: 13px;
+  color: #777;
+  text-align: center;
+  margin-top: 10px;
+}
 </style>
 </head>
 <body>
@@ -115,6 +143,37 @@ pre {
   </div>
 
   <pre id="out">Result will appear here...</pre>
+</div>
+
+<!-- 🧭 GUIDE SECTION -->
+<div class="guide-box">
+  <h3>🧭 How It Works — ఇది ఎలా పనిచేస్తుంది?</h3>
+  <p>
+    <b>Trust Ledger</b> అనేది ఒక mini blockchain system. ఇది మీ invoice data ని tamper-proofగా (ఎవరూ మార్చలేని విధంగా) secure చేస్తుంది.  
+    మీరు ప్రతి invoice add చేసినప్పుడు, అది <b>SHA-256 hash</b> రూపంలో ఒక proof సృష్టిస్తుంది.  
+    ప్రతి entry ముందున్న entry కి link అవుతుంది — ఇలా ఒక <b>Chain of Trust</b> తయారవుతుంది.
+  </p>
+
+  <h4>💡 Example Usage:</h4>
+  <ul>
+    <li>Step 1️⃣ — Example JSON ని చూడండి (ముందే ఇవ్వబడి ఉంది)</li>
+    <li>Step 2️⃣ — <b>Add Entry</b> క్లిక్ చేయండి → invoice blockchain లో చేరుతుంది</li>
+    <li>Step 3️⃣ — <b>Proof</b> క్లిక్ చేయండి → unique proof hash కనపడుతుంది</li>
+    <li>Step 4️⃣ — <b>Verify</b> క్లిక్ చేయండి → మొత్తం ledger chain సరిగ్గా ఉందా చెక్ చేస్తుంది</li>
+    <li>Step 5️⃣ — <b>Export</b> ద్వారా ledger ఫైల్ save చేసుకోవచ్చు</li>
+  </ul>
+
+  <h4>🛡️ Why Use This?</h4>
+  <ul>
+    <li>✅ Proof that your invoice data is <b>genuine and unchanged</b></li>
+    <li>✅ Works without internet — browser లోనే blockchain structure</li>
+    <li>✅ Useful for business owners to create <b>verifiable proof of authenticity</b></li>
+    <li>✅ Transparent and immutable (once added, cannot be altered)</li>
+  </ul>
+
+  <p class="guide-note">
+    — Built with <b>SHA-256 cryptographic hashing</b> for offline trust verification —
+  </p>
 </div>
 
 <a href="../index.html" class="back-home">← Back to Home</a>
