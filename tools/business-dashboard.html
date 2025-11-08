@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>📦 KharchaSaathi — Business Dashboard v6.2.3</title>
+<title>📦 KharchaSaathi — Business Dashboard v6.2.4</title>
 <meta name="theme-color" content="#ff7a00">
 <style>
 :root{
@@ -41,7 +41,7 @@ body.dark .help-content{background:var(--dark-card);color:#fff;}
 <body>
 
 <div class="topbar">
-  <h1>📦 KharchaSaathi v6.2.3</h1>
+  <h1>📦 KharchaSaathi v6.2.4</h1>
   <button class="theme-btn" id="themeBtn">🌙</button>
 </div>
 
@@ -76,6 +76,13 @@ body.dark .help-content{background:var(--dark-card);color:#fff;}
   <input type="text" id="pname" placeholder="Product name">
   <input type="number" id="pqty" placeholder="Qty">
   <button onclick="addStock()">Add</button>
+
+  <br><br>
+  <label><b>Filter by Type:</b></label>
+  <select id="filterType" onchange="renderStock()">
+    <option value="all">All Types</option>
+  </select>
+
   <table id="stockTable">
     <thead>
       <tr>
@@ -117,14 +124,13 @@ body.dark .help-content{background:var(--dark-card);color:#fff;}
   <a href="../index.html">🏠 Back</a>
 </div>
 
-<!-- Help Modal -->
 <div id="helpModal" class="help-modal">
   <div class="help-content">
     <h2>📘 Help Guide</h2>
     <ul>
+      <li>Filter your stock by selecting a Type or show All.</li>
       <li>💰 Sale = Cash | 📒 Credit = Khata</li>
       <li>✅ Tick adds item to Stock & removes from Wanting</li>
-      <li>Low stock alert auto-updates</li>
     </ul>
     <button onclick="toggleHelp()">Close</button>
   </div>
@@ -140,10 +146,23 @@ let types=JSON.parse(localStorage.getItem(K_TYPES)||'[]'),
 function saveAll(){localStorage.setItem(K_TYPES,JSON.stringify(types));localStorage.setItem(K_STOCK,JSON.stringify(stock));localStorage.setItem(K_SALES,JSON.stringify(sales));localStorage.setItem(K_WANT,JSON.stringify(want));}
 
 /* TYPES */
-function addType(){const t=document.getElementById('typeName').value.trim();if(!t)return;types.includes(t)?alert("Already exists"):types.push(t);saveAll();renderTypes();updateDropdowns();document.getElementById('typeName').value='';}
+function addType(){
+  const t=document.getElementById('typeName').value.trim();
+  if(!t)return alert("Enter a type name");
+  if(types.includes(t))return alert("Already exists");
+  types.push(t);
+  saveAll();renderTypes();updateDropdowns();document.getElementById('typeName').value='';
+}
 function renderTypes(){document.getElementById('typeList').innerHTML=types.map(t=>`<li>${t}</li>`).join('')||'<li>No types yet</li>';}
 function clearTypes(){if(confirm("Clear all types?")){types=[];saveAll();renderTypes();updateDropdowns();}}
-function updateDropdowns(){['ptype','wtype'].forEach(id=>{const el=document.getElementById(id);el.innerHTML='<option value="">Select</option>'+types.map(t=>`<option>${t}</option>`).join('');});}
+function updateDropdowns(){
+  ['ptype','wtype','filterType'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    let extra = id==='filterType' ? '<option value="all">All Types</option>' : '<option value="">Select</option>';
+    el.innerHTML = extra + types.map(t=>`<option value="${t}">${t}</option>`).join('');
+  });
+}
 
 /* GLOBAL LIMIT */
 function setGlobalLimit(){const v=parseInt(document.getElementById('globalLimit').value);if(isNaN(v)||v<0)return alert("Invalid limit");localStorage.setItem(K_LIMIT,v);alert("Limit set "+v);}
@@ -160,8 +179,11 @@ saveAll();renderStock();
 function clearStock(){if(confirm("Clear all stock?")){stock=[];saveAll();renderStock();}}
 
 function renderStock(){
+const filter=document.getElementById('filterType').value;
 const tb=document.querySelector('#stockTable tbody');
-tb.innerHTML=stock.map((s,i)=>{
+tb.innerHTML=stock
+.filter(s=>filter==='all'||s.type===filter)
+.map((s,i)=>{
 const sold=s.sold||0,rem=s.qty-sold,limit=getLimit();
 let cls='ok',status='OK';
 if(rem<=0){cls='out';status='OUT';}
@@ -215,15 +237,14 @@ want.push({date,type,item,restocked:false});saveAll();renderWant();
 }
 function renderWant(){
 const tb=document.querySelector('#wantTable tbody');
-tb.innerHTML=want.map((w,i)=>`<tr class="${w.restocked?'restocked':''}"><td>${w.date}</td><td>${w.type}</td><td>${w.item}</td><td><button class="sell-btn" onclick="restock(${i})">✅ Restock</button> <button class="credit-btn" onclick="delWant(${i})">🗑 Delete</button></td></tr>`).join('');
+tb.innerHTML=want.map((w,i)=>`<tr><td>${w.date}</td><td>${w.type}</td><td>${w.item}</td><td><button class="sell-btn" onclick="restock(${i})">✅ Restock</button> <button class="credit-btn" onclick="delWant(${i})">🗑 Delete</button></td></tr>`).join('');
 }
 function restock(i){
 const q=parseInt(prompt("Enter Restock Qty:"));if(!q||q<=0)return alert("Invalid qty");
 const w=want[i];const date=new Date().toISOString().split('T')[0];
 const ex=stock.find(s=>s.type===w.type&&s.name.toLowerCase()===w.item.toLowerCase());
 if(ex){ex.qty+=q;}else{stock.push({date,type:w.type,name:w.item,qty:q,sold:0});}
-want.splice(i,1); // remove immediately
-saveAll();renderStock();renderWant();
+want.splice(i,1);saveAll();renderStock();renderWant();
 alert(`✅ ${q} of "${w.item}" added to Stock & removed from Wanting.`);
 }
 function delWant(i){want.splice(i,1);saveAll();renderWant();}
