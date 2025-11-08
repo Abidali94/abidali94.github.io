@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>📦 KharchaSaathi — Business Dashboard v4.9</title>
+<title>📦 KharchaSaathi — Business Dashboard v5.0</title>
 <meta name="theme-color" content="#ff7a00">
 <style>
 :root{
@@ -49,7 +49,7 @@ body.dark .help-box{background:var(--dark-card);color:#e8e8e8}
 
 <div class="topbar">
   <div>
-    <h1>📦 KharchaSaathi — Business Dashboard v4.9</h1>
+    <h1>📦 KharchaSaathi — Business Dashboard v5.0</h1>
     <div class="muted">Offline • Simple • Backup • Smart Totals</div>
   </div>
   <div class="controls">
@@ -94,6 +94,7 @@ body.dark .help-box{background:var(--dark-card);color:#e8e8e8}
     <input type="text" id="pname" placeholder="Product name">
     <input type="number" id="pqty" placeholder="Qty">
     <button onclick="addStock()">Add</button>
+    <button class="small-btn" onclick="clearStock()">Clear All</button>
   </div>
 </section>
 
@@ -112,6 +113,7 @@ body.dark .help-box{background:var(--dark-card);color:#e8e8e8}
     <input type="number" id="sqty" placeholder="Qty">
     <input type="number" id="sprice" placeholder="Price ₹">
     <button onclick="addSale()">Add Sale</button>
+    <button class="small-btn" onclick="clearSales()">Clear All</button>
   </div>
 </section>
 
@@ -143,8 +145,8 @@ body.dark .help-box{background:var(--dark-card);color:#e8e8e8}
     <h2>📘 Guides & Help</h2>
     <ul>
       <li>Manage Types → Add product categories</li>
-      <li>Current Stock → Add & view stock</li>
-      <li>Sales Ledger → Record daily sales</li>
+      <li>Current Stock → Add & view stock (🧹 Clear All added)</li>
+      <li>Sales Ledger → Record daily sales (🧹 Clear All added)</li>
       <li>Wanting List → Track missing stock</li>
       <li>Use 🖨️ Print / PDF to export</li>
       <li>Backup/Restore → Keep your data safe</li>
@@ -179,6 +181,14 @@ function renderTypes(){
 }
 
 function clearTypes(){if(confirm("Clear all types?")){types=[];saveAll();renderTypes();updateDropdowns();}}
+
+// ✅ NEW clear stock & sales functions
+function clearStock(){
+  if(confirm("Clear entire stock?")){stock=[];saveAll();renderStock();}
+}
+function clearSales(){
+  if(confirm("Clear all sales records?")){sales=[];saveAll();renderSales();}
+}
 
 function updateDropdowns(){
   ['ptype','stype','wtype','viewTypeFilter'].forEach(id=>{
@@ -228,7 +238,6 @@ function renderSales(){
   document.getElementById('dayTotal').textContent=t.toFixed(2);
 }
 
-// ✅ FIXED WANTING LIST FUNCTION
 function addWant(){
   let type=document.getElementById('wtype').value;
   const item=document.getElementById('witem').value.trim();
