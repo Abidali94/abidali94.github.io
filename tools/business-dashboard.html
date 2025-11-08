@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>📦 KharchaSaathi — Business Dashboard v5.3</title>
+<title>📦 KharchaSaathi — Business Dashboard v5.3.1</title>
 <meta name="theme-color" content="#ff7a00">
 <style>
 :root{
@@ -51,7 +51,7 @@ body.dark .help-box{background:var(--dark-card);color:#e8e8e8}
 
 <div class="topbar">
   <div>
-    <h1>📦 KharchaSaathi — Business Dashboard v5.3</h1>
+    <h1>📦 KharchaSaathi — Business Dashboard v5.3.1</h1>
     <div class="muted">Offline • Auto-Sell • Smart Totals</div>
   </div>
   <div class="controls">
@@ -103,6 +103,9 @@ body.dark .help-box{background:var(--dark-card);color:#e8e8e8}
     <tbody></tbody>
     <tfoot><tr><td colspan="5" style="text-align:right;font-weight:bold;">Total:</td><td id="dayTotal">0</td></tr></tfoot>
   </table>
+  <div class="row" style="margin-top:8px;">
+    <button class="small-btn" onclick="clearSales()">Clear All Sales</button>
+  </div>
 </section>
 
 <section id="wanting" class="section">
@@ -111,6 +114,13 @@ body.dark .help-box{background:var(--dark-card);color:#e8e8e8}
     <thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Qty</th><th>Actions</th></tr></thead>
     <tbody></tbody>
   </table>
+  <div class="row" style="margin-top:10px;">
+    <input type="date" id="wdate">
+    <select id="wtype"></select>
+    <input type="text" id="witem" placeholder="Item name">
+    <button onclick="addWant()">Add</button>
+    <button onclick="printWanting()">🖨️ Print / PDF</button>
+  </div>
 </section>
 
 <div class="footer-btns">
@@ -123,8 +133,9 @@ body.dark .help-box{background:var(--dark-card);color:#e8e8e8}
     <button class="close-btn" onclick="closeHelp()">✖</button>
     <h2>📘 Guides</h2>
     <ul>
-      <li>🛒 Sell button → Correctly works with Filter (fixed issue!)</li>
-      <li>Offline, Dark Mode, Smart Totals supported</li>
+      <li>🛒 Sell button → Filter-safe fixed</li>
+      <li>💰 Clear All option added to Sales</li>
+      <li>🖨️ Add + Print restored in Wanting List</li>
     </ul>
   </div>
 </div>
@@ -207,6 +218,33 @@ const tb=document.querySelector('#salesTable tbody');let t=0;
 tb.innerHTML=sales.map(s=>{t+=s.amount;return`<tr><td>${s.date}</td><td>${s.type}</td><td>${s.product}</td><td>${s.qty}</td><td>${s.price}</td><td>${s.amount}</td></tr>`}).join('');
 document.getElementById('dayTotal').textContent=t.toFixed(2);}
 
+function addWant(){
+let type=document.getElementById('wtype').value;
+const item=document.getElementById('witem').value.trim();
+const date=document.getElementById('wdate').value;
+if(!type&&types.length===1)type=types[0];
+if(!item||!date)return alert("Fill all fields");
+if(!type)return alert("Select Type");
+want.push({type,item,date});saveAll();renderWant();
+['wtype','witem','wdate'].forEach(i=>document.getElementById(i).value='');}
+
+function renderWant(){
+const tb=document.querySelector('#wantTable tbody');
+tb.innerHTML=want.map((w,i)=>`<tr><td>${w.date}</td><td>${w.type}</td><td>${w.item}</td><td>-</td><td><button onclick="restock(${i})">✔</button><button onclick="removeWant(${i})">🗑</button></td></tr>`).join('');}
+
+function restock(i){
+const q=prompt("Restocked Qty:");if(!q)return;
+const t=new Date().toISOString().split('T')[0],w=want[i];
+stock.push({type:w.type,name:w.item,qty:parseInt(q),sold:0,date:t});
+want.splice(i,1);saveAll();renderStock();renderWant();}
+
+function removeWant(i){want.splice(i,1);saveAll();renderWant();}
+function printWanting(){
+const html=document.getElementById('wantTable').outerHTML;
+const w=window.open('','_blank');
+w.document.write(`<html><head><title>Wanting List</title><style>body{font-family:Arial}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px;text-align:center}th{background:#ff7a00;color:#fff}</style></head><body><h3>🛒 Wanting List</h3>${html}</body></html>`);
+w.document.close();w.print();}
+
 document.getElementById('themeBtn').onclick=()=>{
 document.body.classList.toggle('dark');
 const d=document.body.classList.contains('dark');
@@ -225,7 +263,7 @@ document.querySelector(`.tab[data-tab="${id}"]`).classList.add('active');
 document.getElementById(id).classList.add('active');}
 document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',()=>openTab(tab.dataset.tab)));
 
-function renderAll(){renderTypes();updateDropdowns();renderStock();renderSales();}
+function renderAll(){renderTypes();updateDropdowns();renderStock();renderSales();renderWant();}
 renderAll();
 </script>
 </body>
