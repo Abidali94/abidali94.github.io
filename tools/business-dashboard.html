@@ -72,6 +72,7 @@
     <thead><tr><th>Date</th><th>Type</th><th>Product</th><th>Qty</th><th>Sold</th><th>Remaining</th></tr></thead>
     <tbody></tbody>
   </table>
+  <button class="clear-btn" onclick="clearStock()">🧹 Clear All Stock</button>
   <hr>
   <h4>➕ Add Stock</h4>
   <input id="pdate" type="date"><select id="ptype"></select>
@@ -87,6 +88,7 @@
     <tbody></tbody>
     <tfoot><tr><td colspan="5" style="text-align:right;font-weight:bold;">Day Total:</td><td id="dayTotal" style="color:var(--orange);font-weight:bold;">0</td></tr></tfoot>
   </table>
+  <button class="clear-btn" onclick="clearSales()">🧹 Clear All Sales</button>
   <h4>Add Sale</h4>
   <input id="sdate" type="date"><select id="stype"></select>
   <input id="sname" placeholder="Product name"><input id="sqty" type="number" placeholder="Qty">
@@ -105,6 +107,10 @@
     <thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Qty</th><th>Actions</th></tr></thead>
     <tbody></tbody>
   </table>
+  <div style="text-align:right;margin-top:10px;">
+    <button onclick="printWanting()">🖨️ Print / PDF</button>
+    <button class="clear-btn" onclick="clearWant()">🧹 Clear All</button>
+  </div>
   <hr>
   <h4>Add Want</h4>
   <input id="wdate" type="date"><select id="wtype"></select>
@@ -122,7 +128,7 @@ let stock=JSON.parse(localStorage.getItem('stock-data')||'[]');
 let sales=JSON.parse(localStorage.getItem('sales-data')||'[]');
 let want=JSON.parse(localStorage.getItem('wanting-data')||'[]');
 
-// Theme
+// THEME
 (function(){
   const t=localStorage.getItem('ks-theme');
   if(t==='dark'){document.body.classList.add('dark');document.querySelector('.theme-toggle').textContent='☀️';}
@@ -146,7 +152,7 @@ function addType(){let name=document.getElementById('typeName').value.trim();
   types.push(name);localStorage.setItem('item-types',JSON.stringify(types));
   renderTypes();updateDropdowns();document.getElementById('typeName').value='';
 }
-function clearTypes(){if(confirm("Clear types?")){types=[];localStorage.removeItem('item-types');renderTypes();updateDropdowns();}}
+function clearTypes(){if(confirm("Clear all types?")){types=[];localStorage.removeItem('item-types');renderTypes();updateDropdowns();}}
 function renderTypes(){document.getElementById('typeList').innerHTML=types.length?types.map(t=>`<li>${t}</li>`).join(''):"<li>No types yet.</li>";}
 function updateDropdowns(){
   ['ptype','stype','wtype','viewTypeFilter','viewWantFilter'].forEach(id=>{
@@ -172,6 +178,7 @@ function renderStock(f="All"){
     return `<tr><td>${s.date}</td><td>${s.type}</td><td>${s.name}</td><td>${s.qty}</td><td>${s.sold||0}</td><td>${rem}</td></tr>`;
   }).join(''):"<tr><td colspan=6>No stock.</td></tr>";
 }
+function clearStock(){if(confirm("Clear all stock?")){stock=[];localStorage.removeItem('stock-data');renderStock();}}
 
 // SALES
 function addSale(){
@@ -191,6 +198,7 @@ function renderSales(){
   let total=0;tb.innerHTML=sales.map(s=>{total+=s.amount;return `<tr><td>${s.date}</td><td>${s.type}</td><td>${s.product}</td><td>${s.qty}</td><td>${s.price}</td><td>${s.amount}</td></tr>`;}).join('');
   document.getElementById('dayTotal').textContent=total.toFixed(2);
 }
+function clearSales(){if(confirm("Clear all sales?")){sales=[];localStorage.removeItem('sales-data');renderSales();}}
 
 // WANTING
 function addWant(){
@@ -213,6 +221,14 @@ function renderWant(filter="All"){
   tb.innerHTML=data.length?data.map((w,i)=>`<tr><td>${w.date}</td><td>${w.type}</td><td>${w.item}</td><td>-</td>
   <td><button class='restock-btn' onclick='restock(${want.indexOf(w)})'>✔</button>
   <button class='remove-btn' onclick='removeWant(${want.indexOf(w)})'>🗑</button></td></tr>`).join(''):"<tr><td colspan=5>No items.</td></tr>";
+}
+function clearWant(){if(confirm("Clear all wanting items?")){want=[];localStorage.removeItem('wanting-data');renderWant();}}
+function printWanting(){
+  const content=document.getElementById('wantTable').outerHTML;
+  const win=window.open("","_blank");
+  win.document.write("<h3>🛒 Wanting List</h3>"+content);
+  win.document.close();
+  win.print();
 }
 
 // INIT
