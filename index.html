@@ -9,14 +9,17 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <link rel="apple-touch-icon" href="icon-512.png">
+
+  <!-- ✅ App Manifest (PWA) -->
   <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-512.png">
+
+  <!-- ✅ Font Preload -->
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" as="style">
   <title>💰 KharchaSaathi — Smart Tools Hub</title>
 
   <!-- ✅ Google AdSense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2914631277707668"
-     crossorigin="anonymous"></script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2914631277707668" crossorigin="anonymous"></script>
 
   <style>
     :root {
@@ -34,246 +37,100 @@
       --shadow-dark: rgba(255,255,255,0.05);
     }
 
-    * { box-sizing: border-box; }
-
-    body {
-      font-family: "Poppins", Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: var(--bg-light);
-      color: var(--text-dark);
-      text-align: center;
-      transition: background 0.4s ease, color 0.4s ease;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+    *{box-sizing:border-box;}
+    body{
+      font-family:"Poppins",Arial,sans-serif;
+      margin:0;padding:0;
+      background:var(--bg-light);color:var(--text-dark);
+      text-align:center;min-height:100vh;
+      display:flex;flex-direction:column;
+      transition:background .4s,color .4s;
     }
-
-    body.dark {
-      background: var(--bg-dark);
-      color: var(--text-light);
-    }
-
-    h1 {
-      font-size: 38px;
-      font-weight: 800;
-      margin-top: 40px;
-      margin-bottom: 10px;
-      color: var(--orange);
-      letter-spacing: 0.5px;
-    }
-
-    p.subtitle {
-      font-size: 16px;
-      color: #666;
-      margin-bottom: 30px;
-    }
-    body.dark p.subtitle { color: #bbb; }
-
-    .theme-toggle {
-      position: fixed;
-      top: 14px;
-      right: 14px;
-      background: var(--orange);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 14px;
-      font-size: 15px;
-      cursor: pointer;
-      transition: 0.3s;
-      z-index: 1000;
-      box-shadow: 0 2px 6px var(--shadow-light);
-    }
-    .theme-toggle:hover { background: var(--orange-dark); }
-
-    .section-title {
-      font-size: 20px;
-      font-weight: 700;
-      margin: 40px 0 20px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--orange);
-    }
-
-    .tools-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 20px;
-      max-width: 960px;
-      margin: auto;
-      padding: 0 20px;
-      flex: 1;
-    }
-
-    .tool-card {
-      background: var(--card-light);
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 4px 12px var(--shadow-light);
-      text-decoration: none;
-      color: var(--text-dark);
-      font-weight: 600;
-      transition: all 0.25s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 160px;
-    }
-
-    .tool-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
-      background: #fff3e6;
-    }
-
-    .tool-card span {
-      font-size: 34px;
-      margin-bottom: 10px;
-    }
-
-    body.dark .tool-card {
-      background: var(--card-dark);
-      color: var(--text-light);
-      box-shadow: 0 3px 8px var(--shadow-dark);
-    }
-
-    body.dark .tool-card:hover {
-      background: #2a2a2a;
-      box-shadow: 0 3px 14px rgba(255,255,255,0.08);
-    }
-
-    footer {
-      margin-top: 50px;
-      padding: 25px 0;
-      font-size: 13px;
-      color: #888;
-      border-top: 1px solid var(--border-light);
-    }
-    body.dark footer {
-      color: #aaa;
-      border-top: 1px solid var(--border-dark);
-    }
-
-    small.desc {
-      color: #777;
-      font-size: 13px;
-      margin-top: 8px;
-      text-align: center;
-      display: block;
-      line-height: 1.4em;
-    }
-    body.dark small.desc { color: #bbb; }
-
-    /* Popup Help */
-    #helpPopup {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-    .help-box {
-      background: var(--card-light);
-      color: var(--text-dark);
-      padding: 20px;
-      border-radius: 12px;
-      max-width: 700px;
-      width: 90%;
-      max-height: 85vh;
-      overflow-y: auto;
-      text-align: left;
-    }
-    body.dark .help-box { background: var(--card-dark); color: var(--text-light); }
-    .help-box h2 { color: var(--orange); text-align: center; }
-    .close-btn {
-      background: var(--orange);
-      border: none;
-      color: #fff;
-      padding: 6px 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      float: right;
-    }
-    .close-btn:hover { background: var(--orange-dark); }
-
-    @media (max-width: 600px) {
-      h1 { font-size: 30px; }
-      .section-title { font-size: 18px; }
-      .tool-card { padding: 18px; }
-    }
+    body.dark{background:var(--bg-dark);color:var(--text-light);}
+    h1{font-size:38px;font-weight:800;margin:40px 0 10px;color:var(--orange);}
+    p.subtitle{font-size:16px;color:#666;margin-bottom:30px;}
+    body.dark p.subtitle{color:#bbb;}
+    .theme-toggle{position:fixed;top:14px;right:14px;background:var(--orange);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:15px;cursor:pointer;z-index:1000;box-shadow:0 2px 6px var(--shadow-light);}
+    .theme-toggle:hover{background:var(--orange-dark);}
+    .section-title{font-size:20px;font-weight:700;margin:40px 0 20px;text-transform:uppercase;letter-spacing:1px;color:var(--orange);}
+    .tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px;max-width:960px;margin:auto;padding:0 20px;flex:1;}
+    .tool-card{background:var(--card-light);border-radius:16px;padding:24px;box-shadow:0 4px 12px var(--shadow-light);text-decoration:none;color:var(--text-dark);font-weight:600;transition:all .25s;display:flex;flex-direction:column;align-items:center;min-height:160px;}
+    .tool-card:hover{transform:translateY(-6px);box-shadow:0 6px 18px rgba(0,0,0,.1);background:#fff3e6;}
+    .tool-card span{font-size:34px;margin-bottom:10px;}
+    body.dark .tool-card{background:var(--card-dark);color:var(--text-light);box-shadow:0 3px 8px var(--shadow-dark);}
+    body.dark .tool-card:hover{background:#2a2a2a;box-shadow:0 3px 14px rgba(255,255,255,.08);}
+    footer{margin-top:50px;padding:25px 0;font-size:13px;color:#888;border-top:1px solid var(--border-light);}
+    body.dark footer{color:#aaa;border-top:1px solid var(--border-dark);}
+    small.desc{color:#777;font-size:13px;margin-top:8px;text-align:center;display:block;line-height:1.4em;}
+    body.dark small.desc{color:#bbb;}
+    #helpPopup{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);justify-content:center;align-items:center;z-index:9999;}
+    .help-box{background:var(--card-light);color:var(--text-dark);padding:20px;border-radius:12px;max-width:700px;width:90%;max-height:85vh;overflow-y:auto;text-align:left;}
+    body.dark .help-box{background:var(--card-dark);color:var(--text-light);}
+    .help-box h2{text-align:center;color:var(--orange);}
+    .close-btn{background:var(--orange);border:none;color:#fff;padding:6px 10px;border-radius:8px;cursor:pointer;float:right;}
+    .close-btn:hover{background:var(--orange-dark);}
+    @media(max-width:600px){h1{font-size:30px;}.section-title{font-size:18px;}.tool-card{padding:18px;}}
   </style>
 </head>
 
-<body data-theme>
+<body>
   <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
 
   <h1>💰 KharchaSaathi</h1>
   <p class="subtitle">Your Smart Companion for Daily & Business Calculations</p>
 
-  <!-- 🏠 Personal Tools -->
   <div class="section-title">Personal Tools</div>
   <div class="tools-grid">
-    <a class="tool-card" href="tools/rent-split.html"><span>🏠</span> Rent Split Calculator<small class="desc">Split rent among friends easily.</small></a>
-    <a class="tool-card" href="tools/trip-expense-splitter.html"><span>🚗</span> Trip Expense Splitter<small class="desc">Manage shared trip expenses smartly.</small></a>
-    <a class="tool-card" href="tools/water-bill-split.html"><span>💧</span> Water Bill Splitter<small class="desc">Fairly split household water bills.</small></a>
-    <a class="tool-card" href="tools/grocery-split-pro.html"><span>🛒</span> Grocery Split (Pro)<small class="desc">Divide grocery costs with clarity.</small></a>
-    <a class="tool-card" href="tools/roomshare-ledger.html"><span>📒</span> RoomShare Ledger Pro<small class="desc">Track shared daily expenses room-wise.</small></a>
+    <a class="tool-card" href="tools/rent-split.html"><span>🏠</span>Rent Split Calculator<small class="desc">Split rent among friends easily.</small></a>
+    <a class="tool-card" href="tools/trip-expense-splitter.html"><span>🚗</span>Trip Expense Splitter<small class="desc">Manage shared trip expenses.</small></a>
+    <a class="tool-card" href="tools/water-bill-split.html"><span>💧</span>Water Bill Splitter<small class="desc">Split household water bills.</small></a>
+    <a class="tool-card" href="tools/grocery-split-pro.html"><span>🛒</span>Grocery Split (Pro)<small class="desc">Divide grocery costs clearly.</small></a>
+    <a class="tool-card" href="tools/roomshare-ledger.html"><span>📒</span>RoomShare Ledger Pro<small class="desc">Track shared expenses room-wise.</small></a>
   </div>
 
-  <!-- 💼 Business Tools -->
   <div class="section-title">Business Tools</div>
   <div class="tools-grid">
-    <a class="tool-card" href="tools/business-dashboard.html"><span>📦</span> Business Dashboard<small class="desc">Add item types, manage stock, sales & wanting list with PDF export.</small></a>
-    <a class="tool-card" href="tools/invoice-pro.html"><span>🧾</span> Invoice Pro (Smart Billing)<small class="desc">Create, print & share invoices instantly.</small></a>
-    <a class="tool-card" href="tools/gst-bill.html"><span>📄</span> GST Reverse Calculator<small class="desc">Find GST components from total amount.</small></a>
+    <a class="tool-card" href="tools/business-dashboard.html"><span>📦</span>Business Dashboard<small class="desc">Manage stock, sales & wanting list with PDF export.</small></a>
+    <a class="tool-card" href="tools/invoice-pro.html"><span>🧾</span>Invoice Pro (Smart Billing)<small class="desc">Create, print & share invoices instantly.</small></a>
+    <a class="tool-card" href="tools/gst-bill.html"><span>📄</span>GST Reverse Calculator<small class="desc">Find GST components from totals.</small></a>
   </div>
 
-  <!-- 📘 Guides -->
   <div class="section-title">Guides & Help</div>
   <div class="tools-grid">
-    <a class="tool-card" href="#" onclick="openHelp()"><span>📘</span> Open Help Center</a>
+    <a class="tool-card" href="#" onclick="openHelp()"><span>📘</span>Open Help Center</a>
   </div>
 
   <footer>© 2025 KharchaSaathi • Built by Abid Ali</footer>
 
-  <!-- Popup -->
   <div id="helpPopup">
     <div class="help-box">
       <button class="close-btn" onclick="closeHelp()">✖ Close</button>
       <h2>📘 Guides & Help — KharchaSaathi</h2>
-      <p>Welcome to <b>KharchaSaathi Smart Tools Hub</b>.</p>
       <ul>
-        <li><b>Dark Mode:</b> Click 🌙 / ☀️ button to toggle theme.</li>
-        <li><b>Business Dashboard:</b> Manage stock, sales, and wanting list.</li>
-        <li><b>RoomShare Ledger:</b> Track shared daily expenses easily.</li>
-        <li><b>Rent, Water, Grocery Split:</b> Split household bills fairly.</li>
-        <li><b>Invoice Pro:</b> Create and print bills with GST instantly.</li>
-        <li><b>Offline Save:</b> All your data stays in browser storage.</li>
+        <li>🌙 Toggle Dark Mode easily.</li>
+        <li>📦 Manage Stock & Sales in Business Dashboard.</li>
+        <li>📒 Track shared expenses via RoomShare Ledger.</li>
+        <li>🧾 Generate Invoices & GST calculations.</li>
+        <li>💾 All data stored offline in browser.</li>
       </ul>
-      <p><b>Tip:</b> Use “Backup” option in dashboards to export all data safely.</p>
     </div>
   </div>
 
   <script>
-    (function(){
-      const t = localStorage.getItem('ks-theme');
-      if(t === 'dark'){
-        document.body.classList.add('dark');
-        document.querySelector('.theme-toggle').textContent = '☀️';
-      }
-    })();
+    // 🌙 Theme
+    (()=>{const t=localStorage.getItem('ks-theme');if(t==='dark'){document.body.classList.add('dark');document.querySelector('.theme-toggle').textContent='☀️';}})();
+    function toggleTheme(){const dark=document.body.classList.toggle('dark');localStorage.setItem('ks-theme',dark?'dark':'light');document.querySelector('.theme-toggle').textContent=dark?'☀️':'🌙';}
 
-    function toggleTheme(){
-      const dark = document.body.classList.toggle('dark');
-      localStorage.setItem('ks-theme', dark ? 'dark' : 'light');
-      document.querySelector('.theme-toggle').textContent = dark ? '☀️' : '🌙';
+    // 📘 Help Popup
+    function openHelp(){document.getElementById('helpPopup').style.display='flex';}
+    function closeHelp(){document.getElementById('helpPopup').style.display='none';}
+
+    // ⚙️ Register Service Worker for PWA
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('service-worker.js')
+        .then(()=>console.log('✅ Service Worker Registered'))
+        .catch(err=>console.log('❌ SW Error:',err));
     }
-
-    function openHelp(){ document.getElementById('helpPopup').style.display='flex'; }
-    function closeHelp(){ document.getElementById('helpPopup').style.display='none'; }
   </script>
 </body>
 </html>
