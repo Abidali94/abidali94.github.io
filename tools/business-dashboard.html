@@ -3,62 +3,53 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>📦 KharchaSaathi — Business Dashboard v4.7</title>
+<title>📦 KharchaSaathi — Business Dashboard v4.8</title>
 <meta name="theme-color" content="#ff7a00">
 <style>
-  :root{
-    --orange:#ff7a00; --orange-dark:#cc6300;
-    --bg:#f8f9fa; --card:#fff; --text:#222;
-    --dark-bg:#121212; --dark-card:#1e1e1e; --muted:#666;
-  }
-  *{box-sizing:border-box}
-  body{font-family:Inter, Poppins, Arial, sans-serif;margin:0;padding:18px;background:var(--bg);color:var(--text);transition:background .25s,color .25s;}
-  body.dark{background:var(--dark-bg);color:#e8e8e8}
-  h1{margin:0 0 14px;color:var(--orange);font-size:20px}
-  .topbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-  .controls{display:flex;gap:8px;align-items:center}
-  .theme-btn, .export-btn, .small-btn{background:var(--orange);color:#fff;border:none;padding:8px 10px;border-radius:8px;cursor:pointer}
-  .theme-btn:hover{background:var(--orange-dark)}
-  .tabs{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap;justify-content:center}
-  .tab{background:#eee;padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600}
-  body.dark .tab{background:#2b2b2b}
-  .tab.active{background:var(--orange);color:#fff}
-  .layout{margin-top:6px}
-  .section{display:none;background:var(--card);padding:14px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.06);margin-bottom:18px}
-  body.dark .section{background:var(--dark-card);box-shadow:none}
-  .section.active{display:block}
-  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  input,select{padding:8px;border-radius:8px;border:1px solid #ddd;min-width:140px}
-  body.dark input, body.dark select{background:#222;border-color:#333;color:#e8e8e8}
-  table{width:100%;border-collapse:collapse;margin-top:12px}
-  th,td{padding:8px;border:1px solid #eee;text-align:center;font-size:13px}
-  body.dark th, body.dark td{border-color:#333}
-  th{background:var(--orange);color:#fff}
-  .muted{color:var(--muted);font-size:13px}
-  .footer-btns{text-align:center;margin-top:20px;}
-  .footer-btns a{background:var(--orange);color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;margin:6px;display:inline-block}
-  .footer-btns a:hover{background:var(--orange-dark)}
-
-  #helpModal{
-    display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);
-    justify-content:center;align-items:center;z-index:9999;
-  }
-  .help-box{
-    background:var(--card);color:var(--text);max-width:700px;width:90%;
-    padding:18px;border-radius:12px;overflow-y:auto;max-height:85vh;
-  }
-  body.dark .help-box{background:var(--dark-card);color:#e8e8e8;}
-  .help-box h2{color:var(--orange);}
-  .close-btn{background:var(--orange);color:#fff;border:none;padding:6px 10px;border-radius:6px;float:right;cursor:pointer}
-  .close-btn:hover{background:var(--orange-dark)}
-  @media(max-width:720px){ .row{flex-direction:column;align-items:stretch} table td, table th{font-size:12px} }
+:root{
+  --orange:#ff7a00; --orange-dark:#cc6300;
+  --bg:#f8f9fa; --card:#fff; --text:#222;
+  --dark-bg:#121212; --dark-card:#1e1e1e; --muted:#666;
+}
+*{box-sizing:border-box}
+body{font-family:Inter,Poppins,Arial,sans-serif;margin:0;padding:18px;background:var(--bg);color:var(--text);transition:background .25s,color .25s;}
+body.dark{background:var(--dark-bg);color:#e8e8e8}
+h1{margin:0 0 14px;color:var(--orange);font-size:20px}
+.topbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.controls{display:flex;gap:8px;align-items:center}
+.theme-btn,.export-btn,.small-btn{background:var(--orange);color:#fff;border:none;padding:8px 10px;border-radius:8px;cursor:pointer}
+.theme-btn:hover{background:var(--orange-dark)}
+.tabs{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap;justify-content:center}
+.tab{background:#eee;padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600}
+body.dark .tab{background:#2b2b2b}
+.tab.active{background:var(--orange);color:#fff}
+.section{display:none;background:var(--card);padding:14px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.06);margin-bottom:18px}
+body.dark .section{background:var(--dark-card);box-shadow:none}
+.section.active{display:block}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+input,select{padding:8px;border-radius:8px;border:1px solid #ddd;min-width:140px}
+body.dark input,body.dark select{background:#222;border-color:#333;color:#e8e8e8}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th,td{padding:8px;border:1px solid #eee;text-align:center;font-size:13px}
+body.dark th,body.dark td{border-color:#333}
+th{background:var(--orange);color:#fff}
+.footer-btns{text-align:center;margin-top:20px}
+.footer-btns a{background:var(--orange);color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;margin:6px;display:inline-block}
+.footer-btns a:hover{background:var(--orange-dark)}
+#helpModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);justify-content:center;align-items:center;z-index:9999}
+.help-box{background:var(--card);color:var(--text);max-width:700px;width:90%;padding:18px;border-radius:12px;overflow-y:auto;max-height:85vh;}
+body.dark .help-box{background:var(--dark-card);color:#e8e8e8}
+.help-box h2{color:var(--orange)}
+.close-btn{background:var(--orange);color:#fff;border:none;padding:6px 10px;border-radius:6px;float:right;cursor:pointer}
+.close-btn:hover{background:var(--orange-dark)}
+@media(max-width:720px){.row{flex-direction:column;align-items:stretch}table td,table th{font-size:12px}}
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div>
-    <h1>📦 KharchaSaathi — Business Dashboard v4.7</h1>
+    <h1>📦 KharchaSaathi — Business Dashboard v4.8</h1>
     <div class="muted">Offline • Simple • Backup • Smart Totals</div>
   </div>
   <div class="controls">
@@ -75,123 +66,118 @@
   <div class="tab" data-tab="wanting">🛒 Wanting List</div>
 </div>
 
-<div class="layout">
-
-  <!-- TYPES -->
-  <section id="types" class="section active">
-    <h3>🗂 Manage Types</h3>
-    <div class="row">
-      <input type="text" id="typeName" placeholder="Add new type (e.g. Mobiles, Accessories)" />
-      <button onclick="addType()">Add Type</button>
-      <button class="small-btn" onclick="clearTypes()">Clear All</button>
-    </div>
-    <ul id="typeList" style="margin-top:12px;padding-left:16px;"></ul>
-  </section>
-
-  <!-- STOCK -->
-  <section id="stock" class="section">
-    <h3>📦 Current Stock</h3>
-    <div class="row">
-      <label>Filter:</label>
-      <select id="viewTypeFilter" onchange="renderStock()"><option value="All">All</option></select>
-    </div>
-    <table id="stockTable">
-      <thead><tr><th>Date</th><th>Type</th><th>Product</th><th>Qty</th><th>Sold</th><th>Remaining</th></tr></thead>
-      <tbody></tbody>
-    </table>
-    <div class="row">
-      <input type="date" id="pdate">
-      <select id="ptype"></select>
-      <input type="text" id="pname" placeholder="Product name">
-      <input type="number" id="pqty" placeholder="Qty">
-      <button onclick="addStock()">Add</button>
-    </div>
-  </section>
-
-  <!-- SALES -->
-  <section id="sales" class="section">
-    <h3>💰 Sales Ledger</h3>
-    <table id="salesTable">
-      <thead><tr><th>Date</th><th>Type</th><th>Product</th><th>Qty</th><th>Price ₹</th><th>Total ₹</th></tr></thead>
-      <tbody></tbody>
-      <tfoot><tr><td colspan="5" style="text-align:right;font-weight:bold;">Day Total:</td><td id="dayTotal">0</td></tr></tfoot>
-    </table>
-    <div class="row">
-      <input type="date" id="sdate">
-      <select id="stype"></select>
-      <input type="text" id="sname" placeholder="Product name">
-      <input type="number" id="sqty" placeholder="Qty">
-      <input type="number" id="sprice" placeholder="Price ₹">
-      <button onclick="addSale()">Add Sale</button>
-    </div>
-  </section>
-
-  <!-- WANTING -->
-  <section id="wanting" class="section">
-    <h3>🛒 Wanting List</h3>
-    <table id="wantTable">
-      <thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Qty</th><th>Actions</th></tr></thead>
-      <tbody></tbody>
-    </table>
-    <div class="row">
-      <input type="date" id="wdate">
-      <select id="wtype"></select>
-      <input type="text" id="witem" placeholder="Item name">
-      <button onclick="addWant()">Add</button>
-      <button onclick="printWanting()">🖨️ Print / PDF</button>
-    </div>
-  </section>
-
-  <div class="footer-btns">
-    <a href="#" onclick="openHelp()">📘 Guides & Help</a>
-    <a href="../index.html">🏠 Back to Home</a>
+<!-- TYPES -->
+<section id="types" class="section active">
+  <h3>🗂 Manage Types</h3>
+  <div class="row">
+    <input type="text" id="typeName" placeholder="Add new type (e.g. Mobiles, Accessories)" />
+    <button onclick="addType()">Add Type</button>
+    <button class="small-btn" onclick="clearTypes()">Clear All</button>
   </div>
+  <ul id="typeList" style="margin-top:12px;padding-left:16px;"></ul>
+</section>
 
+<!-- STOCK -->
+<section id="stock" class="section">
+  <h3>📦 Current Stock</h3>
+  <div class="row">
+    <label>Filter:</label>
+    <select id="viewTypeFilter" onchange="renderStock()"><option value="All">All</option></select>
+  </div>
+  <table id="stockTable">
+    <thead><tr><th>Date</th><th>Type</th><th>Product</th><th>Qty</th><th>Sold</th><th>Remaining</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <div class="row">
+    <input type="date" id="pdate">
+    <select id="ptype"></select>
+    <input type="text" id="pname" placeholder="Product name">
+    <input type="number" id="pqty" placeholder="Qty">
+    <button onclick="addStock()">Add</button>
+  </div>
+</section>
+
+<!-- SALES -->
+<section id="sales" class="section">
+  <h3>💰 Sales Ledger</h3>
+  <table id="salesTable">
+    <thead><tr><th>Date</th><th>Type</th><th>Product</th><th>Qty</th><th>Price ₹</th><th>Total ₹</th></tr></thead>
+    <tbody></tbody>
+    <tfoot><tr><td colspan="5" style="text-align:right;font-weight:bold;">Day Total:</td><td id="dayTotal">0</td></tr></tfoot>
+  </table>
+  <div class="row">
+    <input type="date" id="sdate">
+    <select id="stype"></select>
+    <input type="text" id="sname" placeholder="Product name">
+    <input type="number" id="sqty" placeholder="Qty">
+    <input type="number" id="sprice" placeholder="Price ₹">
+    <button onclick="addSale()">Add Sale</button>
+  </div>
+</section>
+
+<!-- WANTING -->
+<section id="wanting" class="section">
+  <h3>🛒 Wanting List</h3>
+  <table id="wantTable">
+    <thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Qty</th><th>Actions</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <div class="row">
+    <input type="date" id="wdate">
+    <select id="wtype"></select>
+    <input type="text" id="witem" placeholder="Item name">
+    <button onclick="addWant()">Add</button>
+    <button onclick="printWanting()">🖨️ Print / PDF</button>
+  </div>
+</section>
+
+<div class="footer-btns">
+  <a href="#" onclick="openHelp()">📘 Guides & Help</a>
+  <a href="../index.html">🏠 Back to Home</a>
 </div>
 
-<!-- Help Popup -->
+<!-- HELP -->
 <div id="helpModal">
   <div class="help-box">
-    <button class="close-btn" onclick="closeHelp()">✖ Close</button>
-    <h2>📘 Guides & Help — KharchaSaathi</h2>
-    <p>Welcome to <b>KharchaSaathi</b> Business Dashboard.</p>
+    <button class="close-btn" onclick="closeHelp()">✖</button>
+    <h2>📘 Guides & Help</h2>
     <ul>
-      <li><b>Manage Types:</b> Add your product categories (Mobiles, Accessories, Chargers, etc.)</li>
-      <li><b>Current Stock:</b> Add daily stock items and view available quantity.</li>
-      <li><b>Sales Ledger:</b> Record sales; total updates automatically.</li>
-      <li><b>Wanting List:</b> Track out-of-stock items and restock later.</li>
-      <li>Use <b>🖨️ Print / PDF</b> to save reports.</li>
-      <li><b>Backup & Restore:</b> Export or Import all your data.</li>
-      <li><b>Dark Mode:</b> Click 🌙 / ☀️ button anytime.</li>
+      <li>Manage Types → Add product categories</li>
+      <li>Current Stock → Add & view stock</li>
+      <li>Sales Ledger → Record daily sales</li>
+      <li>Wanting List → Track missing stock</li>
+      <li>Use 🖨️ Print / PDF to export</li>
+      <li>Backup/Restore → Keep your data safe</li>
+      <li>Dark Mode → Click 🌙 anytime</li>
     </ul>
-    <p><b>Tip:</b> All data is saved offline (browser localStorage). No internet required ✅</p>
   </div>
 </div>
 
-<input type="file" id="restoreFile" accept="application/json" style="display:none">
-
 <script>
-const tabs=document.querySelectorAll('.tab');
-tabs.forEach(tab=>tab.addEventListener('click',()=>openTab(tab.dataset.tab)));
-function openTab(id){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelector(`.tab[data-tab="${id}"]`).classList.add('active');document.getElementById(id).classList.add('active');}
-
 const K_TYPES='item-types',K_STOCK='stock-data',K_SALES='sales-data',K_WANT='wanting-data';
-let types=JSON.parse(localStorage.getItem(K_TYPES)||'[]'),stock=JSON.parse(localStorage.getItem(K_STOCK)||'[]'),sales=JSON.parse(localStorage.getItem(K_SALES)||'[]'),want=JSON.parse(localStorage.getItem(K_WANT)||'[]');
-function saveAll(){localStorage.setItem(K_TYPES,JSON.stringify(types));localStorage.setItem(K_STOCK,JSON.stringify(stock));localStorage.setItem(K_SALES,JSON.stringify(sales));localStorage.setItem(K_WANT,JSON.stringify(want));}
+let types=JSON.parse(localStorage.getItem(K_TYPES)||'[]'),
+    stock=JSON.parse(localStorage.getItem(K_STOCK)||'[]'),
+    sales=JSON.parse(localStorage.getItem(K_SALES)||'[]'),
+    want=JSON.parse(localStorage.getItem(K_WANT)||'[]');
+
+function saveAll(){localStorage.setItem(K_TYPES,JSON.stringify(types));
+  localStorage.setItem(K_STOCK,JSON.stringify(stock));
+  localStorage.setItem(K_SALES,JSON.stringify(sales));
+  localStorage.setItem(K_WANT,JSON.stringify(want));}
 
 function addType(){
   const n=document.getElementById('typeName').value.trim();
   if(!n)return alert("Enter type");
   if(types.includes(n))return alert("Type exists");
-  types.push(n);
-  saveAll();
-  renderTypes();
-  updateDropdowns();
+  types.push(n);saveAll();renderTypes();updateDropdowns();
   document.getElementById('viewTypeFilter').dispatchEvent(new Event('change'));
   document.getElementById('typeName').value='';
 }
 
-function renderTypes(){document.getElementById('typeList').innerHTML=types.length?types.map(t=>`<li>${t}</li>`).join(''):"<li class='muted'>No types yet</li>";}
+function renderTypes(){
+  document.getElementById('typeList').innerHTML=types.length?types.map(t=>`<li>${t}</li>`).join(''):"<li class='muted'>No types yet</li>";
+}
+
 function clearTypes(){if(confirm("Clear all types?")){types=[];saveAll();renderTypes();updateDropdowns();}}
 
 function updateDropdowns(){
@@ -213,17 +199,12 @@ function addStock(){
   if(!type&&types.length===1)type=types[0];
   if(!type)return alert("Select Type");
   stock.push({type,name,qty,sold:0,date});
-  saveAll();
-  renderStock();
-  document.getElementById('ptype').value="";
-  document.getElementById('pname').value="";
-  document.getElementById('pqty').value="";
-  document.getElementById('pdate').value="";
+  saveAll();renderStock();
+  ['ptype','pname','pqty','pdate'].forEach(i=>document.getElementById(i).value='');
 }
 
 function renderStock(){
-  const f=document.getElementById('viewTypeFilter').value,
-        tb=document.querySelector('#stockTable tbody');
+  const f=document.getElementById('viewTypeFilter').value,tb=document.querySelector('#stockTable tbody');
   let d=f==="All"||!f?stock:stock.filter(s=>s.type===f);
   tb.innerHTML=d.map(s=>`<tr><td>${s.date}</td><td>${s.type}</td><td>${s.name}</td><td>${s.qty}</td><td>${s.sold||0}</td><td>${s.qty-(s.sold||0)}</td></tr>`).join('');
 }
@@ -235,41 +216,23 @@ function addSale(){
         price=parseFloat(document.getElementById('sprice').value),
         date=document.getElementById('sdate').value;
   if(!type||!name||!qty||!price||!date)return alert("Fill all fields");
-  const amt=qty*price;
-  sales.push({type,product:name,qty,price,amount:amt,date});
+  const amt=qty*price;sales.push({type,product:name,qty,price,amount:amt,date});
   const i=stock.find(s=>s.name.toLowerCase()===name.toLowerCase());
-  if(i)i.sold=(i.sold||0)+qty;
-  saveAll();
-  renderSales();
-  renderStock();
-  document.getElementById('stype').value="";
-  document.getElementById('sname').value="";
-  document.getElementById('sqty').value="";
-  document.getElementById('sprice').value="";
-  document.getElementById('sdate').value="";
+  if(i)i.sold=(i.sold||0)+qty;saveAll();renderSales();renderStock();
+  ['stype','sname','sqty','sprice','sdate'].forEach(i=>document.getElementById(i).value='');
 }
 
 function renderSales(){
-  const tb=document.querySelector('#salesTable tbody');
-  let t=0;
-  tb.innerHTML=sales.map(s=>{
-    t+=s.amount;
-    return`<tr><td>${s.date}</td><td>${s.type}</td><td>${s.product}</td><td>${s.qty}</td><td>${s.price}</td><td>${s.amount}</td></tr>`;
-  }).join('');
+  const tb=document.querySelector('#salesTable tbody');let t=0;
+  tb.innerHTML=sales.map(s=>{t+=s.amount;return`<tr><td>${s.date}</td><td>${s.type}</td><td>${s.product}</td><td>${s.qty}</td><td>${s.price}</td><td>${s.amount}</td></tr>`}).join('');
   document.getElementById('dayTotal').textContent=t.toFixed(2);
 }
 
 function addWant(){
-  const type=document.getElementById('wtype').value,
-        item=document.getElementById('witem').value.trim(),
-        date=document.getElementById('wdate').value;
+  const type=document.getElementById('wtype').value,item=document.getElementById('witem').value.trim(),date=document.getElementById('wdate').value;
   if(!type||!item||!date)return alert("Fill all fields");
-  want.push({type,item,date});
-  saveAll();
-  renderWant();
-  document.getElementById('wtype').value="";
-  document.getElementById('witem').value="";
-  document.getElementById('wdate').value="";
+  want.push({type,item,date});saveAll();renderWant();
+  ['wtype','witem','wdate'].forEach(i=>document.getElementById(i).value='');
 }
 
 function renderWant(){
@@ -278,27 +241,33 @@ function renderWant(){
 }
 
 function restock(i){
-  const q=prompt("Restocked Qty:");
-  if(!q)return;
-  const t=new Date().toISOString().split('T')[0];
-  const w=want[i];
+  const q=prompt("Restocked Qty:");if(!q)return;
+  const t=new Date().toISOString().split('T')[0],w=want[i];
   stock.push({type:w.type,name:w.item,qty:parseInt(q),sold:0,date:t});
-  want.splice(i,1);
-  saveAll();
-  renderStock();
-  renderWant();
+  want.splice(i,1);saveAll();renderStock();renderWant();
 }
 
 function removeWant(i){want.splice(i,1);saveAll();renderWant();}
-
-function printWanting(){
-  const html=document.getElementById('wantTable').outerHTML;
-  const w=window.open('','_blank');
-  w.document.write(`<html><head><title>Wanting List</title><style>body{font-family:Arial}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px;text-align:center}th{background:#ff7a00;color:#fff}</style></head><body><h3>🛒 Wanting List — KharchaSaathi</h3>${html}</body></html>`);
-  w.document.close();w.print();
+function printWanting(){const html=document.getElementById('wantTable').outerHTML;const w=window.open('','_blank');
+  w.document.write(`<html><head><title>Wanting List</title><style>body{font-family:Arial}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px;text-align:center}th{background:#ff7a00;color:#fff}</style></head><body><h3>🛒 Wanting List</h3>${html}</body></html>`);w.document.close();w.print();
 }
 
-document.getElementById('themeBtn').onclick=()=>{document.body.classList.toggle('dark');const d=document.body.classList.contains('dark');localStorage.setItem('ks-theme',d?'dark':'light');document.getElementById('themeBtn').textContent=d?'☀️':'🌙';};
+document.getElementById('themeBtn').onclick=()=>{
+  document.body.classList.toggle('dark');
+  const d=document.body.classList.contains('dark');
+  localStorage.setItem('ks-theme',d?'dark':'light');
+  document.getElementById('themeBtn').textContent=d?'☀️':'🌙';
+};
 if(localStorage.getItem('ks-theme')==='dark'){document.body.classList.add('dark');document.getElementById('themeBtn').textContent='☀️';}
 
-function openHelp(){document.getElementById('helpModal
+function openHelp(){document.getElementById('helpModal').style.display='flex';}
+function closeHelp(){document.getElementById('helpModal').style.display='none';}
+
+function openTab(id){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelector(`.tab[data-tab="${id}"]`).classList.add('active');document.getElementById(id).classList.add('active');}
+document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',()=>openTab(tab.dataset.tab)));
+
+function renderAll(){renderTypes();updateDropdowns();renderStock();renderSales();renderWant();}
+renderAll();
+</script>
+</body>
+</html>
