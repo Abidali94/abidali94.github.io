@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>📦 KharchaSaathi — Business Dashboard v6.1</title>
+<title>📦 KharchaSaathi — Business Dashboard v6.2 (Smart Alerts)</title>
 <meta name="theme-color" content="#ff7a00">
 <style>
 :root{
@@ -12,13 +12,13 @@
   --dark-bg:#121212; --dark-card:#1e1e1e; --muted:#666;
 }
 *{box-sizing:border-box}
-body{font-family:Poppins,Arial,sans-serif;margin:0;padding:18px;background:var(--bg);color:var(--text);transition:background .3s,color .3s;}
+body{font-family:Poppins,Arial,sans-serif;margin:0;padding:18px;background:var(--bg);color:var(--text);transition:background .25s,color .25s;}
 body.dark{background:var(--dark-bg);color:#e8e8e8}
 h1{margin:0 0 14px;color:var(--orange);font-size:20px}
 .topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
 .controls{display:flex;gap:8px;align-items:center}
-.theme-btn,.small-btn{background:var(--orange);color:#fff;border:none;padding:8px 10px;border-radius:8px;cursor:pointer}
-.theme-btn:hover{background:var(--orange-dark)}
+.theme-btn,.small-btn,.action-btn{background:var(--orange);color:#fff;border:none;padding:8px 10px;border-radius:8px;cursor:pointer}
+.theme-btn:hover,.small-btn:hover,.action-btn:hover{background:var(--orange-dark)}
 .tabs{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap;justify-content:center}
 .tab{background:#eee;padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600}
 body.dark .tab{background:#2b2b2b}
@@ -34,34 +34,31 @@ th,td{padding:8px;border:1px solid #eee;text-align:center;font-size:13px}
 body.dark th,body.dark td{border-color:#333}
 th{background:var(--orange);color:#fff}
 .sell-btn{background:#00a86b;color:#fff;border:none;padding:5px 8px;border-radius:6px;cursor:pointer}
+.sell-btn:hover{background:#007c50}
 .credit-btn{background:#007bff;color:#fff;border:none;padding:5px 8px;border-radius:6px;cursor:pointer}
+.credit-btn:hover{background:#0056b3}
+.small-muted{background:#f1f1f1;border-radius:8px;padding:6px 8px;color:#666;border:1px solid #eee}
 .footer-btns{text-align:center;margin-top:20px}
 .footer-btns a{background:var(--orange);color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;margin:6px;display:inline-block}
 .footer-btns a:hover{background:var(--orange-dark)}
+.low{color:#b35a00;font-weight:700}
+.out{color:#c70000;font-weight:800}
+.ok{color:#087f3a;font-weight:700}
 .restocked{background:#d4f7d4 !important;color:#090 !important;}
-/* Help Modal Styling */
-.help-modal{
-  position:fixed;top:0;left:0;width:100%;height:100%;
-  background:rgba(0,0,0,0.6);display:none;justify-content:center;align-items:center;
-  z-index:1000;
-}
-.help-content{
-  background:var(--card);padding:20px 26px;max-width:550px;border-radius:12px;
-  box-shadow:0 6px 20px rgba(0,0,0,.4);color:var(--text);
-}
+.help-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:none;justify-content:center;align-items:center;z-index:1000;}
+.help-content{background:var(--card);padding:20px 26px;max-width:640px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.4);color:var(--text);}
 body.dark .help-content{background:var(--dark-card);color:#fff;}
 .help-content h2{margin-top:0;color:var(--orange);}
 .help-content ul{margin-top:6px;}
-.help-content button{background:var(--orange);border:none;padding:8px 14px;color:#fff;border-radius:6px;cursor:pointer;}
-.help-content button:hover{background:var(--orange-dark);}
+@media(max-width:720px){.row{flex-direction:column;align-items:stretch}table td,table th{font-size:12px}}
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div>
-    <h1>📦 KharchaSaathi — Business Dashboard v6.1</h1>
-    <div class="muted">Offline • Dual Sell • Credit + Smart Restock (Merge Fixed)</div>
+    <h1>📦 KharchaSaathi — Business Dashboard v6.2</h1>
+    <div class="muted">Offline • Smart Inventory Alerts • Auto-Wanting</div>
   </div>
   <div class="controls">
     <button class="theme-btn" id="themeBtn">🌙</button>
@@ -89,16 +86,30 @@ body.dark .help-content{background:var(--dark-card);color:#fff;}
 <!-- STOCK -->
 <section id="stock" class="section">
   <h3>📦 Current Stock</h3>
-  <div class="row">
+
+  <div class="row" style="align-items:center;">
+    <label class="small-muted">Default Low Stock Limit:</label>
+    <input type="number" id="globalLimit" placeholder="e.g. 2" style="width:100px">
+    <button class="small-btn" onclick="setGlobalLimit()">Set Default</button>
+    <div style="flex:1"></div>
+    <button class="small-btn" onclick="clearStock()">Clear All Stock</button>
+  </div>
+
+  <div class="row" style="margin-top:8px;">
     <input type="date" id="pdate">
     <select id="ptype"></select>
     <input type="text" id="pname" placeholder="Product name">
     <input type="number" id="pqty" placeholder="Qty">
     <button onclick="addStock()">Add</button>
-    <button class="small-btn" onclick="clearStock()">Clear All</button>
   </div>
+
   <table id="stockTable">
-    <thead><tr><th>Date</th><th>Type</th><th>Product</th><th>Qty</th><th>Sold</th><th>Remaining</th><th colspan="2">Action</th></tr></thead>
+    <thead>
+      <tr>
+        <th>Date</th><th>Type</th><th>Product</th><th>Qty</th><th>Sold</th><th>Remaining</th>
+        <th>Alert</th><th>Limit</th><th colspan="2">Action</th>
+      </tr>
+    </thead>
     <tbody></tbody>
   </table>
 </section>
@@ -137,16 +148,24 @@ body.dark .help-content{background:var(--dark-card);color:#fff;}
   <a href="../index.html">🏠 Back to Home</a>
 </div>
 
-<!-- ✅ Help Panel -->
+<!-- Help Modal -->
 <div id="helpModal" class="help-modal">
   <div class="help-content">
-    <h2>📘 KharchaSaathi — Quick User Guide</h2>
+    <h2>📘 KharchaSaathi — Quick User Guide (v6.2)</h2>
     <hr>
-    <p>v6.1 update: Smart Restock now merges same items into stock automatically.</p>
+    <h3>Inventory Alerts</h3>
     <ul>
-      <li>💰 Sell = Cash Sale | 📒 Credit = Khata Sale</li>
-      <li>✅ Restock merges quantity if same item exists</li>
-      <li>🌙 Dark mode auto-saves</li>
+      <li>Set a <b>Default Low Stock Limit</b> at top of Stock — this applies when an item doesn't have its own limit.</li>
+      <li>Per-item limit: click the <i>Set</i> limit button in the stock table to override the default for that product.</li>
+      <li><b>LOW</b> appears when remaining ≤ limit; <b>OUT</b> when remaining === 0.</li>
+      <li>When an item becomes <b>OUT</b> (remaining 0), it is automatically added to the Wanting List (unless already present).</li>
+      <li>Clear Stock will clear stock and reset per-item alert data (so inventory alerts are cleared too).</li>
+    </ul>
+    <h3>Other</h3>
+    <ul>
+      <li>💰 Sell = Cash Sale; 📒 Credit = Khata (credit) sale — both go to Sales Ledger.</li>
+      <li>Wanting tick → allows restock flow (enter qty to add back to stock).</li>
+      <li>Dark mode toggles with the moon button (state saved).</li>
     </ul>
     <div style="text-align:right;margin-top:12px;">
       <button onclick="toggleHelp()">Close</button>
@@ -155,138 +174,266 @@ body.dark .help-content{background:var(--dark-card);color:#fff;}
 </div>
 
 <script>
-const K_TYPES='item-types',K_STOCK='stock-data',K_SALES='sales-data',K_WANT='wanting-data';
-let types=JSON.parse(localStorage.getItem(K_TYPES)||'[]'),
-stock=JSON.parse(localStorage.getItem(K_STOCK)||'[]'),
-sales=JSON.parse(localStorage.getItem(K_SALES)||'[]'),
-want=JSON.parse(localStorage.getItem(K_WANT)||'[]');
+/* Keys and data */
+const K_TYPES='item-types', K_STOCK='stock-data', K_SALES='sales-data', K_WANT='wanting-data', K_DEFAULT_LIMIT='ks-default-limit';
+let types = JSON.parse(localStorage.getItem(K_TYPES) || '[]'),
+    stock = JSON.parse(localStorage.getItem(K_STOCK) || '[]'),
+    sales = JSON.parse(localStorage.getItem(K_SALES) || '[]'),
+    want = JSON.parse(localStorage.getItem(K_WANT) || '[]');
 
 function saveAll(){
-  localStorage.setItem(K_TYPES,JSON.stringify(types));
-  localStorage.setItem(K_STOCK,JSON.stringify(stock));
-  localStorage.setItem(K_SALES,JSON.stringify(sales));
-  localStorage.setItem(K_WANT,JSON.stringify(want));
+  localStorage.setItem(K_TYPES, JSON.stringify(types));
+  localStorage.setItem(K_STOCK, JSON.stringify(stock));
+  localStorage.setItem(K_SALES, JSON.stringify(sales));
+  localStorage.setItem(K_WANT, JSON.stringify(want));
 }
 
+/* Types */
 function addType(){
-  const t=document.getElementById('typeName').value.trim();
-  if(!t)return alert("Enter type name");
-  if(types.includes(t))return alert("Already exists");
-  types.push(t);saveAll();renderTypes();updateDropdowns();
+  const t = document.getElementById('typeName').value.trim();
+  if(!t) return alert("Enter type name");
+  if(types.includes(t)) return alert("Already exists");
+  types.push(t); saveAll(); renderTypes(); updateDropdowns();
   document.getElementById('typeName').value='';
 }
-function clearTypes(){if(confirm("Clear all types?")){types=[];saveAll();renderTypes();updateDropdowns();}}
-function renderTypes(){document.getElementById('typeList').innerHTML=types.length?types.map(t=>`<li>${t}</li>`).join(''):"<li>No types yet</li>";}
+function renderTypes(){ document.getElementById('typeList').innerHTML = types.length ? types.map(t=>`<li>${t}</li>`).join('') : "<li>No types yet</li>"; }
+function clearTypes(){ if(confirm("Clear all types?")){ types=[]; saveAll(); renderTypes(); updateDropdowns(); } }
+
+/* Dropdowns */
 function updateDropdowns(){
   ['ptype','wtype'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.innerHTML='<option value="">Select</option>'+types.map(t=>`<option>${t}</option>`).join('');
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.innerHTML = '<option value="">Select</option>' + types.map(t=>`<option>${t}</option>`).join('');
   });
 }
 
+/* Global default limit */
+function setGlobalLimit(){
+  const v = parseInt(document.getElementById('globalLimit').value);
+  if(!v || v < 0) return alert("Enter valid default limit (0 or positive number)");
+  localStorage.setItem(K_DEFAULT_LIMIT, String(v));
+  alert("Default low stock limit set to " + v);
+}
+function getDefaultLimit(){ const d = parseInt(localStorage.getItem(K_DEFAULT_LIMIT)); return Number.isInteger(d) ? d : 0; }
+
+/* Stock */
 function addStock(){
-  const date=document.getElementById('pdate').value;
-  const type=document.getElementById('ptype').value;
-  const name=document.getElementById('pname').value.trim();
-  const qty=parseInt(document.getElementById('pqty').value);
-  if(!date||!type||!name||!qty)return alert("Fill all fields");
-  const existing=stock.find(s=>s.type===type && s.name.toLowerCase()===name.toLowerCase());
-  if(existing){existing.qty+=qty;}
-  else{stock.push({date,type,name,qty,sold:0});}
-  saveAll();renderStock();
-  ['pdate','ptype','pname','pqty'].forEach(id=>document.getElementById(id).value='');
+  const date = document.getElementById('pdate').value;
+  const type = document.getElementById('ptype').value;
+  const name = document.getElementById('pname').value.trim();
+  const qty = parseInt(document.getElementById('pqty').value);
+  if(!date || !type || !name || !qty) return alert("Fill all fields");
+  // merge if same type+name (case-insensitive)
+  const existing = stock.find(s => s.type === type && s.name.toLowerCase() === name.toLowerCase());
+  if(existing){
+    existing.qty += qty;
+    // update date to latest add date (optional)
+    existing.date = date;
+  } else {
+    // default limit undefined (will fall back to global)
+    stock.push({date, type, name, qty, sold: 0, limit: undefined});
+  }
+  saveAll(); renderStock(); ['pdate','ptype','pname','pqty'].forEach(id=>document.getElementById(id).value='');
 }
-function clearStock(){if(confirm("Clear stock?")){stock=[];saveAll();renderStock();}}
+function clearStock(){
+  if(!confirm("Clear all stock and inventory alert data?")) return;
+  stock = []; saveAll(); renderStock();
+}
 
+/* Render Stock table with Alert column and Limit column and per-item set button */
 function renderStock(){
-  const tb=document.querySelector('#stockTable tbody');
-  tb.innerHTML=stock.map((s,i)=>`
-  <tr><td>${s.date}</td><td>${s.type}</td><td>${s.name}</td>
-  <td>${s.qty}</td><td>${s.sold||0}</td><td>${s.qty-(s.sold||0)}</td>
-  <td><button class="sell-btn" onclick="sellItem(${i},'Paid')">💰 Sell</button></td>
-  <td><button class="credit-btn" onclick="sellItem(${i},'Credit')">📒 Credit</button></td></tr>`).join('');
+  const tb = document.querySelector('#stockTable tbody');
+  tb.innerHTML = stock.map((s, i) => {
+    const sold = s.sold || 0;
+    const rem = (s.qty || 0) - sold;
+    const limit = (typeof s.limit === 'number') ? s.limit : getDefaultLimit();
+    let status = 'OK', cls = 'ok';
+    if(rem <= 0){ status = 'OUT'; cls = 'out'; }
+    else if(rem <= limit){ status = 'LOW'; cls = 'low'; }
+    // show limit as number or '-' if none and default 0
+    const limitDisplay = (typeof s.limit === 'number') ? s.limit : (getDefaultLimit() || '-');
+    return `<tr>
+      <td>${s.date}</td>
+      <td>${s.type}</td>
+      <td>${s.name}</td>
+      <td>${s.qty}</td>
+      <td>${sold}</td>
+      <td>${rem}</td>
+      <td class="${cls}">${status}</td>
+      <td>${limitDisplay}</td>
+      <td><button class="action-btn" onclick="setItemLimit(${i})">Set</button></td>
+      <td>
+        <button class="sell-btn" onclick="sellItem(${i},'Paid')">💰</button>
+        <button class="credit-btn" onclick="sellItem(${i},'Credit')">📒</button>
+      </td>
+    </tr>`;
+  }).join('');
 }
 
-function sellItem(i,status){
-  const item=stock[i];
-  const remain=item.qty-(item.sold||0);
-  if(remain<=0)return alert("No stock left!");
-  const qty=parseInt(prompt(`Enter ${status==='Credit'?'Credit':'Sale'} Qty (${remain} left):`));
-  if(!qty||qty<=0||qty>remain)return;
-  const price=parseFloat(prompt("Enter Price ₹:"));
-  if(!price||price<=0)return;
-  const date=new Date().toISOString().split('T')[0];
-  const amount=qty*price;
-  item.sold=(item.sold||0)+qty;
-  sales.push({date,type:item.type,product:item.name,qty,price,amount,status});
-  saveAll();renderStock();renderSales();
-  alert(status==='Credit'?"📒 Added to Khata":"✅ Sale Added!");
+/* set per-item limit prompt */
+function setItemLimit(i){
+  const s = stock[i];
+  const cur = (typeof s.limit === 'number') ? s.limit : getDefaultLimit();
+  const v = prompt(`Set low-stock limit for "${s.name}" (current: ${cur}). Enter blank to remove per-item limit:`);
+  if(v === null) return; // cancelled
+  if(v.trim() === ''){
+    delete s.limit;
+  } else {
+    const n = parseInt(v.trim());
+    if(!Number.isInteger(n) || n < 0) return alert("Invalid number");
+    s.limit = n;
+  }
+  saveAll(); renderStock();
+  alert("Limit updated.");
 }
 
+/* Sell / Credit flow — adjusts sold, creates sales entry, checks alerts & auto add wanting when out */
+function sellItem(i, status){
+  const item = stock[i];
+  const remain = (item.qty || 0) - (item.sold || 0);
+  if(remain <= 0) return alert("No stock left!");
+  const qty = parseInt(prompt(`Enter ${status==='Credit'?'Credit':'Sale'} quantity (available: ${remain}):`));
+  if(!qty || qty <= 0 || qty > remain) return alert("Invalid quantity");
+  const price = parseFloat(prompt("Enter price per unit ₹:"));
+  if(!price || price <= 0) return alert("Invalid price");
+  const date = new Date().toISOString().split('T')[0];
+  const amount = qty * price;
+  item.sold = (item.sold || 0) + qty;
+  sales.push({date, type: item.type, product: item.name, qty, price, amount, status});
+  saveAll();
+  // After sale, check remaining and handle auto-wanting if necessary
+  handlePostStockChange(item);
+  renderStock(); renderSales();
+  alert(status === 'Credit' ? "📒 Added to Khata (Credit)" : "✅ Sale Added!");
+}
+
+/* After any stock change, evaluate alert status and auto-add to wanting if out */
+function handlePostStockChange(item){
+  const remain = (item.qty || 0) - (item.sold || 0);
+  // if reached zero — auto add wanting if not already present
+  if(remain <= 0){
+    const exists = want.find(w => w.type === item.type && w.item.toLowerCase() === item.name.toLowerCase());
+    if(!exists){
+      // create wanting entry with today's date
+      const date = new Date().toISOString().split('T')[0];
+      want.push({date, type: item.type, item: item.name, restocked: false});
+      saveAll();
+      // no alert needed here for user, but we can show a small notice (alert suppressed to avoid spam)
+    }
+  }
+  // Nothing else immediate; renderings will reflect status
+}
+
+/* Sales rendering */
 function renderSales(){
-  const tb=document.querySelector('#salesTable tbody');let t=0;
-  tb.innerHTML=sales.map((s,i)=>{t+=s.amount;return`
-  <tr><td>${s.date}</td><td>${s.type}</td><td>${s.product}</td>
-  <td>${s.qty}</td><td>${s.price}</td><td>${s.amount}</td>
-  <td>${s.status}</td>
-  <td>${s.status==='Credit'?`<button class='credit-btn' onclick='markPaid(${i})'>Mark Paid</button>`:""}</td></tr>`}).join('');
-  document.getElementById('dayTotal').textContent=t.toFixed(2);
+  const tb = document.querySelector('#salesTable tbody');
+  let total = 0;
+  tb.innerHTML = sales.map((s, i) => {
+    total += s.amount || 0;
+    return `<tr>
+      <td>${s.date}</td><td>${s.type}</td><td>${s.product}</td>
+      <td>${s.qty}</td><td>${s.price}</td><td>${(s.amount||0).toFixed(2)}</td>
+      <td>${s.status}</td>
+      <td>${s.status === 'Credit' ? `<button class='credit-btn' onclick='markPaid(${i})'>Mark Paid</button>` : ''}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('dayTotal').textContent = total.toFixed(2);
 }
-function markPaid(i){sales[i].status="Paid";saveAll();renderSales();alert("✅ Marked Paid!");}
-function clearSales(){if(confirm("Clear all sales?")){sales=[];saveAll();renderSales();}}
+function markPaid(i){ sales[i].status = "Paid"; saveAll(); renderSales(); alert("✅ Marked Paid!"); }
+function clearSales(){ if(confirm("Clear all sales?")){ sales = []; saveAll(); renderSales(); } }
 
+/* Wanting list */
 function addWant(){
-  const date=document.getElementById('wdate').value,type=document.getElementById('wtype').value,item=document.getElementById('witem').value.trim();
-  if(!date||!type||!item)return alert("Fill all fields");
-  want.push({date,type,item,restocked:false});saveAll();renderWant();
+  const date = document.getElementById('wdate').value;
+  const type = document.getElementById('wtype').value;
+  const itemName = document.getElementById('witem').value.trim();
+  if(!date || !type || !itemName) return alert("Fill all fields");
+  // avoid duplicates (case-insensitive)
+  const exists = want.find(w => w.type === type && w.item.toLowerCase() === itemName.toLowerCase());
+  if(exists) return alert("Already in Wanting list");
+  want.push({date, type, item: itemName, restocked: false});
+  saveAll(); renderWant();
   ['wdate','wtype','witem'].forEach(id=>document.getElementById(id).value='');
 }
-
 function renderWant(){
-  const tb=document.querySelector('#wantTable tbody');
-  tb.innerHTML=want.map((w,i)=>`
-  <tr class="${w.restocked?'restocked':''}">
-    <td>${w.date}</td><td>${w.type}</td><td>${w.item}</td>
-    <td>
-      ${!w.restocked?`<button class='sell-btn' onclick='markRestocked(${i})'>✅</button>`:''}
-      <button class='credit-btn' onclick="removeWant(${i})">🗑</button>
-    </td>
-  </tr>`).join('');
+  const tb = document.querySelector('#wantTable tbody');
+  tb.innerHTML = want.map((w, i) => `
+    <tr class="${w.restocked ? 'restocked' : ''}">
+      <td>${w.date}</td><td>${w.type}</td><td>${w.item}</td>
+      <td>
+        ${!w.restocked ? `<button class="sell-btn" onclick="markRestocked(${i})">✅</button>` : ''}
+        <button class="credit-btn" onclick="removeWant(${i})">🗑</button>
+      </td>
+    </tr>`).join('');
 }
 
+/* Tick => ask qty and merge into stock (merge fix already in earlier versions) */
 function markRestocked(i){
-  const qty=parseInt(prompt("Enter Restocked Quantity:"));
-  if(!qty||qty<=0)return;
-  const date=new Date().toISOString().split('T')[0];
-  const w=want[i];
-  w.restocked=true;
-
-  // ✅ Merge Fix: if item already exists in stock, add qty
+  const qty = parseInt(prompt("Enter Restocked Quantity:"));
+  if(!qty || qty <= 0) return alert("Invalid quantity");
+  const date = new Date().toISOString().split('T')[0];
+  const w = want[i];
+  // merge to existing stock if same type+name
   const existing = stock.find(s => s.type === w.type && s.name.toLowerCase() === w.item.toLowerCase());
   if(existing){
     existing.qty += qty;
   } else {
-    stock.push({date,type:w.type,name:w.item,qty,sold:0});
+    stock.push({date, type: w.type, name: w.item, qty, sold: 0, limit: undefined});
   }
-
-  saveAll();renderWant();renderStock();
+  w.restocked = true;
+  saveAll(); renderWant(); renderStock();
   alert(`✅ ${qty} of "${w.item}" added to Stock!`);
 }
 
-function removeWant(i){want.splice(i,1);saveAll();renderWant();}
-function printWanting(){const w=window.open('','_blank');w.document.write('<h3>🛒 Wanting List</h3>'+document.getElementById('wantTable').outerHTML);w.print();}
+function removeWant(i){ if(confirm("Remove this wanting item?")){ want.splice(i,1); saveAll(); renderWant(); } }
+function printWanting(){ const w = window.open('','_blank'); w.document.write('<h3>🛒 Wanting List</h3>'+document.getElementById('wantTable').outerHTML); w.print(); }
 
-document.getElementById('themeBtn').onclick=()=>{
+/* Utility: find want index by type+item */
+function wantExists(type, item){
+  return want.some(w => w.type === type && w.item.toLowerCase() === item.toLowerCase());
+}
+
+/* Theme toggle */
+document.getElementById('themeBtn').onclick = ()=>{
   document.body.classList.toggle('dark');
-  localStorage.setItem('theme',document.body.classList.contains('dark')?'dark':'light');
-  document.getElementById('themeBtn').textContent=document.body.classList.contains('dark')?'☀️':'🌙';
+  localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+  document.getElementById('themeBtn').textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
 };
-if(localStorage.getItem('theme')==='dark'){document.body.classList.add('dark');document.getElementById('themeBtn').textContent='☀️';}
-document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>openTab(t.dataset.tab)));
-function openTab(id){document.querySelectorAll('.tab,.section').forEach(e=>e.classList.remove('active'));document.querySelector(`.tab[data-tab="${id}"]`).classList.add('active');document.getElementById(id).classList.add('active');}
-function toggleHelp(){document.getElementById('helpModal').style.display=(document.getElementById('helpModal').style.display==='flex')?'none':'flex';}
-function renderAll(){renderTypes();updateDropdowns();renderStock();renderSales();renderWant();}
+if(localStorage.getItem('theme') === 'dark'){ document.body.classList.add('dark'); document.getElementById('themeBtn').textContent = '☀️'; }
+
+/* Help modal toggle */
+function toggleHelp(){ const modal = document.getElementById('helpModal'); modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex'; }
+
+/* Tabs */
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', ()=> openTab(t.dataset.tab)));
+function openTab(id){
+  document.querySelectorAll('.tab,.section').forEach(e => e.classList.remove('active'));
+  const tab = document.querySelector(`.tab[data-tab="${id}"]`);
+  const sec = document.getElementById(id);
+  if(tab) tab.classList.add('active');
+  if(sec) sec.classList.add('active');
+}
+
+/* initial render and helper: if any item already out on load, ensure it's in want list */
+function reconcileOnLoad(){
+  // ensure any existing stock with remaining <=0 is added to wanting
+  stock.forEach(item => {
+    const rem = (item.qty||0) - (item.sold||0);
+    if(rem <= 0){
+      if(!wantExists(item.type, item.name)){
+        want.push({date: new Date().toISOString().split('T')[0], type: item.type, item: item.name, restocked: false});
+      }
+    }
+  });
+  saveAll();
+}
+
+/* start */
+function renderAll(){ renderTypes(); updateDropdowns(); renderStock(); renderSales(); renderWant(); }
+reconcileOnLoad();
 renderAll();
+
 </script>
 </body>
 </html>
