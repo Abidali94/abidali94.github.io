@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>📦 KharchaSaathi — Business Dashboard v4.2</title>
+<title>📦 KharchaSaathi — Business Dashboard v4.3</title>
 <meta name="theme-color" content="#ff7a00">
 <style>
   :root{
@@ -19,7 +19,7 @@
   .controls{display:flex;gap:8px;align-items:center}
   .theme-btn, .export-btn, .small-btn{background:var(--orange);color:#fff;border:none;padding:8px 10px;border-radius:8px;cursor:pointer}
   .theme-btn:hover{background:var(--orange-dark)}
-  .tabs{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap}
+  .tabs{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap;justify-content:center}
   .tab{background:#eee;padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600}
   body.dark .tab{background:#2b2b2b}
   .tab.active{background:var(--orange);color:#fff}
@@ -28,19 +28,16 @@
   body.dark .section{background:var(--dark-card);box-shadow:none}
   .section.active{display:block}
   .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  input[type="text"], input[type="date"], input[type="number"], select{padding:8px;border-radius:8px;border:1px solid #ddd;min-width:140px}
+  input,select{padding:8px;border-radius:8px;border:1px solid #ddd;min-width:140px}
   body.dark input, body.dark select{background:#222;border-color:#333;color:#e8e8e8}
   table{width:100%;border-collapse:collapse;margin-top:12px}
   th,td{padding:8px;border:1px solid #eee;text-align:center;font-size:13px}
   body.dark th, body.dark td{border-color:#333}
   th{background:var(--orange);color:#fff}
   .muted{color:var(--muted);font-size:13px}
-  .guide-box{margin-top:18px;padding:10px 14px;background:#fff5e6;border-left:4px solid var(--orange);border-radius:8px;color:#444}
-  body.dark .guide-box{background:#1f1a12;color:#ddd}
-  .guide-box h4{margin:0 0 6px;font-size:15px;color:var(--orange-dark)}
-  .guide-box ul{margin:4px 0 0 20px;padding:0;font-size:13px}
-  .back-btn{background:none;border:none;color:var(--orange);font-weight:600;font-size:15px;cursor:pointer;display:flex;align-items:center;gap:4px;}
-  .back-btn:hover{text-decoration:underline;}
+  .footer-btns{text-align:center;margin-top:20px;}
+  .footer-btns a{background:var(--orange);color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;margin:6px;display:inline-block}
+  .footer-btns a:hover{background:var(--orange-dark)}
   @media(max-width:720px){ .row{flex-direction:column;align-items:stretch} table td, table th{font-size:12px} }
 </style>
 </head>
@@ -48,64 +45,53 @@
 
 <div class="topbar">
   <div>
-    <button class="back-btn" onclick="goHome()">🏠 Back to Home</button>
-    <h1>📦 KharchaSaathi — Business Dashboard v4.2</h1>
+    <h1>📦 KharchaSaathi — Business Dashboard v4.3</h1>
     <div class="muted">Offline • Simple • Backup • Smart Totals</div>
   </div>
   <div class="controls">
     <button class="theme-btn" id="themeBtn">🌙</button>
     <button class="export-btn" id="backupBtn">⤓ Backup</button>
-    <button class="export-btn secondary" id="restoreBtn">⤴ Restore</button>
+    <button class="export-btn" id="restoreBtn">⤴ Restore</button>
   </div>
 </div>
 
 <div class="tabs">
-  <div class="tab active" data-tab="types" onclick="openTab('types')">🗂 Manage Types</div>
-  <div class="tab" data-tab="stock" onclick="openTab('stock')">📦 Current Stock</div>
-  <div class="tab" data-tab="sales" onclick="openTab('sales')">📈 Sales Ledger</div>
-  <div class="tab" data-tab="wanting" onclick="openTab('wanting')">🛒 Wanting List</div>
+  <div class="tab active" data-tab="types">🗂 Manage Types</div>
+  <div class="tab" data-tab="stock">📦 Current Stock</div>
+  <div class="tab" data-tab="sales">📈 Sales Ledger</div>
+  <div class="tab" data-tab="wanting">🛒 Wanting List</div>
 </div>
 
 <div class="layout">
 
   <!-- TYPES -->
   <section id="types" class="section active">
+    <h3>🗂 Manage Types</h3>
     <div class="row">
       <input type="text" id="typeName" placeholder="Add new type (e.g. Mobiles)" />
       <button onclick="addType()">Add Type</button>
-      <button class="small-btn clear-btn" onclick="clearTypes()">Clear All Types</button>
-      <div class="right"><button onclick="exportCSV('types')" class="export-btn">Export CSV</button></div>
+      <button class="small-btn" onclick="clearTypes()">Clear All</button>
     </div>
-
     <ul id="typeList" style="margin-top:12px;padding-left:16px;"></ul>
-
-    <div class="guide-box">
-      <h4>ℹ️ Guide & Help</h4>
-      <ul>
-        <li>Type = category (e.g. <b>Mobiles</b>, <b>Accessories</b>).</li>
-        <li>Once added, appears in all dropdowns across dashboard.</li>
-        <li>Use <b>Backup</b> & <b>Restore</b> to save or move your data safely.</li>
-      </ul>
-    </div>
   </section>
 
   <!-- STOCK -->
   <section id="stock" class="section">
     <h3>📦 Current Stock</h3>
     <div class="row">
-      <label class="muted">View by Type:</label>
-      <select id="viewTypeFilter" onchange="renderStock()"><option value="All">All Types</option></select>
+      <label>Filter:</label>
+      <select id="viewTypeFilter" onchange="renderStock()"><option value="All">All</option></select>
     </div>
     <table id="stockTable">
       <thead><tr><th>Date</th><th>Type</th><th>Product</th><th>Qty</th><th>Sold</th><th>Remaining</th></tr></thead>
       <tbody></tbody>
     </table>
-    <div class="row" style="margin-top:12px">
-      <input type="date" id="pdate" />
+    <div class="row">
+      <input type="date" id="pdate">
       <select id="ptype"></select>
-      <input type="text" id="pname" placeholder="Product name" />
-      <input type="number" id="pqty" placeholder="Qty" min="1" />
-      <button onclick="addStock()">Add Stock</button>
+      <input type="text" id="pname" placeholder="Product name">
+      <input type="number" id="pqty" placeholder="Qty">
+      <button onclick="addStock()">Add</button>
     </div>
   </section>
 
@@ -115,14 +101,14 @@
     <table id="salesTable">
       <thead><tr><th>Date</th><th>Type</th><th>Product</th><th>Qty</th><th>Price ₹</th><th>Total ₹</th></tr></thead>
       <tbody></tbody>
-      <tfoot><tr><td colspan="5" style="text-align:right;font-weight:bold">Total:</td><td id="dayTotal">0</td></tr></tfoot>
+      <tfoot><tr><td colspan="5" style="text-align:right;font-weight:bold;">Day Total:</td><td id="dayTotal">0</td></tr></tfoot>
     </table>
-    <div class="row" style="margin-top:12px">
-      <input type="date" id="sdate" />
+    <div class="row">
+      <input type="date" id="sdate">
       <select id="stype"></select>
-      <input type="text" id="sname" placeholder="Product name" />
-      <input type="number" id="sqty" placeholder="Qty" min="1" />
-      <input type="number" id="sprice" placeholder="Price ₹" min="0" step="0.01" />
+      <input type="text" id="sname" placeholder="Product name">
+      <input type="number" id="sqty" placeholder="Qty">
+      <input type="number" id="sprice" placeholder="Price ₹">
       <button onclick="addSale()">Add Sale</button>
     </div>
   </section>
@@ -134,22 +120,35 @@
       <thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Qty</th><th>Actions</th></tr></thead>
       <tbody></tbody>
     </table>
-    <div class="row" style="margin-top:12px">
-      <input type="date" id="wdate" />
+    <div class="row">
+      <input type="date" id="wdate">
       <select id="wtype"></select>
-      <input type="text" id="witem" placeholder="Item name" />
-      <button onclick="addWant()">Add Want</button>
-      <div style="margin-left:auto">
-        <button class="export-btn" onclick="printWanting()">🖨️ Print / PDF</button>
-      </div>
+      <input type="text" id="witem" placeholder="Item name">
+      <button onclick="addWant()">Add</button>
+      <button onclick="printWanting()">🖨️ Print / PDF</button>
     </div>
   </section>
 
+  <div class="footer-btns">
+    <a href="guide.html">📘 Guides & Help</a>
+    <a href="../index.html">🏠 Back to Home</a>
+  </div>
+
 </div>
 
-<input type="file" id="restoreFile" accept="application/json" style="display:none" />
+<input type="file" id="restoreFile" accept="application/json" style="display:none">
 
 <script>
+const tabs = document.querySelectorAll('.tab');
+tabs.forEach(tab => tab.addEventListener('click', () => openTab(tab.dataset.tab)));
+
+function openTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelector(`.tab[data-tab="${id}"]`).classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
 const K_TYPES='item-types',K_STOCK='stock-data',K_SALES='sales-data',K_WANT='wanting-data';
 let types=JSON.parse(localStorage.getItem(K_TYPES)||'[]'),
     stock=JSON.parse(localStorage.getItem(K_STOCK)||'[]'),
@@ -158,44 +157,30 @@ let types=JSON.parse(localStorage.getItem(K_TYPES)||'[]'),
 
 function saveAll(){localStorage.setItem(K_TYPES,JSON.stringify(types));localStorage.setItem(K_STOCK,JSON.stringify(stock));localStorage.setItem(K_SALES,JSON.stringify(sales));localStorage.setItem(K_WANT,JSON.stringify(want));}
 
-function goHome(){openTab('types');scrollTo(0,0);}
+function addType(){const n=document.getElementById('typeName').value.trim();if(!n)return alert("Enter type");if(types.includes(n))return alert("Exists");types.push(n);saveAll();renderTypes();updateDropdowns();document.getElementById('typeName').value='';}
+function renderTypes(){document.getElementById('typeList').innerHTML=types.map(t=>`<li>${t}</li>`).join('');}
+function clearTypes(){if(confirm("Clear all types?")){types=[];saveAll();renderTypes();updateDropdowns();}}
+
+function updateDropdowns(){['ptype','stype','wtype','viewTypeFilter'].forEach(id=>{const el=document.getElementById(id);if(el){el.innerHTML='<option value="">Select</option>'+types.map(t=>`<option>${t}</option>`).join('');if(id==='viewTypeFilter')el.insertAdjacentHTML('afterbegin','<option value="All">All</option>');}});}
+
+function addStock(){const type=document.getElementById('ptype').value,name=document.getElementById('pname').value.trim(),qty=parseInt(document.getElementById('pqty').value),date=document.getElementById('pdate').value;if(!type||!name||!qty||!date)return alert("Fill all fields");stock.push({type,name,qty,sold:0,date});saveAll();renderStock();}
+function renderStock(){const f=document.getElementById('viewTypeFilter').value,tb=document.querySelector('#stockTable tbody');let d=f==="All"||!f?stock:stock.filter(s=>s.type===f);tb.innerHTML=d.map(s=>`<tr><td>${s.date}</td><td>${s.type}</td><td>${s.name}</td><td>${s.qty}</td><td>${s.sold||0}</td><td>${s.qty-(s.sold||0)}</td></tr>`).join('');}
+
+function addSale(){const type=document.getElementById('stype').value,name=document.getElementById('sname').value.trim(),qty=parseInt(document.getElementById('sqty').value),price=parseFloat(document.getElementById('sprice').value),date=document.getElementById('sdate').value;if(!type||!name||!qty||!price||!date)return alert("Fill all fields");const amt=qty*price;sales.push({type,product:name,qty,price,amount:amt,date});const i=stock.find(s=>s.name.toLowerCase()===name.toLowerCase());if(i)i.sold=(i.sold||0)+qty;saveAll();renderSales();renderStock();}
+function renderSales(){const tb=document.querySelector('#salesTable tbody');let t=0;tb.innerHTML=sales.map(s=>{t+=s.amount;return`<tr><td>${s.date}</td><td>${s.type}</td><td>${s.product}</td><td>${s.qty}</td><td>${s.price}</td><td>${s.amount}</td></tr>`}).join('');document.getElementById('dayTotal').textContent=t.toFixed(2);}
+
+function addWant(){const type=document.getElementById('wtype').value,item=document.getElementById('witem').value.trim(),date=document.getElementById('wdate').value;if(!type||!item||!date)return alert("Fill all fields");want.push({type,item,date});saveAll();renderWant();}
+function renderWant(){const tb=document.querySelector('#wantTable tbody');tb.innerHTML=want.map((w,i)=>`<tr><td>${w.date}</td><td>${w.type}</td><td>${w.item}</td><td>-</td><td><button onclick="restock(${i})">✔</button><button onclick="removeWant(${i})">🗑</button></td></tr>`).join('');}
+function restock(i){const q=prompt("Restocked Qty:");if(!q)return;const t=new Date().toISOString().split('T')[0];const w=want[i];stock.push({type:w.type,name:w.item,qty:parseInt(q),sold:0,date:t});want.splice(i,1);saveAll();renderStock();renderWant();}
+function removeWant(i){want.splice(i,1);saveAll();renderWant();}
+
+function printWanting(){const html=document.getElementById('wantTable').outerHTML;const w=window.open('','_blank');w.document.write(`<html><head><title>Wanting List</title><style>body{font-family:Arial}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px;text-align:center}th{background:#ff7a00;color:#fff}</style></head><body><h3>🛒 Wanting List — KharchaSaathi</h3>${html}</body></html>`);w.document.close();w.print();}
 
 document.getElementById('themeBtn').onclick=()=>{document.body.classList.toggle('dark');const d=document.body.classList.contains('dark');localStorage.setItem('ks-theme',d?'dark':'light');document.getElementById('themeBtn').textContent=d?'☀️':'🌙';};
 if(localStorage.getItem('ks-theme')==='dark'){document.body.classList.add('dark');document.getElementById('themeBtn').textContent='☀️';}
 
-function openTab(id){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelector('.tab[data-tab="'+id+'"]').classList.add('active');document.getElementById(id).classList.add('active');}
-
-function renderTypes(){document.getElementById('typeList').innerHTML=types.length?types.map(t=>`<li>${t}</li>`).join(''):"<li class='muted'>No types added yet.</li>";updateDropdowns();}
-function addType(){const n=document.getElementById('typeName').value.trim();if(!n)return alert("Enter type name");if(types.includes(n))return alert("Type exists");types.push(n);saveAll();renderTypes();document.getElementById('typeName').value='';}
-function clearTypes(){if(!confirm("Clear all types?"))return;types=[];saveAll();renderTypes();}
-
-function updateDropdowns(){['ptype','stype','wtype','viewTypeFilter'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.innerHTML='<option value="">Select Type</option>'+types.map(t=>`<option>${t}</option>`).join('');if(id==='viewTypeFilter')el.insertAdjacentHTML('afterbegin','<option value="All">All Types</option>');});}
-
-function addStock(){const type=document.getElementById('ptype').value,name=document.getElementById('pname').value.trim(),qty=parseInt(document.getElementById('pqty').value),date=document.getElementById('pdate').value;if(!type||!name||!qty||!date)return alert("Fill all fields");stock.push({type,name,qty,sold:0,date});saveAll();renderStock();}
-function renderStock(f="All"){const tb=document.querySelector('#stockTable tbody');let d=f==="All"?stock:stock.filter(s=>s.type===f);tb.innerHTML=d.length?d.map(s=>`<tr><td>${s.date}</td><td>${s.type}</td><td>${s.name}</td><td>${s.qty}</td><td>${s.sold||0}</td><td>${s.qty-(s.sold||0)}</td></tr>`).join(''):"<tr><td colspan=6>No stock.</td></tr>";}
-
-function addSale(){const type=document.getElementById('stype').value,name=document.getElementById('sname').value.trim(),qty=parseInt(document.getElementById('sqty').value),price=parseFloat(document.getElementById('sprice').value),date=document.getElementById('sdate').value;if(!type||!name||!qty||!price||!date)return alert("Fill all fields");const amt=qty*price;sales.push({type,product:name,qty,price,amount:amt,date});const i=stock.find(s=>s.name.toLowerCase()===name.toLowerCase());if(i)i.sold=(i.sold||0)+qty;saveAll();renderSales();renderStock();}
-function renderSales(){const tb=document.querySelector('#salesTable tbody');if(!sales.length){tb.innerHTML="<tr><td colspan=6>No sales.</td></tr>";return;}let t=0;tb.innerHTML=sales.map(s=>{t+=s.amount;return`<tr><td>${s.date}</td><td>${s.type}</td><td>${s.product}</td><td>${s.qty}</td><td>${s.price}</td><td>${s.amount}</td></tr>`}).join('');document.getElementById('dayTotal').textContent=t.toFixed(2);}
-
-function addWant(){const type=document.getElementById('wtype').value,item=document.getElementById('witem').value.trim(),date=document.getElementById('wdate').value;if(!type||!item||!date)return alert("Fill all fields");want.push({type,item,date});saveAll();renderWant();}
-function renderWant(){const tb=document.querySelector('#wantTable tbody');tb.innerHTML=want.length?want.map((w,i)=>`<tr><td>${w.date}</td><td>${w.type}</td><td>${w.item}</td><td>-</td><td><button onclick="restock(${i})">✔</button><button onclick="removeWant(${i})">🗑</button></td></tr>`).join(''):"<tr><td colspan=5>No items.</td></tr>";}
-function restock(i){const q=prompt("Restocked Qty:");if(!q)return;const t=new Date().toISOString().split('T')[0];const w=want[i];stock.push({type:w.type,name:w.item,qty:parseInt(q),sold:0,date:t});want.splice(i,1);saveAll();renderStock();renderWant();}
-function removeWant(i){want.splice(i,1);saveAll();renderWant();}
-
-function printWanting(){
-  const html=document.getElementById('wantTable').outerHTML;
-  const w=window.open('','_blank');
-  w.document.write(`<html><head><title>Wanting List</title><style>
-  body{font-family:Arial;padding:12px}
-  table{width:100%;border-collapse:collapse}
-  th,td{border:1px solid #ccc;padding:6px;text-align:center}
-  th{background:#ff7a00;color:#fff}
-  </style></head><body><h3>🛒 Wanting List — KharchaSaathi</h3>${html}</body></html>`);
-  w.document.close();w.print();
-}
-
-document.getElementById('backupBtn').onclick=()=>{const d={types,stock,sales,want,exportedAt:new Date().toISOString()};const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='kharchasaathi_backup.json';a.click();}
-document.getElementById('restoreBtn').onclick=()=>document.getElementById('restoreFile').click();
-document.getElementById('restoreFile').onchange=function(){const f=this.files[0];if(!f)return;const r=new FileReader();r.onload=function(){try{const j=JSON.parse(r.result);if(confirm("Replace current data?")){types=j.types||[];stock=j.stock||[];sales=j.sales||[];want=j.want||[];saveAll();renderAll();alert("Restore complete");}}catch(e){alert("Invalid file");}};r.readAsText(f);};
-
-function renderAll(){renderTypes();updateDropdowns();renderStock
+function renderAll(){renderTypes();updateDropdowns();renderStock();renderSales();renderWant();}
+renderAll();
+</script>
+</body>
+</html>
