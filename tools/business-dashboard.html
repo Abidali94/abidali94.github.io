@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>📦 KharchaSaathi — Business Dashboard v4.1</title>
+<title>📦 KharchaSaathi — Business Dashboard v4.2</title>
 <meta name="theme-color" content="#ff7a00">
 <style>
   :root{
@@ -35,25 +35,21 @@
   body.dark th, body.dark td{border-color:#333}
   th{background:var(--orange);color:#fff}
   .muted{color:var(--muted);font-size:13px}
-  .section-footer{margin-top:12px;padding-top:10px;border-top:1px dashed #eee;color:var(--muted);font-size:13px}
-  body.dark .section-footer{border-top-color:#2b2b2b;color:#ccc}
-  .summary{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
-  .card{background:linear-gradient(180deg,#fff,#fff);padding:8px 12px;border-radius:8px;box-shadow:0 3px 10px rgba(0,0,0,.03)}
-  body.dark .card{background:#222;box-shadow:none}
-  .right{margin-left:auto}
-  .small-muted{font-size:12px;color:#888}
   .guide-box{margin-top:18px;padding:10px 14px;background:#fff5e6;border-left:4px solid var(--orange);border-radius:8px;color:#444}
   body.dark .guide-box{background:#1f1a12;color:#ddd}
   .guide-box h4{margin:0 0 6px;font-size:15px;color:var(--orange-dark)}
   .guide-box ul{margin:4px 0 0 20px;padding:0;font-size:13px}
-  @media(max-width:720px){ .row{flex-direction:column;align-items:stretch} .search-input{min-width:100%} table td, table th{font-size:12px} }
+  .back-btn{background:none;border:none;color:var(--orange);font-weight:600;font-size:15px;cursor:pointer;display:flex;align-items:center;gap:4px;}
+  .back-btn:hover{text-decoration:underline;}
+  @media(max-width:720px){ .row{flex-direction:column;align-items:stretch} table td, table th{font-size:12px} }
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div>
-    <h1>📦 KharchaSaathi — Business Dashboard v4.1</h1>
+    <button class="back-btn" onclick="goHome()">🏠 Back to Home</button>
+    <h1>📦 KharchaSaathi — Business Dashboard v4.2</h1>
     <div class="muted">Offline • Simple • Backup • Smart Totals</div>
   </div>
   <div class="controls">
@@ -86,10 +82,9 @@
     <div class="guide-box">
       <h4>ℹ️ Guide & Help</h4>
       <ul>
-        <li>Type is a category (e.g. <b>Mobiles</b>, <b>Accessories</b>).</li>
-        <li>Add a type here once → it will appear in dropdowns in all sections.</li>
-        <li>You can clear or export type list anytime.</li>
-        <li>Use <b>Backup</b> & <b>Restore</b> (top right) to save or move data.</li>
+        <li>Type = category (e.g. <b>Mobiles</b>, <b>Accessories</b>).</li>
+        <li>Once added, appears in all dropdowns across dashboard.</li>
+        <li>Use <b>Backup</b> & <b>Restore</b> to save or move your data safely.</li>
       </ul>
     </div>
   </section>
@@ -144,6 +139,9 @@
       <select id="wtype"></select>
       <input type="text" id="witem" placeholder="Item name" />
       <button onclick="addWant()">Add Want</button>
+      <div style="margin-left:auto">
+        <button class="export-btn" onclick="printWanting()">🖨️ Print / PDF</button>
+      </div>
     </div>
   </section>
 
@@ -159,6 +157,8 @@ let types=JSON.parse(localStorage.getItem(K_TYPES)||'[]'),
     want=JSON.parse(localStorage.getItem(K_WANT)||'[]');
 
 function saveAll(){localStorage.setItem(K_TYPES,JSON.stringify(types));localStorage.setItem(K_STOCK,JSON.stringify(stock));localStorage.setItem(K_SALES,JSON.stringify(sales));localStorage.setItem(K_WANT,JSON.stringify(want));}
+
+function goHome(){openTab('types');scrollTo(0,0);}
 
 document.getElementById('themeBtn').onclick=()=>{document.body.classList.toggle('dark');const d=document.body.classList.contains('dark');localStorage.setItem('ks-theme',d?'dark':'light');document.getElementById('themeBtn').textContent=d?'☀️':'🌙';};
 if(localStorage.getItem('ks-theme')==='dark'){document.body.classList.add('dark');document.getElementById('themeBtn').textContent='☀️';}
@@ -182,12 +182,20 @@ function renderWant(){const tb=document.querySelector('#wantTable tbody');tb.inn
 function restock(i){const q=prompt("Restocked Qty:");if(!q)return;const t=new Date().toISOString().split('T')[0];const w=want[i];stock.push({type:w.type,name:w.item,qty:parseInt(q),sold:0,date:t});want.splice(i,1);saveAll();renderStock();renderWant();}
 function removeWant(i){want.splice(i,1);saveAll();renderWant();}
 
+function printWanting(){
+  const html=document.getElementById('wantTable').outerHTML;
+  const w=window.open('','_blank');
+  w.document.write(`<html><head><title>Wanting List</title><style>
+  body{font-family:Arial;padding:12px}
+  table{width:100%;border-collapse:collapse}
+  th,td{border:1px solid #ccc;padding:6px;text-align:center}
+  th{background:#ff7a00;color:#fff}
+  </style></head><body><h3>🛒 Wanting List — KharchaSaathi</h3>${html}</body></html>`);
+  w.document.close();w.print();
+}
+
 document.getElementById('backupBtn').onclick=()=>{const d={types,stock,sales,want,exportedAt:new Date().toISOString()};const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='kharchasaathi_backup.json';a.click();}
 document.getElementById('restoreBtn').onclick=()=>document.getElementById('restoreFile').click();
 document.getElementById('restoreFile').onchange=function(){const f=this.files[0];if(!f)return;const r=new FileReader();r.onload=function(){try{const j=JSON.parse(r.result);if(confirm("Replace current data?")){types=j.types||[];stock=j.stock||[];sales=j.sales||[];want=j.want||[];saveAll();renderAll();alert("Restore complete");}}catch(e){alert("Invalid file");}};r.readAsText(f);};
 
-function renderAll(){renderTypes();updateDropdowns();renderStock();renderSales();renderWant();}
-renderAll();
-</script>
-</body>
-</html>
+function renderAll(){renderTypes();updateDropdowns();renderStock
