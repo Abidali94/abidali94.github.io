@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>📦 KharchaSaathi — Business Dashboard v4.4</title>
+<title>📦 KharchaSaathi — Business Dashboard v4.5</title>
 <meta name="theme-color" content="#ff7a00">
 <style>
   :root{
@@ -38,6 +38,20 @@
   .footer-btns{text-align:center;margin-top:20px;}
   .footer-btns a{background:var(--orange);color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;margin:6px;display:inline-block}
   .footer-btns a:hover{background:var(--orange-dark)}
+
+  /* Popup Help Modal */
+  #helpModal{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);
+    justify-content:center;align-items:center;z-index:9999;
+  }
+  .help-box{
+    background:var(--card);color:var(--text);max-width:700px;width:90%;
+    padding:18px;border-radius:12px;overflow-y:auto;max-height:85vh;
+  }
+  body.dark .help-box{background:var(--dark-card);color:#e8e8e8;}
+  .help-box h2{color:var(--orange);}
+  .close-btn{background:var(--orange);color:#fff;border:none;padding:6px 10px;border-radius:6px;float:right;cursor:pointer}
+  .close-btn:hover{background:var(--orange-dark)}
   @media(max-width:720px){ .row{flex-direction:column;align-items:stretch} table td, table th{font-size:12px} }
 </style>
 </head>
@@ -45,7 +59,7 @@
 
 <div class="topbar">
   <div>
-    <h1>📦 KharchaSaathi — Business Dashboard v4.4</h1>
+    <h1>📦 KharchaSaathi — Business Dashboard v4.5</h1>
     <div class="muted">Offline • Simple • Backup • Smart Totals</div>
   </div>
   <div class="controls">
@@ -130,31 +144,40 @@
   </section>
 
   <div class="footer-btns">
-    <a href="./guides.html" target="_blank">📘 Guides & Help</a>
+    <a href="#" onclick="openHelp()">📘 Guides & Help</a>
     <a href="../index.html">🏠 Back to Home</a>
   </div>
 
 </div>
 
+<!-- Help Popup -->
+<div id="helpModal">
+  <div class="help-box">
+    <button class="close-btn" onclick="closeHelp()">✖ Close</button>
+    <h2>📘 Guides & Help — KharchaSaathi</h2>
+    <p>Welcome to <b>KharchaSaathi</b> Business Dashboard.</p>
+    <ul>
+      <li><b>Manage Types:</b> Add your product categories (Mobiles, Accessories, Chargers, etc.)</li>
+      <li><b>Current Stock:</b> Add daily stock items and view available quantity.</li>
+      <li><b>Sales Ledger:</b> Record sales; total updates automatically.</li>
+      <li><b>Wanting List:</b> Track out-of-stock items and restock later.</li>
+      <li>Use <b>🖨️ Print / PDF</b> to save reports.</li>
+      <li><b>Backup & Restore:</b> Export or Import all your data.</li>
+      <li><b>Dark Mode:</b> Click 🌙 / ☀️ button anytime.</li>
+    </ul>
+    <p><b>Tip:</b> All data is saved offline (browser localStorage). No internet required ✅</p>
+  </div>
+</div>
+
 <input type="file" id="restoreFile" accept="application/json" style="display:none">
 
 <script>
-const tabs = document.querySelectorAll('.tab');
-tabs.forEach(tab => tab.addEventListener('click', () => openTab(tab.dataset.tab)));
-
-function openTab(id){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelector(`.tab[data-tab="${id}"]`).classList.add('active');
-  document.getElementById(id).classList.add('active');
-}
+const tabs=document.querySelectorAll('.tab');
+tabs.forEach(tab=>tab.addEventListener('click',()=>openTab(tab.dataset.tab)));
+function openTab(id){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelector(`.tab[data-tab="${id}"]`).classList.add('active');document.getElementById(id).classList.add('active');}
 
 const K_TYPES='item-types',K_STOCK='stock-data',K_SALES='sales-data',K_WANT='wanting-data';
-let types=JSON.parse(localStorage.getItem(K_TYPES)||'[]'),
-    stock=JSON.parse(localStorage.getItem(K_STOCK)||'[]'),
-    sales=JSON.parse(localStorage.getItem(K_SALES)||'[]'),
-    want=JSON.parse(localStorage.getItem(K_WANT)||'[]');
-
+let types=JSON.parse(localStorage.getItem(K_TYPES)||'[]'),stock=JSON.parse(localStorage.getItem(K_STOCK)||'[]'),sales=JSON.parse(localStorage.getItem(K_SALES)||'[]'),want=JSON.parse(localStorage.getItem(K_WANT)||'[]');
 function saveAll(){localStorage.setItem(K_TYPES,JSON.stringify(types));localStorage.setItem(K_STOCK,JSON.stringify(stock));localStorage.setItem(K_SALES,JSON.stringify(sales));localStorage.setItem(K_WANT,JSON.stringify(want));}
 
 function addType(){const n=document.getElementById('typeName').value.trim();if(!n)return alert("Enter type");if(types.includes(n))return alert("Type exists");types.push(n);saveAll();renderTypes();updateDropdowns();document.getElementById('typeName').value='';}
@@ -173,11 +196,13 @@ function addWant(){const type=document.getElementById('wtype').value,item=docume
 function renderWant(){const tb=document.querySelector('#wantTable tbody');tb.innerHTML=want.map((w,i)=>`<tr><td>${w.date}</td><td>${w.type}</td><td>${w.item}</td><td>-</td><td><button onclick=\"restock(${i})\">✔</button><button onclick=\"removeWant(${i})\">🗑</button></td></tr>`).join('');}
 function restock(i){const q=prompt("Restocked Qty:");if(!q)return;const t=new Date().toISOString().split('T')[0];const w=want[i];stock.push({type:w.type,name:w.item,qty:parseInt(q),sold:0,date:t});want.splice(i,1);saveAll();renderStock();renderWant();}
 function removeWant(i){want.splice(i,1);saveAll();renderWant();}
-
 function printWanting(){const html=document.getElementById('wantTable').outerHTML;const w=window.open('','_blank');w.document.write(`<html><head><title>Wanting List</title><style>body{font-family:Arial}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px;text-align:center}th{background:#ff7a00;color:#fff}</style></head><body><h3>🛒 Wanting List — KharchaSaathi</h3>${html}</body></html>`);w.document.close();w.print();}
 
 document.getElementById('themeBtn').onclick=()=>{document.body.classList.toggle('dark');const d=document.body.classList.contains('dark');localStorage.setItem('ks-theme',d?'dark':'light');document.getElementById('themeBtn').textContent=d?'☀️':'🌙';};
 if(localStorage.getItem('ks-theme')==='dark'){document.body.classList.add('dark');document.getElementById('themeBtn').textContent='☀️';}
+
+function openHelp(){document.getElementById('helpModal').style.display='flex';}
+function closeHelp(){document.getElementById('helpModal').style.display='none';}
 
 function renderAll(){renderTypes();updateDropdowns();renderStock();renderSales();renderWant();}
 renderAll();
