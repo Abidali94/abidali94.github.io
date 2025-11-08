@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>📦 KharchaSaathi — Business Dashboard v4.8</title>
+<title>📦 KharchaSaathi — Business Dashboard v4.9</title>
 <meta name="theme-color" content="#ff7a00">
 <style>
 :root{
@@ -49,7 +49,7 @@ body.dark .help-box{background:var(--dark-card);color:#e8e8e8}
 
 <div class="topbar">
   <div>
-    <h1>📦 KharchaSaathi — Business Dashboard v4.8</h1>
+    <h1>📦 KharchaSaathi — Business Dashboard v4.9</h1>
     <div class="muted">Offline • Simple • Backup • Smart Totals</div>
   </div>
   <div class="controls">
@@ -228,10 +228,16 @@ function renderSales(){
   document.getElementById('dayTotal').textContent=t.toFixed(2);
 }
 
+// ✅ FIXED WANTING LIST FUNCTION
 function addWant(){
-  const type=document.getElementById('wtype').value,item=document.getElementById('witem').value.trim(),date=document.getElementById('wdate').value;
-  if(!type||!item||!date)return alert("Fill all fields");
-  want.push({type,item,date});saveAll();renderWant();
+  let type=document.getElementById('wtype').value;
+  const item=document.getElementById('witem').value.trim();
+  const date=document.getElementById('wdate').value;
+  if(!type && types.length===1) type=types[0];
+  if(!item || !date) return alert("Enter Item & Date");
+  if(!type) return alert("Select Type");
+  want.push({type,item,date});
+  saveAll();renderWant();
   ['wtype','witem','wdate'].forEach(i=>document.getElementById(i).value='');
 }
 
