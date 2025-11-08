@@ -4,7 +4,7 @@
   <meta name="google-adsense-account" content="ca-pub-2914631277707668">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="KharchaSaathi — Smart tools to manage rent, expenses, stock, sales, and invoices with dark mode support. Perfect for both personal and business use.">
+  <meta name="description" content="KharchaSaathi — Smart tools to manage rent, expenses, stock, sales, invoices & ledgers with dark mode support. Perfect for both personal and business use.">
   <meta name="theme-color" content="#ff7a00">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
@@ -70,7 +70,6 @@
     }
     body.dark p.subtitle { color: #bbb; }
 
-    /* 🌗 Theme Toggle */
     .theme-toggle {
       position: fixed;
       top: 14px;
@@ -88,7 +87,6 @@
     }
     .theme-toggle:hover { background: var(--orange-dark); }
 
-    /* Section Titles */
     .section-title {
       font-size: 20px;
       font-weight: 700;
@@ -98,7 +96,6 @@
       color: var(--orange);
     }
 
-    /* Tools Grid */
     .tools-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
@@ -168,7 +165,40 @@
     }
     body.dark small.desc { color: #bbb; }
 
-    /* Responsive */
+    /* Popup Help */
+    #helpPopup {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    .help-box {
+      background: var(--card-light);
+      color: var(--text-dark);
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 700px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+      text-align: left;
+    }
+    body.dark .help-box { background: var(--card-dark); color: var(--text-light); }
+    .help-box h2 { color: var(--orange); text-align: center; }
+    .close-btn {
+      background: var(--orange);
+      border: none;
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      float: right;
+    }
+    .close-btn:hover { background: var(--orange-dark); }
+
     @media (max-width: 600px) {
       h1 { font-size: 30px; }
       .section-title { font-size: 18px; }
@@ -186,54 +216,46 @@
   <!-- 🏠 Personal Tools -->
   <div class="section-title">Personal Tools</div>
   <div class="tools-grid">
-    <a class="tool-card" href="tools/rent-split.html">
-      <span>🏠</span> Rent Split Calculator
-      <small class="desc">Split rent among friends easily.</small>
-    </a>
-    <a class="tool-card" href="tools/trip-expense-splitter.html">
-      <span>🚗</span> Trip Expense Splitter
-      <small class="desc">Manage shared trip expenses smartly.</small>
-    </a>
-    <a class="tool-card" href="tools/water-bill-split.html">
-      <span>💧</span> Water Bill Splitter
-      <small class="desc">Fairly split household water bills.</small>
-    </a>
-    <a class="tool-card" href="tools/grocery-split-pro.html">
-      <span>🛒</span> Grocery Split (Pro)
-      <small class="desc">Divide grocery costs with clarity.</small>
-    </a>
-    <a class="tool-card" href="tools/roomshare-ledger.html">
-      <span>📒</span> RoomShare Ledger Pro
-      <small class="desc">Track shared daily expenses room-wise.</small>
-    </a>
+    <a class="tool-card" href="tools/rent-split.html"><span>🏠</span> Rent Split Calculator<small class="desc">Split rent among friends easily.</small></a>
+    <a class="tool-card" href="tools/trip-expense-splitter.html"><span>🚗</span> Trip Expense Splitter<small class="desc">Manage shared trip expenses smartly.</small></a>
+    <a class="tool-card" href="tools/water-bill-split.html"><span>💧</span> Water Bill Splitter<small class="desc">Fairly split household water bills.</small></a>
+    <a class="tool-card" href="tools/grocery-split-pro.html"><span>🛒</span> Grocery Split (Pro)<small class="desc">Divide grocery costs with clarity.</small></a>
+    <a class="tool-card" href="tools/roomshare-ledger.html"><span>📒</span> RoomShare Ledger Pro<small class="desc">Track shared daily expenses room-wise.</small></a>
   </div>
 
   <!-- 💼 Business Tools -->
   <div class="section-title">Business Tools</div>
   <div class="tools-grid">
-    <a class="tool-card" href="tools/business-dashboard.html" title="Manage stock, sales, and wanting list with type-based grouping.">
-      <span>📦</span> Business Dashboard
-      <small class="desc">Add item types, manage stock, sales & wanting list — with PDF export & dark mode.</small>
-    </a>
-    <a class="tool-card" href="tools/invoice-pro.html">
-      <span>🧾</span> Invoice Pro (Smart Billing)
-      <small class="desc">Create, print & share invoices instantly.</small>
-    </a>
-    <a class="tool-card" href="tools/gst-bill.html">
-      <span>📄</span> GST Reverse Calculator
-      <small class="desc">Find GST components from total amount.</small>
-    </a>
+    <a class="tool-card" href="tools/business-dashboard.html"><span>📦</span> Business Dashboard<small class="desc">Add item types, manage stock, sales & wanting list with PDF export.</small></a>
+    <a class="tool-card" href="tools/invoice-pro.html"><span>🧾</span> Invoice Pro (Smart Billing)<small class="desc">Create, print & share invoices instantly.</small></a>
+    <a class="tool-card" href="tools/gst-bill.html"><span>📄</span> GST Reverse Calculator<small class="desc">Find GST components from total amount.</small></a>
   </div>
 
   <!-- 📘 Guides -->
   <div class="section-title">Guides & Help</div>
   <div class="tools-grid">
-    <a class="tool-card" href="about-rent-split.html"><span>📘</span> Split Rent Fairly</a>
-    <a class="tool-card" href="about-water-bill-split.html"><span>📘</span> Split Water Bill Fairly</a>
-    <a class="tool-card" href="about-grocery-split.html"><span>📘</span> Split Grocery Fairly</a>
+    <a class="tool-card" href="#" onclick="openHelp()"><span>📘</span> Open Help Center</a>
   </div>
 
   <footer>© 2025 KharchaSaathi • Built by Abid Ali</footer>
+
+  <!-- Popup -->
+  <div id="helpPopup">
+    <div class="help-box">
+      <button class="close-btn" onclick="closeHelp()">✖ Close</button>
+      <h2>📘 Guides & Help — KharchaSaathi</h2>
+      <p>Welcome to <b>KharchaSaathi Smart Tools Hub</b>.</p>
+      <ul>
+        <li><b>Dark Mode:</b> Click 🌙 / ☀️ button to toggle theme.</li>
+        <li><b>Business Dashboard:</b> Manage stock, sales, and wanting list.</li>
+        <li><b>RoomShare Ledger:</b> Track shared daily expenses easily.</li>
+        <li><b>Rent, Water, Grocery Split:</b> Split household bills fairly.</li>
+        <li><b>Invoice Pro:</b> Create and print bills with GST instantly.</li>
+        <li><b>Offline Save:</b> All your data stays in browser storage.</li>
+      </ul>
+      <p><b>Tip:</b> Use “Backup” option in dashboards to export all data safely.</p>
+    </div>
+  </div>
 
   <script>
     (function(){
@@ -241,16 +263,17 @@
       if(t === 'dark'){
         document.body.classList.add('dark');
         document.querySelector('.theme-toggle').textContent = '☀️';
-        document.body.dataset.theme = 'dark';
       }
     })();
 
     function toggleTheme(){
-      const isDark = document.body.classList.toggle('dark');
-      localStorage.setItem('ks-theme', isDark ? 'dark' : 'light');
-      document.querySelector('.theme-toggle').textContent = isDark ? '☀️' : '🌙';
-      document.body.dataset.theme = isDark ? 'dark' : 'light';
+      const dark = document.body.classList.toggle('dark');
+      localStorage.setItem('ks-theme', dark ? 'dark' : 'light');
+      document.querySelector('.theme-toggle').textContent = dark ? '☀️' : '🌙';
     }
+
+    function openHelp(){ document.getElementById('helpPopup').style.display='flex'; }
+    function closeHelp(){ document.getElementById('helpPopup').style.display='none'; }
   </script>
 </body>
 </html>
