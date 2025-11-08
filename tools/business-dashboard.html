@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>📦 KharchaSaathi — Business Dashboard v6.2.7</title>
+<title>📦 KharchaSaathi — Business Dashboard v6.2.8</title>
 <meta name="theme-color" content="#ff7a00">
 <style>
 :root{
@@ -47,7 +47,6 @@ body.dark td{border:1px solid var(--dark-border);}
 .low{color:#ffbb33;font-weight:700;}
 .out{color:#ff5555;font-weight:700;}
 .ok{color:#4eff90;font-weight:700;}
-.restocked{background:#d4f7d4!important;color:#090!important;}
 .footer-btns{text-align:center;margin-top:20px;}
 .footer-btns a{background:var(--orange);color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;margin:6px;display:inline-block;}
 .footer-btns a:hover{background:var(--orange-dark);}
@@ -65,14 +64,12 @@ input, select{
 body.dark input,body.dark select{
   background:#222;color:#fff;border:1px solid var(--dark-border);
 }
-input::placeholder{color:#888;}
-body.dark input::placeholder{color:#aaa;}
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <h1>📦 KharchaSaathi v6.2.7</h1>
+  <h1>📦 KharchaSaathi v6.2.8</h1>
   <button class="theme-btn" id="themeBtn">🌙</button>
 </div>
 
@@ -155,83 +152,18 @@ body.dark input::placeholder{color:#aaa;}
   <a href="../index.html">🏠 Back</a>
 </div>
 
-<!-- 📘 Full Help & Guide -->
+<!-- 📘 Help -->
 <div id="helpModal" class="help-modal">
   <div class="help-content">
-    <h2>📘 KharchaSaathi — Complete User Guide</h2>
-    <hr>
-    <h3>🗂 1. Item Types</h3>
+    <h2>📘 KharchaSaathi — User Guide</h2>
     <ul>
-      <li>👉 Create product categories (Mobiles, TVs, Accessories, etc.)</li>
-      <li>✅ These appear in dropdowns across Stock & Wanting.</li>
-      <li>🧹 Clear All removes all item types.</li>
+      <li>🗂 Create Types → 📦 Add Stock → 💰 Sell → 🛒 Auto Wanting → ✅ Restock.</li>
+      <li>💰 “Sale” = Cash, 📒 “Credit” = Khata.</li>
+      <li>⚙️ Set Low Stock Limit → get automatic alerts.</li>
+      <li>🌙 Dark mode auto-saves your preference.</li>
+      <li>💾 Works fully offline — data stored locally.</li>
     </ul>
-
-    <h3>📦 2. Stock Management</h3>
-    <ul>
-      <li>➕ Add product details: Date, Type, Name & Quantity.</li>
-      <li>📋 Every product updates quantity automatically if re-added.</li>
-      <li>⚙️ Set Low Stock Limit — alerts when remaining ≤ limit.</li>
-      <li>📊 Columns: Total Qty | Sold | Remaining | Alert | Limit.</li>
-    </ul>
-
-    <h3>💰 3. Selling (Cash & Credit)</h3>
-    <ul>
-      <li>💰 “Sale” → Cash Transaction</li>
-      <li>📒 “Credit” → Khata Sale (recorded separately)</li>
-      <li>📅 You’ll be asked for Quantity & Price per sale.</li>
-      <li>📈 Sales auto-updates Stock and adds entry to Ledger.</li>
-      <li>🧹 “Clear All” resets full sales record.</li>
-    </ul>
-
-    <h3>🔔 4. Inventory Alerts</h3>
-    <ul>
-      <li>⚠️ When stock ≤ limit → “LOW” alert appears.</li>
-      <li>❌ When stock = 0 → product auto-moves to “Wanting List”.</li>
-    </ul>
-
-    <h3>🛒 5. Wanting List</h3>
-    <ul>
-      <li>📝 Auto-adds items that go out of stock.</li>
-      <li>✅ Restock → adds back to Stock with new quantity.</li>
-      <li>🗑 Delete → remove item manually.</li>
-      <li>🖨️ Print → generate supplier restock list.</li>
-    </ul>
-
-    <h3>📈 6. Sales Ledger</h3>
-    <ul>
-      <li>📊 View all daily Cash & Credit sales.</li>
-      <li>💵 “Total” shows combined revenue of the day.</li>
-      <li>🧹 Use Clear to reset after monthly closing.</li>
-    </ul>
-
-    <h3>🌙 7. Dark / Light Mode</h3>
-    <ul>
-      <li>🌙 Toggle top-right icon to switch theme instantly.</li>
-      <li>💾 Theme preference auto-saves in local storage.</li>
-    </ul>
-
-    <h3>💾 8. Data & Backup</h3>
-    <ul>
-      <li>🗂 All data stored locally in browser (offline ready).</li>
-      <li>⚙️ “Clear” options wipe section data only.</li>
-      <li>📤 Backup & Export coming soon (v6.3 feature).</li>
-    </ul>
-
-    <h3>🚀 9. Summary Flow</h3>
-    <ol>
-      <li>🗂 Add Product Type →</li>
-      <li>📦 Add Stock →</li>
-      <li>💰 Sell (Cash/Credit) →</li>
-      <li>⚠️ Auto Alerts trigger →</li>
-      <li>🛒 Out-of-stock goes to Wanting →</li>
-      <li>✅ Restock adds it back.</li>
-    </ol>
-
-    <hr>
-    <div style="text-align:right">
-      <button onclick="toggleHelp()">Close Guide</button>
-    </div>
+    <button onclick="toggleHelp()">Close</button>
   </div>
 </div>
 
@@ -270,7 +202,7 @@ function getLimit(){const v=parseInt(localStorage.getItem(K_LIMIT));return isNaN
 /* STOCK */
 function addStock(){
 const date=document.getElementById('pdate').value,type=document.getElementById('ptype').value,name=document.getElementById('pname').value.trim(),qty=parseInt(document.getElementById('pqty').value);
-if(!date||!type||!name||!qty)return alert("Fill all");
+if(!date||!type||!name||!qty)return alert("Fill all fields");
 const ex=stock.find(s=>s.type===type&&s.name.toLowerCase()===name.toLowerCase());
 if(ex){ex.qty+=qty;ex.date=date;}else{stock.push({date,type,name,qty,sold:0});}
 saveAll();renderStock();
@@ -292,8 +224,8 @@ return `<tr>
 <td>${s.qty}</td><td>${sold}</td><td>${rem}</td>
 <td class="${cls}">${status}</td><td>${limit}</td>
 <td>
-  <button onclick="sellItem(${i},'Paid')" class="sell-btn">💰 Sale</button>
-  <button onclick="sellItem(${i},'Credit')" class="credit-btn">📒 Credit</button>
+  <button onclick="sellItem(${i},'Paid')">💰 Sale</button>
+  <button onclick="sellItem(${i},'Credit')">📒 Credit</button>
 </td></tr>`;
 }).join('');
 }
@@ -314,7 +246,7 @@ saveAll();renderStock();renderSales();checkWantAuto(s);
 function checkWantAuto(s){
 const remain=s.qty-(s.sold||0);
 if(remain<=0&&!want.find(w=>w.type===s.type&&w.item.toLowerCase()===s.name.toLowerCase())){
-want.push({date:new Date().toISOString().split('T')[0],type:s.type,item:s.name,restocked:false});
+want.push({date:new Date().toISOString().split('T')[0],type:s.type,item:s.name});
 saveAll();renderWant();
 }
 }
@@ -330,5 +262,47 @@ function clearSales(){if(confirm("Clear sales?")){sales=[];saveAll();renderSales
 /* WANTING */
 function addWant(){
 const date=document.getElementById('wdate').value,type=document.getElementById('wtype').value,item=document.getElementById('witem').value.trim();
-if(!date||!type||!item)return;
-if(want
+if(!date||!type||!item)return alert("Fill all");
+if(want.find(w=>w.type===type&&w.item.toLowerCase()===item.toLowerCase()))return alert("Already exists");
+want.push({date,type,item});saveAll();renderWant();
+}
+function renderWant(){
+const tb=document.querySelector('#wantTable tbody');
+tb.innerHTML=want.map((w,i)=>`<tr><td>${w.date}</td><td>${w.type}</td><td>${w.item}</td><td><button onclick="restock(${i})">✅ Restock</button> <button onclick="delWant(${i})">🗑 Delete</button></td></tr>`).join('');
+}
+function restock(i){
+const q=parseInt(prompt("Enter Restock Qty:"));if(!q||q<=0)return alert("Invalid qty");
+const w=want[i];const date=new Date().toISOString().split('T')[0];
+const ex=stock.find(s=>s.type===w.type&&s.name.toLowerCase()===w.item.toLowerCase());
+if(ex){ex.qty+=q;}else{stock.push({date,type:w.type,name:w.item,qty:q,sold:0});}
+want.splice(i,1);saveAll();renderStock();renderWant();
+alert(`✅ ${q} of "${w.item}" added to Stock & removed from Wanting.`);
+}
+function delWant(i){want.splice(i,1);saveAll();renderWant();}
+function printWanting(){const w=window.open('','_blank');w.document.write('<h3>Wanting List</h3>'+document.getElementById('wantTable').outerHTML);w.print();}
+
+/* UI */
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById(t.dataset.tab).classList.add('active');
+}));
+
+document.getElementById('themeBtn').onclick=()=>{
+  document.body.classList.toggle('dark');
+  localStorage.setItem('theme',document.body.classList.contains('dark'));
+};
+if(localStorage.getItem('theme')==='true')document.body.classList.add('dark');
+
+function toggleHelp(){
+  const h=document.getElementById('helpModal');
+  h.style.display=h.style.display==='flex'?'none':'flex';
+}
+
+/* INIT */
+function renderAll(){renderTypes();updateDropdowns();renderStock();renderSales();renderWant();}
+renderAll();
+</script>
+</body>
+</html>
