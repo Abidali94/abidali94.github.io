@@ -22,6 +22,9 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
+  <!-- ✅ Favicon -->
+  <link rel="icon" type="image/png" href="favicon.ico">
+
   <!-- ✅ App Manifest (PWA) -->
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-512.png">
@@ -125,7 +128,7 @@
     </div>
   </div>
 
-  <!-- ✅ Firebase SDK Integration -->
+  <!-- ✅ Firebase SDK Integration (Updated) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
@@ -134,7 +137,7 @@
       apiKey: "AIzaSyC1TSwODhcD88-IizbteOGF-bbebAP6Poc",
       authDomain: "kharchasaathi-main.firebaseapp.com",
       projectId: "kharchasaathi-main",
-      storageBucket: "kharchasaathi-main.firebasestorage.app",
+      storageBucket: "kharchasaathi-main.appspot.com",
       messagingSenderId: "116390837159",
       appId: "1:116390837159:web:6e3900fa3b25a07d4c9482",
       measurementId: "G-1M4H9VRSBY"
@@ -143,20 +146,19 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // ✅ Save sample test data to Firestore
-    async function addSampleData() {
+    async function testFirebase() {
       try {
-        await addDoc(collection(db, "test_data"), {
+        await addDoc(collection(db, "connection_test"), {
+          connected: true,
           user: "Abid Ali",
-          type: "Firebase connected ✅",
-          timestamp: new Date().toLocaleString()
+          time: new Date().toLocaleString()
         });
         console.log("✅ Firebase connection successful!");
       } catch (error) {
         console.error("❌ Firebase error:", error);
       }
     }
-    addSampleData();
+    testFirebase();
   </script>
 
   <!-- ✅ Theme + Service Worker -->
