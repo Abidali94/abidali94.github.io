@@ -1,169 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🔐 KharchaSaathi — Login</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>🏠 KharchaSaathi — Smart Tools Hub</title>
 <meta name="theme-color" content="#ff7a00">
 <style>
 :root{
-  --orange:#ff7a00; --orange-dark:#cc6300;
-  --bg:#f5f6f7; --card:#fff; --text:#222;
-  --dark-bg:#111; --dark-card:#1b1b1b; --dark-text:#eee; --dark-border:#333;
+  --orange:#ff7a00;--orange-dark:#cc6300;
+  --bg:#f7f7f7;--card:#fff;--text:#222;
+  --dark-bg:#111;--dark-card:#1a1a1a;--dark-text:#f2f2f2;
 }
-*{box-sizing:border-box;transition:.3s;}
+*{box-sizing:border-box;transition:background .3s,color .3s;}
 body{
-  font-family:'Poppins',Arial,sans-serif;
-  margin:0; background:var(--bg); color:var(--text);
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  height:100vh;
+  margin:0;font-family:Poppins,Arial,sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;padding:20px;display:flex;flex-direction:column;align-items:center;
 }
 body.dark{background:var(--dark-bg);color:var(--dark-text);}
-.card{
-  background:var(--card);
-  padding:28px 25px; border-radius:14px;
-  box-shadow:0 6px 20px rgba(0,0,0,.1);
-  width:90%; max-width:400px; text-align:center;
+h1{color:var(--orange);text-align:center;margin-bottom:20px;}
+.theme-btn{
+  position:fixed;top:16px;right:16px;
+  background:var(--orange);color:#fff;border:none;
+  padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:600;
 }
-body.dark .card{background:var(--dark-card); border:1px solid var(--dark-border);}
-h1{color:var(--orange); margin-bottom:6px;}
-h3{margin-top:0;color:var(--text);}
-body.dark h3{color:var(--dark-text);}
-input{
-  width:100%; padding:10px; margin:8px 0;
-  border:1px solid #ccc; border-radius:6px; outline:none;
-  font-size:14px;
+.theme-btn:hover{background:var(--orange-dark);}
+.tools-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:16px;width:100%;max-width:950px;
 }
-body.dark input{background:#222;color:#fff;border:1px solid var(--dark-border);}
-button{
-  width:100%; padding:10px; margin-top:8px;
-  background:var(--orange); color:#fff; border:none;
-  border-radius:8px; cursor:pointer; font-weight:600;
+.tool-card{
+  background:var(--card);padding:18px;border-radius:14px;text-align:center;
+  text-decoration:none;color:inherit;box-shadow:0 6px 14px rgba(0,0,0,.08);
 }
-button:hover{background:var(--orange-dark);}
-.alt-links a{
-  display:block; margin-top:12px; color:var(--orange); text-decoration:none;
-}
-.theme-toggle{
-  position:fixed; top:14px; right:14px;
-  background:var(--orange); color:#fff; border:none;
-  padding:8px 10px; border-radius:8px; cursor:pointer;
-}
-.theme-toggle:hover{background:var(--orange-dark);}
+.tool-card:hover{background:var(--orange);color:#fff;transform:translateY(-3px);}
+.tool-card span{font-size:34px;display:block;margin-bottom:8px;}
+body.dark .tool-card{background:var(--dark-card);}
+.desc{display:block;font-size:13px;margin-top:4px;color:#666;}
+body.dark .desc{color:#aaa;}
+footer{margin-top:auto;text-align:center;font-size:13px;color:#777;padding:14px;}
 </style>
 </head>
 <body>
-<button class="theme-toggle" id="themeBtn">🌙</button>
 
-<div class="card">
-  <h1>📦 KharchaSaathi</h1>
-  <h3>Welcome Back</h3>
-  <input type="email" id="email" placeholder="Email Address" required>
-  <input type="password" id="password" placeholder="Password" required>
-  <button id="loginBtn">🔓 Login</button>
-  <button id="registerBtn">📝 Register</button>
-  <button id="googleBtn">🟢 Continue with Google</button>
-  <div class="alt-links">
-    <a href="#" id="offlineBtn">📴 Continue Offline</a>
-  </div>
+<button class="theme-btn" id="themeBtn">🌙</button>
+<h1>📦 KharchaSaathi — Smart Tools Hub</h1>
+
+<div class="tools-grid">
+  <a class="tool-card" href="tools/business-dashboard.html">
+    <span>📊</span> Business Dashboard
+    <small class="desc">Manage stock, sales, wanting list & reports (Offline Supported)</small>
+  </a>
+
+  <a class="tool-card" href="tools/invoice-pro.html">
+    <span>🧾</span> Invoice Generator
+    <small class="desc">Create professional GST invoices and PDF bills easily</small>
+  </a>
+
+  <a class="tool-card" href="tools/expense-tracker.html">
+    <span>💰</span> Expense Tracker
+    <small class="desc">Track your daily expenses with category insights</small>
+  </a>
+
+  <a class="tool-card" href="tools/rent-split.html">
+    <span>🏠</span> Rent Split
+    <small class="desc">Split rent & utilities smartly among roommates</small>
+  </a>
+
+  <a class="tool-card" href="tools/inventory-analyzer.html">
+    <span>📦</span> Inventory Analyzer
+    <small class="desc">Advanced tool for analyzing stock trends</small>
+  </a>
 </div>
 
-<script type="module">
-// 🌙 Theme Toggle
+<footer>© 2025 KharchaSaathi v6.2.8 | Made with 💛 for smart business owners</footer>
+
+<script>
 if(localStorage.getItem('theme')==='true') document.body.classList.add('dark');
 document.getElementById('themeBtn').onclick=()=>{
   document.body.classList.toggle('dark');
   localStorage.setItem('theme',document.body.classList.contains('dark'));
 };
-
-// 🔥 Firebase Auth Setup
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail, setPersistence, browserLocalPersistence } 
-from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyC1TSwODhcD88-IizbteOGF-bbebAP6Poc",
-  authDomain: "kharchasaathi-main.firebaseapp.com",
-  projectId: "kharchasaathi-main",
-  storageBucket: "kharchasaathi-main.firebasestorage.app",
-  messagingSenderId: "116390837159",
-  appId: "1:116390837159:web:6e3900fa3b25a07d4c9482",
-  measurementId: "G-1M4H9VRSBY"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
-
-// ✅ Login Function
-document.getElementById("loginBtn").addEventListener("click", async ()=>{
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  if(!email || !password) return alert("⚠️ Please enter email and password.");
-
-  try{
-    await signInWithEmailAndPassword(auth, email, password);
-    alert("✅ Login successful!");
-    window.location.href = "./tools/business-dashboard.html";
-  }catch(error){
-    alert("❌ Login failed: " + error.message);
-  }
-});
-
-// ✅ Register Function
-document.getElementById("registerBtn").addEventListener("click", async ()=>{
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  if(!email || !password) return alert("⚠️ Please enter email and password.");
-
-  try{
-    await createUserWithEmailAndPassword(auth, email, password);
-    alert("🎉 Account created successfully!");
-    window.location.href = "./tools/business-dashboard.html";
-  }catch(error){
-    alert("❌ Registration failed: " + error.message);
-  }
-});
-
-// ✅ Google Login Function
-document.getElementById("googleBtn").addEventListener("click", async ()=>{
-  try{
-    await signInWithPopup(auth, provider);
-    alert("✅ Google login success!");
-    window.location.href = "./tools/business-dashboard.html";
-  }catch(error){
-    alert("❌ Google login failed: " + error.message);
-  }
-});
-
-// 📴 Offline Mode
-document.getElementById("offlineBtn").addEventListener("click", ()=>{
-  alert("📴 Working in Offline Mode — Data stored locally.");
-  window.location.href = "./tools/business-dashboard.html";
-});
-
-// 🔄 Remember Session (Stay logged in)
-setPersistence(auth, browserLocalPersistence)
-  .then(() => console.log("✅ Session persistence enabled"))
-  .catch(err => console.warn("⚠️ Persistence error:", err.message));
-
-// 🔐 Forgot Password
-const forgotLink = document.createElement("a");
-forgotLink.textContent = "🔑 Forgot Password?";
-forgotLink.href = "#";
-forgotLink.onclick = async ()=>{
-  const email = prompt("Enter your registered email:");
-  if(!email) return;
-  try {
-    await sendPasswordResetEmail(auth, email);
-    alert("📩 Password reset link sent to your email!");
-  } catch(err) {
-    alert("❌ Error: " + err.message);
-  }
-};
-document.querySelector(".alt-links").appendChild(forgotLink);
-
-console.log("%cKharchaSaathi Index Page Loaded Successfully ✨","color:#ff7a00;font-weight:bold;");
 </script>
 </body>
 </html>
