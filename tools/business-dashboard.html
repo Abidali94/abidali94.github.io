@@ -170,87 +170,200 @@ body.dark th{background:var(--orange-dark)}
   </div>
 </div>
 
-
 <script>
 /* 🌙 Theme Toggle */
-if(localStorage.getItem('ks-theme')==='dark')document.body.classList.add('dark');
-document.getElementById('themeBtn').onclick=()=>{
+if (localStorage.getItem('ks-theme') === 'dark') {
+  document.body.classList.add('dark');
+}
+document.getElementById('themeBtn').onclick = () => {
   document.body.classList.toggle('dark');
-  localStorage.setItem('ks-theme',document.body.classList.contains('dark')?'dark':'light');
+  localStorage.setItem('ks-theme', document.body.classList.contains('dark') ? 'dark' : 'light');
 };
 
-/* Tabs */
-const tabs=document.querySelectorAll('.tab'),sections=document.querySelectorAll('.section');
-tabs.forEach(tab=>{
-  tab.addEventListener('click',()=>{
-    tabs.forEach(t=>t.classList.remove('active'));
-    sections.forEach(s=>s.classList.remove('active'));
+/* 🔄 Tabs Switching */
+const tabs = document.querySelectorAll('.tab');
+const sections = document.querySelectorAll('.section');
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    tabs.forEach(t => t.classList.remove('active'));
+    sections.forEach(s => s.classList.remove('active'));
     tab.classList.add('active');
-    document.getElementById(tab.dataset.tab)?.classList.add('active');
+    const target = document.getElementById(tab.dataset.tab);
+    if (target) target.classList.add('active');
   });
 });
 
-/* Help */
-function toggleHelp(){
-  const m=document.getElementById('helpModal');
-  m.style.display=m.style.display==='flex'?'none':'flex';
+/* 📘 Help Modal */
+function toggleHelp() {
+  const modal = document.getElementById('helpModal');
+  modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
 }
-document.getElementById('helpLink').onclick=e=>{e.preventDefault();toggleHelp();};
+document.getElementById('helpLink').onclick = e => {
+  e.preventDefault();
+  toggleHelp();
+};
 
 /* ===== TYPES + STOCK LOGIC ===== */
-const K_TYPES='item-types',K_STOCK='stock-data',K_LIMIT='default-limit';
-window.types=JSON.parse(localStorage.getItem(K_TYPES)||'["Mobiles","Accessories"]');
-window.stock=JSON.parse(localStorage.getItem(K_STOCK)||'[]');
-function saveAll(){localStorage.setItem(K_TYPES,JSON.stringify(types));localStorage.setItem(K_STOCK,JSON.stringify(stock));}
-function renderTypes(){typeList.innerHTML=types.map(t=>`<li>${t}</li>`).join('');}
-function updateDropdowns(){
-  ['ptype','filterType'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(!el)return;
-    const base=id==='filterType'?'<option value="all">All Types</option>':'<option value="">Select</option>';
-    el.innerHTML=base+types.map(t=>`<option value="${t}">${t}</option>`).join('');
+const K_TYPES = 'item-types';
+const K_STOCK = 'stock-data';
+const K_LIMIT = 'default-limit';
+
+window.types = JSON.parse(localStorage.getItem(K_TYPES) || '["Mobiles","Accessories"]');
+window.stock = JSON.parse(localStorage.getItem(K_STOCK) || '[]');
+
+/* 💾 Save All */
+function saveAll() {
+  localStorage.setItem(K_TYPES, JSON.stringify(types));
+  localStorage.setItem(K_STOCK, JSON.stringify(stock));
+}
+
+/* 🔠 Render Types List */
+function renderTypes() {
+  const list = document.getElementById('typeList');
+  if (!list) return;
+  list.innerHTML = types.map(t => `<li>${t}</li>`).join('');
+}
+
+/* ⬇️ Update Dropdowns (Type Filters & Add Product) */
+function updateDropdowns() {
+  ['ptype', 'filterType'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const base = id === 'filterType'
+      ? '<option value="all">All Types</option>'
+      : '<option value="">Select</option>';
+    el.innerHTML = base + types.map(t => `<option value="${t}">${t}</option>`).join('');
   });
 }
-function addType(){
-  const t=typeName.value.trim();
-  if(!t)return alert('Enter type');
-  if(types.includes(t))return alert('Exists');
-  types.push(t);saveAll();renderTypes();updateDropdowns();typeName.value='';
+
+/* ➕ Add New Type */
+function addType() {
+  const t = document.getElementById('typeName').value.trim();
+  if (!t) return alert('Enter a type name');
+  if (types.includes(t)) return alert('Type already exists');
+  types.push(t);
+  saveAll();
+  renderTypes();
+  updateDropdowns();
+  document.getElementById('typeName').value = '';
 }
-function clearTypes(){if(confirm('Clear all types?')){types=[];saveAll();renderTypes();updateDropdowns();}}
-function setGlobalLimit(){const v=parseInt(globalLimit.value);if(isNaN(v)||v<0)return alert('Invalid');localStorage.setItem(K_LIMIT,v);alert('Limit set '+v);}
-function getLimit(){const v=parseInt(localStorage.getItem(K_LIMIT));return isNaN(v)?0:v;}
-function addStock(){
-  const d=pdate.value,t=ptype.value,n=pname.value.trim(),q=parseInt(pqty.value),c=parseFloat(pcost.value);
-  if(!d||!t||!n||!q||!c)return alert('Fill all fields');
-  let ex=stock.find(s=>s.type===t&&s.name.toLowerCase()===n.toLowerCase());
-  if(ex){ex.qty+=q;ex.date=d;ex.cost=c;ex.history=ex.history||[];ex.history.push({date:d,qty:q,cost:c});}
-  else stock.push({date:d,type:t,name:n,qty:q,sold:0,cost:c,history:[{date:d,qty:q,cost:c}]});
-  saveAll();renderStock();pname.value='';pqty.value='';pcost.value='';
+
+/* ❌ Clear All Types */
+function clearTypes() {
+  if (confirm('Clear all types?')) {
+    types = [];
+    saveAll();
+    renderTypes();
+    updateDropdowns();
+  }
 }
-function renderStock(){
-  const f=filterType.value,tb=document.querySelector('#stockTable tbody');
-  tb.innerHTML=stock.filter(s=>f==='all'||s.type===f).map((s,i)=>{
-    const sold=s.sold||0,rem=s.qty-sold,lim=getLimit();
-    let cls='ok',msg='OK';if(rem<=0){cls='out';msg='OUT'}else if(rem<=lim){cls='low';msg='LOW'}
-    return `<tr><td>${s.date}</td><td>${s.type}</td><td>${s.name}</td><td>${s.qty}</td><td>${sold}</td><td>${rem}</td><td class="${cls}">${msg}</td><td>${lim}</td><td><button onclick="viewHistory(${i})">📜</button></td></tr>`;
-  }).join('')||'<tr><td colspan="9">No Data</td></tr>';
+
+/* ⚙️ Set Global Low Stock Limit */
+function setGlobalLimit() {
+  const v = parseInt(document.getElementById('globalLimit').value);
+  if (isNaN(v) || v < 0) return alert('Invalid number');
+  localStorage.setItem(K_LIMIT, v);
+  alert('Limit set: ' + v);
 }
-function viewHistory(i){
-  const s=stock[i];
-  if(!s.history)return alert('No history');
-  alert(`📜 ${s.name}:\n`+s.history.map(h=>`${h.date} — Qty:${h.qty} @₹${h.cost}`).join('\n'));
+
+/* 📏 Get Limit */
+function getLimit() {
+  const v = parseInt(localStorage.getItem(K_LIMIT));
+  return isNaN(v) ? 0 : v;
 }
-document.addEventListener('click',e=>{
-  if(e.target.id==='addTypeBtn')addType();
-  if(e.target.id==='clearTypesBtn')clearTypes();
-  if(e.target.id==='setLimitBtn')setGlobalLimit();
-  if(e.target.id==='clearStockBtn'){if(confirm('Clear all stock?')){stock=[];saveAll();renderStock();}}
-  if(e.target.id==='addStockBtn')addStock();
+
+/* ➕ Add Stock Item */
+function addStock() {
+  const d = document.getElementById('pdate').value;
+  const t = document.getElementById('ptype').value;
+  const n = document.getElementById('pname').value.trim();
+  const q = parseInt(document.getElementById('pqty').value);
+  const c = parseFloat(document.getElementById('pcost').value);
+
+  if (!d || !t || !n || !q || !c) return alert('Please fill all fields');
+
+  let ex = stock.find(s => s.type === t && s.name.toLowerCase() === n.toLowerCase());
+  if (ex) {
+    ex.qty += q;
+    ex.date = d;
+    ex.cost = c;
+    ex.history = ex.history || [];
+    ex.history.push({ date: d, qty: q, cost: c });
+  } else {
+    stock.push({
+      date: d, type: t, name: n, qty: q, sold: 0, cost: c,
+      history: [{ date: d, qty: q, cost: c }]
+    });
+  }
+  saveAll();
+  renderStock();
+  document.getElementById('pname').value = '';
+  document.getElementById('pqty').value = '';
+  document.getElementById('pcost').value = '';
+}
+
+/* 📋 Render Stock Table */
+function renderStock() {
+  const f = document.getElementById('filterType').value;
+  const tb = document.querySelector('#stockTable tbody');
+  if (!tb) return;
+  tb.innerHTML = stock
+    .filter(s => f === 'all' || s.type === f)
+    .map((s, i) => {
+      const sold = s.sold || 0;
+      const rem = s.qty - sold;
+      const lim = getLimit();
+      let cls = 'ok', msg = 'OK';
+      if (rem <= 0) { cls = 'out'; msg = 'OUT'; }
+      else if (rem <= lim) { cls = 'low'; msg = 'LOW'; }
+      return `
+        <tr>
+          <td>${s.date}</td>
+          <td>${s.type}</td>
+          <td>${s.name}</td>
+          <td>${s.qty}</td>
+          <td>${sold}</td>
+          <td>${rem}</td>
+          <td class="${cls}">${msg}</td>
+          <td>${lim}</td>
+          <td><button onclick="viewHistory(${i})">📜</button></td>
+        </tr>`;
+    })
+    .join('') || '<tr><td colspan="9">No Data</td></tr>';
+}
+
+/* 📜 View History */
+function viewHistory(i) {
+  const s = stock[i];
+  if (!s || !s.history) return alert('No history available');
+  const list = s.history.map(h => `${h.date} — Qty: ${h.qty} @₹${h.cost}`).join('\n');
+  alert(`📜 ${s.name} History:\n${list}`);
+}
+
+/* 🖱️ Event Delegation */
+document.addEventListener('click', e => {
+  switch (e.target.id) {
+    case 'addTypeBtn': addType(); break;
+    case 'clearTypesBtn': clearTypes(); break;
+    case 'setLimitBtn': setGlobalLimit(); break;
+    case 'clearStockBtn':
+      if (confirm('Clear all stock?')) { stock = []; saveAll(); renderStock(); }
+      break;
+    case 'addStockBtn': addStock(); break;
+  }
 });
-filterType?.addEventListener('change',renderStock);
-window.addEventListener('load',()=>{renderTypes();updateDropdowns();renderStock();});
+
+/* 🔁 Live Filter */
+document.getElementById('filterType')?.addEventListener('change', renderStock);
+
+/* 🚀 On Load */
+window.addEventListener('load', () => {
+  renderTypes();
+  updateDropdowns();
+  renderStock();
+});
 </script>
+
   <!-- ===== PART: Sales + Profit Module (STEP 1) ===== -->
 <section id="sales" class="section">
   <h3>💰 Sales & Profit</h3>
