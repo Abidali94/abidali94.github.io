@@ -282,6 +282,7 @@ function toggleHelp(){const h=document.getElementById('helpModal');
 h.style.display=h.style.display==='flex'?'none':'flex';}
 function renderAll(){renderTypes();updateDropdowns();renderStock();renderSales();renderWant();}
 /* ☁️ Firebase Cloud Sync (Optional Add-on) */
+<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
