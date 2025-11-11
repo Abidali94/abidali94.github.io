@@ -57,7 +57,31 @@ body.dark th{background:var(--orange-dark)}
   <div class="tab" data-tab="sales">📈 Sales</div>
   <div class="tab" data-tab="wanting">🛒 Wanting</div>
 </div>
+  
+</div> <!-- end of tabs div -->
 
+<!-- ===== PART 6 : SMART SUMMARY PANEL ===== -->
+<section id="dashboard" class="section active">
+  <h3>📊 Business Overview</h3>
+  <div id="summaryCards" style="display:flex;flex-wrap:wrap;gap:10px;margin:12px 0;">
+    <div class="card" style="flex:1;min-width:140px;background:#fff3e0;border-radius:12px;padding:12px;text-align:center;">
+      <div>💰</div>
+      <b id="todaySales">₹0</b><br><small>Today's Sales</small>
+    </div>
+    <div class="card" style="flex:1;min-width:140px;background:#e3f2fd;border-radius:12px;padding:12px;text-align:center;">
+      <div>💳</div>
+      <b id="todayCredit">₹0</b><br><small>Today's Credit</small>
+    </div>
+    <div class="card" style="flex:1;min-width:140px;background:#e8f5e9;border-radius:12px;padding:12px;text-align:center;">
+      <div>📦</div>
+      <b id="stockRemain">0%</b><br><small>Stock Remaining</small>
+    </div>
+    <div class="card" style="flex:1;min-width:140px;background:#fffde7;border-radius:12px;padding:12px;text-align:center;">
+      <div>📈</div>
+      <b id="todayProfit">₹0</b><br><small>Today's Profit</small>
+    </div>
+  </div>
+</section>
 <!-- Sections -->
 <section id="types" class="section active">
   <h3>🗂 Manage Item Types</h3>
@@ -609,5 +633,6 @@ window.addEventListener('load', () => {
   setTimeout(patchStockActions, 800);
 });
 </script>
+  
 </body>
 </html>
