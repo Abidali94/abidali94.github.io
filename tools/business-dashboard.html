@@ -62,8 +62,8 @@ body.dark .section {
 }
 
 table {
-  width:100%; border-collapse:collapse;
-  margin-top:12px;
+  width:100%; border-collapse:separate !important;
+  border-spacing:0; margin-top:12px;
 }
 th,td {
   padding:8px; border:1px solid #ddd;
@@ -128,7 +128,29 @@ body.dark input, body.dark select {
   <div class="tab" data-tab="sales">📈 Sales</div>
   <div class="tab" data-tab="wanting">🛒 Wanting</div>
 </div>
-<!-- ✅ PART 2/4: TYPES + STOCK (Final, Error-Free) -->
+
+<script>
+// Theme Toggle
+if(localStorage.getItem('ks-theme')==='dark') document.body.classList.add('dark');
+document.getElementById('themeBtn').onclick=()=>{
+  document.body.classList.toggle('dark');
+  localStorage.setItem('ks-theme',document.body.classList.contains('dark')?'dark':'light');
+};
+
+// Tabs Handling
+const tabs=document.querySelectorAll('.tab');
+const sections=document.querySelectorAll('.section');
+tabs.forEach(tab=>{
+  tab.onclick=()=>{
+    tabs.forEach(t=>t.classList.remove('active'));
+    sections.forEach(s=>s.classList.remove('active'));
+    tab.classList.add('active');
+    const section=document.getElementById(tab.dataset.tab);
+    if(section) section.classList.add('active');
+  };
+});
+</script>
+<!-- PART 2/4: TYPES + STOCK -->
 <section id="types" class="section active">
   <h3>🗂 Manage Item Types</h3>
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
@@ -175,63 +197,54 @@ body.dark input, body.dark select {
 </section>
 
 <script>
-/* ---------- GLOBAL KEYS ---------- */
-const K_TYPES = 'item-types';
-const K_STOCK = 'stock-data';
-const K_LIMIT = 'default-limit';
+const K_TYPES='item-types',K_STOCK='stock-data',K_LIMIT='default-limit';
+window.types=JSON.parse(localStorage.getItem(K_TYPES)||'[]');
+window.stock=JSON.parse(localStorage.getItem(K_STOCK)||'[]');
+window.sales=JSON.parse(localStorage.getItem('sales-data')||'[]');
+window.want=JSON.parse(localStorage.getItem('wanting-data')||'[]');
 
-window.types = JSON.parse(localStorage.getItem(K_TYPES) || '[]');
-window.stock = JSON.parse(localStorage.getItem(K_STOCK) || '[]');
-window.sales = JSON.parse(localStorage.getItem('sales-data') || '[]');
-window.want  = JSON.parse(localStorage.getItem('wanting-data') || '[]');
-
-/* ---------- SAVE ALL ---------- */
-function saveAllLocal() {
-  localStorage.setItem(K_TYPES, JSON.stringify(types));
-  localStorage.setItem(K_STOCK, JSON.stringify(stock));
-  localStorage.setItem('sales-data', JSON.stringify(sales));
-  localStorage.setItem('wanting-data', JSON.stringify(want));
-  try { if (typeof syncToCloud === 'function') syncToCloud(); } catch(e){}
+function saveAllLocal(){
+  localStorage.setItem(K_TYPES,JSON.stringify(types));
+  localStorage.setItem(K_STOCK,JSON.stringify(stock));
+  localStorage.setItem('sales-data',JSON.stringify(sales));
+  localStorage.setItem('wanting-data',JSON.stringify(want));
+  try{if(typeof syncToCloud==='function')syncToCloud();}catch(e){}
 }
 
-/* ---------- TYPES ---------- */
-function renderTypes() {
-  const el = document.getElementById('typeList');
-  el.innerHTML = types.length
-    ? types.map(t=>`<li>${t}</li>`).join('')
-    : '<li>No types yet</li>';
+function renderTypes(){
+  const el=document.getElementById('typeList');
+  el.innerHTML=types.length?types.map(t=>`<li>${t}</li>`).join(''):'<li>No types yet</li>';
 }
 
-function updateDropdowns() {
+function updateDropdowns(){
   ['ptype','wtype','filterType'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(!el) return;
-    const extra = id==='filterType'
-      ? '<option value="all">All Types</option>'
-      : '<option value="">Select</option>';
-    el.innerHTML = extra + types.map(t=>`<option value="${t}">${t}</option>`).join('');
+    const el=document.getElementById(id);
+    if(!el)return;
+    const extra=id==='filterType'
+      ?'<option value="all">All Types</option>'
+      :'<option value="">Select</option>';
+    el.innerHTML=extra+types.map(t=>`<option value="${t}">${t}</option>`).join('');
   });
 }
 
 function addType(){
   const inp=document.getElementById('typeName');
   const t=inp.value.trim();
-  if(!t) return alert('Enter a type name');
-  if(types.includes(t)) return alert('Already exists');
+  if(!t)return alert('Enter a type name');
+  if(types.includes(t))return alert('Already exists');
   types.push(t);
-  saveAllLocal(); renderTypes(); updateDropdowns();
+  saveAllLocal();renderTypes();updateDropdowns();
   inp.value='';
 }
 
 function clearTypes(){
-  if(!confirm('Clear all types?')) return;
-  types=[]; saveAllLocal(); renderTypes(); updateDropdowns();
+  if(!confirm('Clear all types?'))return;
+  types=[];saveAllLocal();renderTypes();updateDropdowns();
 }
 
-/* ---------- STOCK ---------- */
 function setGlobalLimit(){
   const v=parseInt(document.getElementById('globalLimit').value);
-  if(isNaN(v)||v<0) return alert('Invalid limit');
+  if(isNaN(v)||v<0)return alert('Invalid limit');
   localStorage.setItem(K_LIMIT,v);
   alert('Limit set '+v);
 }
@@ -246,18 +259,17 @@ function addStock(){
   const type=document.getElementById('ptype').value;
   const name=document.getElementById('pname').value.trim();
   const qty=parseInt(document.getElementById('pqty').value);
-  if(!date||!type||!name||!qty) return alert('Fill all fields');
-  const ex=stock.find(s=>s.type===type && s.name.toLowerCase()===name.toLowerCase());
-  if(ex){ ex.qty+=qty; ex.date=date; }
-  else{ stock.push({date,type,name,qty,sold:0}); }
-  saveAllLocal(); renderStock();
+  if(!date||!type||!name||!qty)return alert('Fill all fields');
+  const ex=stock.find(s=>s.type===type&&s.name.toLowerCase()===name.toLowerCase());
+  if(ex){ex.qty+=qty;ex.date=date;}else{stock.push({date,type,name,qty,sold:0});}
+  saveAllLocal();renderStock();
   document.getElementById('pname').value='';
   document.getElementById('pqty').value='';
 }
 
 function clearStock(){
-  if(!confirm('Clear all stock?')) return;
-  stock=[]; saveAllLocal(); renderStock();
+  if(!confirm('Clear all stock?'))return;
+  stock=[];saveAllLocal();renderStock();
 }
 
 function renderStock(){
@@ -266,7 +278,7 @@ function renderStock(){
   tb.innerHTML=stock
     .filter(s=>filter==='all'||s.type===filter)
     .map((s,i)=>{
-      const sold=s.sold||0, rem=s.qty-sold, limit=getLimit();
+      const sold=s.sold||0,rem=s.qty-sold,limit=getLimit();
       let cls='ok',status='OK';
       if(rem<=0){cls='out';status='OUT';}
       else if(rem<=limit){cls='low';status='LOW';}
@@ -279,29 +291,37 @@ function renderStock(){
           <button onclick="sellItem(${i},'Credit')">📒 Credit</button>
         </td>
       </tr>`;
-    }).join('');
+    }).join('')||'<tr><td colspan="9">No Data Yet</td></tr>';
 }
 
-/* ---------- INIT ---------- */
+document.addEventListener('click',e=>{
+  if(e.target.id==='addTypeBtn')addType();
+  if(e.target.id==='clearTypesBtn')clearTypes();
+  if(e.target.id==='setLimitBtn')setGlobalLimit();
+  if(e.target.id==='clearStockBtn')clearStock();
+  if(e.target.id==='addStockBtn')addStock();
+});
+document.getElementById('filterType')?.addEventListener('change',renderStock);
+
 function initPart2(){
-  renderTypes(); updateDropdowns(); renderStock();
+  renderTypes();updateDropdowns();renderStock();
   const ft=document.getElementById('filterType');
-  if(ft && !ft.value) ft.value='all';
+  if(ft&&!ft.value)ft.value='all';
 }
 window.addEventListener('load',initPart2);
 </script>
-<!-- ===== PART 3/4: SALES UI + JS (Sale date, sell, credit settle) ===== -->
+<!-- PART 3/4: SALES + CREDIT MANAGEMENT -->
 <section id="sales" class="section">
   <h3>💰 Sales Ledger</h3>
 
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
-    <label style="white-space:nowrap;">Sale Date:</label>
+    <label>Sale Date:</label>
     <input type="date" id="saleDate" style="min-width:150px;">
     <button type="button" id="setSaleDateBtn" class="small-btn">Set Date</button>
     <button type="button" id="clearSalesBtn" class="small-btn">🧹 Clear All</button>
   </div>
 
-  <table id="salesTable" aria-label="Sales table">
+  <table id="salesTable">
     <thead>
       <tr>
         <th>Date</th><th>Type</th><th>Product</th><th>Qty</th>
@@ -316,131 +336,84 @@ window.addEventListener('load',initPart2);
 </section>
 
 <script>
-/* -------- PART 3 JS: Sales & Credit Settle -------- */
+let currentSaleDate=new Date().toISOString().split('T')[0];
+window.sales=window.sales||JSON.parse(localStorage.getItem('sales-data')||'[]');
+window.stock=window.stock||JSON.parse(localStorage.getItem('stock-data')||'[]');
+window.types=window.types||JSON.parse(localStorage.getItem('item-types')||'[]');
+window.want=window.want||JSON.parse(localStorage.getItem('wanting-data')||'[]');
 
-/* currentSaleDate used by sellItem; default = today */
-let currentSaleDate = new Date().toISOString().split('T')[0];
-const saleDateInput = document.getElementById && document.getElementById('saleDate');
-if (saleDateInput) saleDateInput.value = currentSaleDate;
-
-/* Helper: ensure we have global arrays (Part2 provides them, but be safe) */
-window.sales = window.sales || JSON.parse(localStorage.getItem('sales-data') || '[]');
-window.stock  = window.stock  || JSON.parse(localStorage.getItem('stock-data') || '[]');
-window.types  = window.types  || JSON.parse(localStorage.getItem('item-types') || '[]');
-window.want   = window.want   || JSON.parse(localStorage.getItem('wanting-data') || '[]');
-
-/* Set sale date from UI */
 function setSaleDate(){
-  const d = document.getElementById('saleDate').value;
-  if(!d) return alert('Pick a date');
-  currentSaleDate = d;
-  alert('✅ Sale date set to ' + d);
+  const d=document.getElementById('saleDate').value;
+  if(!d)return alert('Pick a date');
+  currentSaleDate=d;
+  alert('✅ Sale date set to '+d);
 }
 
-/* sellItem is called from stock table buttons.
-   It creates a sales entry (Paid/Credit) and updates stock.sold.
-   Uses currentSaleDate to stamp the sale.
-*/
-function sellItem(index, status){
-  const s = stock[index];
-  if(!s) return alert('Item not found');
-  const remain = s.qty - (s.sold || 0);
-  if(remain <= 0) return alert('No stock left!');
-  const qtyStr = prompt(`Enter qty (max ${remain})`);
-  const qty = parseInt(qtyStr, 10);
-  if(!qty || qty <= 0 || qty > remain) return alert('Invalid qty');
-  const priceStr = prompt('Enter price ₹:');
-  const price = parseFloat(priceStr);
-  if(!price || price <= 0) return alert('Invalid price');
-
-  const date = currentSaleDate || new Date().toISOString().split('T')[0];
-  s.sold = (s.sold || 0) + qty;
-  const amount = qty * price;
-
-  sales.push({ date, type: s.type, product: s.name, qty, price, amount, status });
-  // persist and refresh
-  if (typeof saveAllLocal === 'function') saveAllLocal();
-  renderStock();
-  renderSales();
-  // auto add to wanting if needed (same logic used elsewhere)
-  if (typeof checkWantAuto === 'function') checkWantAuto(s);
+function sellItem(index,status){
+  const s=stock[index];
+  if(!s)return alert('Item not found');
+  const remain=s.qty-(s.sold||0);
+  if(remain<=0)return alert('No stock left!');
+  const qty=parseInt(prompt(`Enter qty (max ${remain})`));
+  if(!qty||qty<=0||qty>remain)return;
+  const price=parseFloat(prompt('Enter price ₹:'));
+  if(!price||price<=0)return;
+  const date=currentSaleDate||new Date().toISOString().split('T')[0];
+  s.sold=(s.sold||0)+qty;
+  const amount=qty*price;
+  sales.push({date,type:s.type,product:s.name,qty,price,amount,status});
+  if(typeof saveAllLocal==='function')saveAllLocal();
+  renderStock();renderSales();
+  if(typeof checkWantAuto==='function')checkWantAuto(s);
 }
 
-/* Settle credit sale: return qty back to stock and remove sale entry */
-function settleCredit(saleIndex){
-  const sale = sales[saleIndex];
-  if(!sale) return alert('Sale not found');
-  if(sale.status !== 'Credit') return alert('This sale is not Credit');
-
-  if(!confirm(`Settle credit for ${sale.product} — ₹${sale.amount} ?`)) return;
-
-  // Find stock item by type & name (case-insensitively)
-  const ex = stock.find(x => x.type === sale.type && x.name.toLowerCase() === sale.product.toLowerCase());
-  if(ex){
-    // return qty to stock and reduce sold
-    ex.qty = (ex.qty || 0) + sale.qty;
-    ex.sold = Math.max(0, (ex.sold || 0) - sale.qty);
-  } else {
-    // create a new stock entry with today's date
-    stock.push({ date: new Date().toISOString().split('T')[0], type: sale.type, name: sale.product, qty: sale.qty, sold: 0 });
-  }
-
-  // remove sale
-  sales.splice(saleIndex, 1);
-
-  if (typeof saveAllLocal === 'function') saveAllLocal();
-  renderSales();
-  renderStock();
+function settleCredit(i){
+  const sale=sales[i];
+  if(!sale)return alert('Sale not found');
+  if(sale.status!=='Credit')return alert('Not a credit sale!');
+  if(!confirm(`Settle credit for ${sale.product} — ₹${sale.amount}?`))return;
+  const ex=stock.find(x=>x.type===sale.type&&x.name.toLowerCase()===sale.product.toLowerCase());
+  if(ex){ex.qty=(ex.qty||0)+sale.qty;ex.sold=Math.max(0,(ex.sold||0)-sale.qty);}
+  else{stock.push({date:new Date().toISOString().split('T')[0],type:sale.type,name:sale.product,qty:sale.qty,sold:0});}
+  sales.splice(i,1);
+  if(typeof saveAllLocal==='function')saveAllLocal();
+  renderSales();renderStock();
   alert('✅ Credit settled and stock updated');
 }
 
-/* Render sales table */
 function renderSales(){
-  const tb = document.querySelector('#salesTable tbody');
-  if(!tb) return;
-  let total = 0;
-  tb.innerHTML = sales.map((s, i) => {
-    total += (s.amount || 0);
-    const settleBtn = s.status === 'Credit' ? ` <button type="button" onclick="settleCredit(${i})">✅ Settle</button>` : '';
+  const tb=document.querySelector('#salesTable tbody');
+  if(!tb)return;
+  let total=0;
+  tb.innerHTML=sales.map((s,i)=>{
+    total+=s.amount||0;
+    const btn=s.status==='Credit'?`<button onclick="settleCredit(${i})">✅ Settle</button>`:'';
     return `<tr>
-      <td>${escapeHtml ? escapeHtml(s.date) : s.date}</td>
-      <td>${escapeHtml ? escapeHtml(s.type) : s.type}</td>
-      <td>${escapeHtml ? escapeHtml(s.product) : s.product}</td>
-      <td>${s.qty}</td>
-      <td>${s.price}</td>
-      <td>${s.amount}</td>
-      <td>${s.status}${settleBtn}</td>
+      <td>${s.date}</td><td>${s.type}</td><td>${s.product}</td>
+      <td>${s.qty}</td><td>${s.price}</td><td>${s.amount}</td>
+      <td>${s.status} ${btn}</td>
     </tr>`;
-  }).join('');
-  const totalEl = document.getElementById('dayTotal');
-  if(totalEl) totalEl.textContent = total;
+  }).join('')||'<tr><td colspan="7">No Sales Yet</td></tr>';
+  document.getElementById('dayTotal').textContent=total;
 }
 
-/* Clear all sales */
 function clearSales(){
-  if(!confirm('Clear all sales?')) return;
-  sales = [];
-  if (typeof saveAllLocal === 'function') saveAllLocal();
-  renderSales();
+  if(!confirm('Clear all sales?'))return;
+  sales=[];if(typeof saveAllLocal==='function')saveAllLocal();renderSales();
 }
 
-/* Event bindings */
-document.addEventListener('click', function(e){
-  if(e.target && e.target.id === 'setSaleDateBtn') setSaleDate();
-  if(e.target && e.target.id === 'clearSalesBtn') clearSales();
+document.addEventListener('click',e=>{
+  if(e.target.id==='setSaleDateBtn')setSaleDate();
+  if(e.target.id==='clearSalesBtn')clearSales();
 });
 
-/* Initialize sales UI on load if standalone */
-window.addEventListener('load', function(){
-  // ensure sale date input shows currentSaleDate
-  const sd = document.getElementById('saleDate');
-  if(sd && !sd.value) sd.value = currentSaleDate;
-  // initial render
-  if(typeof renderSales === 'function') renderSales();
+window.addEventListener('load',()=>{
+  const sd=document.getElementById('saleDate');
+  if(sd&&!sd.value)sd.value=currentSaleDate;
+  renderSales();
 });
 </script>
-<!-- ===== PART 4/4: WANTING + HELP + FIREBASE CLOUD SYNC ===== -->
-
+<!-- PART 4/4: WANTING + HELP + FIREBASE CLOUD SYNC -->
 <section id="wanting" class="section">
   <h3>🛒 Wanting List</h3>
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
@@ -452,7 +425,9 @@ window.addEventListener('load', function(){
   </div>
 
   <table id="wantTable">
-    <thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Action</th></tr></thead>
+    <thead>
+      <tr><th>Date</th><th>Type</th><th>Item</th><th>Action</th></tr>
+    </thead>
     <tbody></tbody>
   </table>
 </section>
@@ -477,114 +452,111 @@ window.addEventListener('load', function(){
 </div>
 
 <script>
-/* ---------- WANTING LOGIC ---------- */
-window.want = window.want || JSON.parse(localStorage.getItem('wanting-data') || '[]');
+window.want=window.want||JSON.parse(localStorage.getItem('wanting-data')||'[]');
 
 function addWant(){
   const date=document.getElementById('wdate').value;
   const type=document.getElementById('wtype').value;
   const item=document.getElementById('witem').value.trim();
-  if(!date||!type||!item) return alert('Fill all fields');
-  if(want.find(w=>w.type===type && w.item.toLowerCase()===item.toLowerCase()))
+  if(!date||!type||!item)return alert('Fill all fields');
+  if(want.find(w=>w.type===type&&w.item.toLowerCase()===item.toLowerCase()))
     return alert('Already exists');
   want.push({date,type,item});
-  saveAllLocal();
-  renderWant();
+  saveAllLocal();renderWant();
   document.getElementById('witem').value='';
 }
 
 function renderWant(){
   const tb=document.querySelector('#wantTable tbody');
-  tb.innerHTML = want.map((w,i)=>`
+  tb.innerHTML=want.map((w,i)=>`
     <tr>
       <td>${w.date}</td><td>${w.type}</td><td>${w.item}</td>
       <td>
         <button onclick="restock(${i})">✅ Restock</button>
         <button onclick="delWant(${i})">🗑 Delete</button>
       </td>
-    </tr>`).join('');
+    </tr>`).join('')||'<tr><td colspan="4">No Items Yet</td></tr>';
 }
 
 function restock(i){
   const q=parseInt(prompt('Enter Restock Qty:'));
-  if(!q||q<=0) return alert('Invalid qty');
+  if(!q||q<=0)return alert('Invalid qty');
   const w=want[i];
   const date=new Date().toISOString().split('T')[0];
-  const ex=stock.find(s=>s.type===w.type && s.name.toLowerCase()===w.item.toLowerCase());
-  if(ex){ ex.qty+=q; }
-  else { stock.push({date,type:w.type,name:w.item,qty:q,sold:0}); }
+  const ex=stock.find(s=>s.type===w.type&&s.name.toLowerCase()===w.item.toLowerCase());
+  if(ex){ex.qty+=q;}else{stock.push({date,type:w.type,name:w.item,qty:q,sold:0});}
   want.splice(i,1);
-  saveAllLocal(); renderStock(); renderWant();
+  saveAllLocal();renderStock();renderWant();
   alert(`✅ ${q} of "${w.item}" added to Stock & removed from Wanting.`);
 }
 
 function delWant(i){
   want.splice(i,1);
-  saveAllLocal(); renderWant();
+  saveAllLocal();renderWant();
 }
 
 function printWanting(){
   const w=window.open('','_blank');
   w.document.write('<h3>🛒 Wanting List</h3>'+document.getElementById('wantTable').outerHTML);
-  w.document.close(); w.print();
+  w.document.close();w.print();
 }
 
 function toggleHelp(){
   const h=document.getElementById('helpModal');
-  h.style.display = h.style.display==='flex' ? 'none' : 'flex';
+  h.style.display=h.style.display==='flex'?'none':'flex';
 }
 
-/* Auto add wanting when stock = 0 */
 function checkWantAuto(s){
   const remain=s.qty-(s.sold||0);
-  if(remain<=0 && !want.find(w=>w.type===s.type && w.item.toLowerCase()===s.name.toLowerCase())){
+  if(remain<=0&&!want.find(w=>w.type===s.type&&w.item.toLowerCase()===s.name.toLowerCase())){
     want.push({date:new Date().toISOString().split('T')[0],type:s.type,item:s.name});
-    saveAllLocal(); renderWant();
+    saveAllLocal();renderWant();
   }
 }
 
-/* Bind buttons */
 document.addEventListener('click',e=>{
-  if(e.target && e.target.id==='addWantBtn') addWant();
-  if(e.target && e.target.id==='printWantBtn') printWanting();
+  if(e.target.id==='addWantBtn')addWant();
+  if(e.target.id==='printWantBtn')printWanting();
 });
 
-/* Init wanting */
 window.addEventListener('load',()=>renderWant());
 </script>
 
-<!-- ---------- FIREBASE CLOUD SYNC (Module) ---------- -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyC1TSwODhcD88-IizbteOGF-bbebAP6Poc",
-  authDomain: "kharchasaathi-main.firebaseapp.com",
-  projectId: "kharchasaathi-main",
-  storageBucket: "kharchasaathi-main.firebasestorage.app",
-  messagingSenderId: "116390837159",
-  appId: "1:116390837159:web:6e3900fa3b25a07d4c9482",
-  measurementId: "G-1M4H9VRSBY"
+const firebaseConfig={
+  apiKey:"AIzaSyC1TSwODhcD88-IizbteOGF-bbebAP6Poc",
+  authDomain:"kharchasaathi-main.firebaseapp.com",
+  projectId:"kharchasaathi-main",
+  storageBucket:"kharchasaathi-main.firebasestorage.app",
+  messagingSenderId:"116390837159",
+  appId:"1:116390837159:web:6e3900fa3b25a07d4c9482",
+  measurementId:"G-1M4H9VRSBY"
 };
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
 
 export async function syncToCloud(){
   try{
-    const uid = localStorage.getItem('ks-user') || 'guest';
+    const uid=localStorage.getItem('ks-user')||'guest';
     await setDoc(doc(db,"users",uid,"data","dashboard"),{
-      types, stock, sales, want,
-      lastSync: new Date().toLocaleString()
+      types,stock,sales,want,lastSync:new Date().toLocaleString()
     });
     console.log("✅ Cloud Sync Successful");
   }catch(err){
-    console.warn("⚠️ Cloud Sync Failed:", err.message || err);
+    console.warn("⚠️ Cloud Sync Failed:",err.message||err);
   }
 }
 
-/* After module load, ensure renderAll runs once */
-window.addEventListener('load',()=>{ if(typeof renderAll==='function') renderAll(); });
+window.addEventListener('load',()=>{
+  if(typeof renderTypes==='function')renderTypes();
+  if(typeof updateDropdowns==='function')updateDropdowns();
+  if(typeof renderStock==='function')renderStock();
+  if(typeof renderSales==='function')renderSales();
+  if(typeof renderWant==='function')renderWant();
+});
 </script>
 </body>
 </html>
