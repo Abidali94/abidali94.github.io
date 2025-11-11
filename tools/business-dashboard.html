@@ -331,30 +331,38 @@ if (localStorage.getItem('ks-theme') === 'dark') {
 }
 document.getElementById('themeBtn').onclick = () => {
   document.body.classList.toggle('dark');
-  localStorage.setItem('ks-theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+  localStorage.setItem(
+    'ks-theme',
+    document.body.classList.contains('dark') ? 'dark' : 'light'
+  );
 };
 
-/* 🔄 Tabs Switching */
+/* 🔄 Tabs Switching — Fixed Full Version */
 const tabs = document.querySelectorAll('.tab');
 const sections = document.querySelectorAll('.section');
-tabs.forEach(tab=>{
-  tab.addEventListener('click',()=>{
+
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
     // deactivate all
-    tabs.forEach(t=>t.classList.remove('active'));
-    sections.forEach(s=>s.classList.remove('active'));
+    tabs.forEach(t => t.classList.remove('active'));
+    sections.forEach(s => s.classList.remove('active'));
 
     // activate selected
     tab.classList.add('active');
-    const target=document.getElementById(tab.dataset.tab);
-    if(target) target.classList.add('active');
+    const target = document.getElementById(tab.dataset.tab);
+    if (target) target.classList.add('active');
 
-    // ✅ Refresh logic (important)
-    if(tab.dataset.tab==='types'){ 
-      renderTypes(); 
-      updateDropdowns(); 
+    // ✅ Refresh logic (auto update)
+    if (tab.dataset.tab === 'types') {
+      renderTypes();
+      updateDropdowns();
     }
-    if(tab.dataset.tab==='stock'){ 
-      renderStock(); 
+    if (tab.dataset.tab === 'stock') {
+      renderStock();
+    }
+    if (tab.dataset.tab === 'analytics') {
+      // If Smart Dashboard tab clicked
+      if (typeof renderAnalytics === 'function') renderAnalytics();
     }
   });
 });
@@ -395,10 +403,12 @@ function updateDropdowns() {
   ['ptype', 'filterType'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    const base = id === 'filterType'
-      ? '<option value="all">All Types</option>'
-      : '<option value="">Select</option>';
-    el.innerHTML = base + types.map(t => `<option value="${t}">${t}</option>`).join('');
+    const base =
+      id === 'filterType'
+        ? '<option value="all">All Types</option>'
+        : '<option value="">Select</option>';
+    el.innerHTML =
+      base + types.map(t => `<option value="${t}">${t}</option>`).join('');
   });
 }
 
@@ -448,7 +458,9 @@ function addStock() {
 
   if (!d || !t || !n || !q || !c) return alert('Please fill all fields');
 
-  let ex = stock.find(s => s.type === t && s.name.toLowerCase() === n.toLowerCase());
+  let ex = stock.find(
+    s => s.type === t && s.name.toLowerCase() === n.toLowerCase()
+  );
   if (ex) {
     ex.qty += q;
     ex.date = d;
@@ -457,7 +469,12 @@ function addStock() {
     ex.history.push({ date: d, qty: q, cost: c });
   } else {
     stock.push({
-      date: d, type: t, name: n, qty: q, sold: 0, cost: c,
+      date: d,
+      type: t,
+      name: n,
+      qty: q,
+      sold: 0,
+      cost: c,
       history: [{ date: d, qty: q, cost: c }]
     });
   }
@@ -473,16 +490,23 @@ function renderStock() {
   const f = document.getElementById('filterType').value;
   const tb = document.querySelector('#stockTable tbody');
   if (!tb) return;
-  tb.innerHTML = stock
-    .filter(s => f === 'all' || s.type === f)
-    .map((s, i) => {
-      const sold = s.sold || 0;
-      const rem = s.qty - sold;
-      const lim = getLimit();
-      let cls = 'ok', msg = 'OK';
-      if (rem <= 0) { cls = 'out'; msg = 'OUT'; }
-      else if (rem <= lim) { cls = 'low'; msg = 'LOW'; }
-      return `
+  tb.innerHTML =
+    stock
+      .filter(s => f === 'all' || s.type === f)
+      .map((s, i) => {
+        const sold = s.sold || 0;
+        const rem = s.qty - sold;
+        const lim = getLimit();
+        let cls = 'ok',
+          msg = 'OK';
+        if (rem <= 0) {
+          cls = 'out';
+          msg = 'OUT';
+        } else if (rem <= lim) {
+          cls = 'low';
+          msg = 'LOW';
+        }
+        return `
         <tr>
           <td>${s.date}</td>
           <td>${s.type}</td>
@@ -494,33 +518,49 @@ function renderStock() {
           <td>${lim}</td>
           <td><button onclick="viewHistory(${i})">📜</button></td>
         </tr>`;
-    })
-    .join('') || '<tr><td colspan="9">No Data</td></tr>';
+      })
+      .join('') || '<tr><td colspan="9">No Data</td></tr>';
 }
 
 /* 📜 View History */
 function viewHistory(i) {
   const s = stock[i];
   if (!s || !s.history) return alert('No history available');
-  const list = s.history.map(h => `${h.date} — Qty: ${h.qty} @₹${h.cost}`).join('\n');
+  const list = s.history
+    .map(h => `${h.date} — Qty: ${h.qty} @₹${h.cost}`)
+    .join('\n');
   alert(`📜 ${s.name} History:\n${list}`);
 }
 
 /* 🖱️ Event Delegation */
 document.addEventListener('click', e => {
   switch (e.target.id) {
-    case 'addTypeBtn': addType(); break;
-    case 'clearTypesBtn': clearTypes(); break;
-    case 'setLimitBtn': setGlobalLimit(); break;
-    case 'clearStockBtn':
-      if (confirm('Clear all stock?')) { stock = []; saveAll(); renderStock(); }
+    case 'addTypeBtn':
+      addType();
       break;
-    case 'addStockBtn': addStock(); break;
+    case 'clearTypesBtn':
+      clearTypes();
+      break;
+    case 'setLimitBtn':
+      setGlobalLimit();
+      break;
+    case 'clearStockBtn':
+      if (confirm('Clear all stock?')) {
+        stock = [];
+        saveAll();
+        renderStock();
+      }
+      break;
+    case 'addStockBtn':
+      addStock();
+      break;
   }
 });
 
 /* 🔁 Live Filter */
-document.getElementById('filterType')?.addEventListener('change', renderStock);
+document
+  .getElementById('filterType')
+  ?.addEventListener('change', renderStock);
 
 /* 🚀 On Load */
 window.addEventListener('load', () => {
@@ -529,7 +569,6 @@ window.addEventListener('load', () => {
   renderStock();
 });
 </script>
-
   <!-- ===== PART: Sales + Profit Module (STEP 1) ===== -->
 <section id="sales" class="section">
   <h3>💰 Sales & Profit</h3>
