@@ -1005,115 +1005,115 @@ window.addEventListener('load',updateSummaryCards);
 window.addEventListener('storage',updateSummaryCards);
 setInterval(updateSummaryCards,60000);
 </script>
-  <!-- ===== PART 3: SMART SALES DASHBOARD (AS SEPARATE TAB) ===== -->
+  
+<!-- ===== PART 3: SMART SALES DASHBOARD (AS SEPARATE TAB) ===== -->
+
+<!-- Step 1️⃣: Smart Dashboard Section -->
+<section id="analytics" class="section">
+  <h3>📊 Smart Sales Dashboard</h3>
+  <div style="display:flex;flex-wrap:wrap;gap:20px;justify-content:flex-end;align-items:center;">
+    <div style="flex:1;min-width:320px;max-width:460px;">
+      <canvas id="salesBar"></canvas>
+    </div>
+    <div style="flex:1;min-width:280px;max-width:360px;">
+      <canvas id="salesPie"></canvas>
+    </div>
+  </div>
+  <p style="margin-top:14px;text-align:center;font-size:14px;opacity:0.7;">
+    🔄 Auto-updates every 60 seconds from your sales data.
+  </p>
+</section>
+
+<!-- Step 2️⃣: Smart Dashboard Script -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 function getSalesData(){
   const sales = JSON.parse(localStorage.getItem('sales-data') || '[]');
   const today = new Date();
   const todayStr = today.toISOString().split('T')[0];
-  const startOfWeek = new Date(today); startOfWeek.setDate(today.getDate() - today.getDay());
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay());
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-  let todaySales=0, weekSales=0, monthSales=0;
-  let creditSales=0, paidSales=0, totalProfit=0;
+  let todaySales = 0, weekSales = 0, monthSales = 0;
+  let creditSales = 0, paidSales = 0, totalProfit = 0;
 
-  sales.forEach(s=>{
+  sales.forEach(s => {
     const d = new Date(s.date);
-    const amt = s.amount||0, prof = s.profit||0;
-    if(s.date===todayStr) todaySales += amt;
-    if(d>=startOfWeek) weekSales += amt;
-    if(d>=startOfMonth) monthSales += amt;
-    if(s.status==='Credit') creditSales += amt; else paidSales += amt;
+    const amt = s.amount || 0;
+    const prof = s.profit || 0;
+
+    if (s.date === todayStr) todaySales += amt;
+    if (d >= startOfWeek) weekSales += amt;
+    if (d >= startOfMonth) monthSales += amt;
+    if (s.status === 'Credit') creditSales += amt; else paidSales += amt;
     totalProfit += prof;
   });
 
-  return {todaySales, weekSales, monthSales, creditSales, paidSales, totalProfit};
+  return { todaySales, weekSales, monthSales, creditSales, paidSales, totalProfit };
 }
 
-/* 🧠 Create Smart Dashboard Tab */
-function injectDashboardTab(){
-  const tabBar=document.querySelector('.tabs');
-  const dashTab=document.createElement('div');
-  dashTab.className='tab';
-  dashTab.dataset.tab='analytics';
-  dashTab.textContent='📊 Dashboard';
-  tabBar.appendChild(dashTab);
-
-  const sec=document.createElement('section');
-  sec.className='section';
-  sec.id='analytics';
-  sec.innerHTML=`
-    <h3>📊 Smart Sales Dashboard</h3>
-    <div style="display:flex;flex-wrap:wrap;gap:20px;justify-content:center;align-items:center;">
-      <div style="flex:1;min-width:320px;max-width:460px;">
-        <canvas id="salesBar"></canvas>
-      </div>
-      <div style="flex:1;min-width:280px;max-width:360px;">
-        <canvas id="salesPie"></canvas>
-      </div>
-    </div>
-    <p style="margin-top:14px;text-align:center;font-size:14px;opacity:0.7;">
-      🔄 Auto-updates every 60 seconds from your sales data.
-    </p>`;
-  document.body.appendChild(sec);
-}
-
-/* 📊 Render Charts */
 function renderAnalytics(){
-  const {todaySales, weekSales, monthSales, creditSales, paidSales, totalProfit} = getSalesData();
-  const ctx1=document.getElementById('salesBar');
-  const ctx2=document.getElementById('salesPie');
-  if(!ctx1||!ctx2)return;
+  const { todaySales, weekSales, monthSales, creditSales, paidSales, totalProfit } = getSalesData();
+  const ctx1 = document.getElementById('salesBar');
+  const ctx2 = document.getElementById('salesPie');
+  if (!ctx1 || !ctx2) return;
 
-  if(window.salesBarChart) window.salesBarChart.destroy();
-  if(window.salesPieChart) window.salesPieChart.destroy();
+  // Destroy old charts before re-render
+  if (window.salesBarChart) window.salesBarChart.destroy();
+  if (window.salesPieChart) window.salesPieChart.destroy();
 
-  window.salesBarChart=new Chart(ctx1,{
-    type:'bar',
-    data:{
-      labels:['Today','This Week','This Month'],
-      datasets:[{
-        label:'Sales ₹',
-        data:[todaySales,weekSales,monthSales],
-        backgroundColor:['#ffb74d','#ff9800','#f57c00'],
-        borderRadius:6
+  // 🟧 Bar Chart
+  window.salesBarChart = new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels: ['Today', 'This Week', 'This Month'],
+      datasets: [{
+        label: 'Sales ₹',
+        data: [todaySales, weekSales, monthSales],
+        backgroundColor: ['#ffb74d', '#ff9800', '#f57c00'],
+        borderRadius: 6
       }]
     },
-    options:{
-      plugins:{
-        title:{display:true,text:'Sales Summary'},
-        legend:{display:false}
+    options: {
+      plugins: {
+        title: { display: true, text: 'Sales Summary' },
+        legend: { display: false }
       },
-      scales:{y:{beginAtZero:true}}
+      scales: { y: { beginAtZero: true } }
     }
   });
 
-  window.salesPieChart=new Chart(ctx2,{
-    type:'pie',
-    data:{
-      labels:['Paid Sales','Credit Sales'],
-      datasets:[{
-        data:[paidSales,creditSales],
-        backgroundColor:['#43a047','#42a5f5']
+  // 🟦 Pie Chart
+  window.salesPieChart = new Chart(ctx2, {
+    type: 'pie',
+    data: {
+      labels: ['Paid Sales', 'Credit Sales'],
+      datasets: [{
+        data: [paidSales, creditSales],
+        backgroundColor: ['#43a047', '#42a5f5']
       }]
     },
-    options:{
-      plugins:{
-        legend:{position:'bottom'},
-        title:{display:true,text:`Total Profit ₹${totalProfit.toFixed(2)}`}
+    options: {
+      plugins: {
+        legend: { position: 'bottom' },
+        title: { display: true, text: `Total Profit ₹${totalProfit.toFixed(2)}` }
       }
     }
   });
 }
 
 /* 🔁 Initialize after page load */
-window.addEventListener('load',()=>{
-  injectDashboardTab();
+window.addEventListener('load', () => {
   renderAnalytics();
-  setInterval(renderAnalytics,60000);
+  setInterval(renderAnalytics, 60000);
 });
 </script>
 
+<!-- Optional: Align charts to the right -->
+<style>
+#analytics h3 { text-align: right; margin-right: 10px; }
+#analytics canvas { display: block; margin-left: auto; margin-right: 0; }
+</style>
 </body>
 </html>
