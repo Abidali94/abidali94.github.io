@@ -211,7 +211,11 @@ function renderTypes(){
 
 function clearTypes(){
   if(confirm("Clear all types?")){
-    types=[];saveAll();renderTypes();updateDropdowns();
+    types = [];
+    localStorage.setItem(K_TYPES, JSON.stringify(types));
+    renderTypes();
+    updateDropdowns();
+    console.log("✅ All types cleared");
   }
 }
 
