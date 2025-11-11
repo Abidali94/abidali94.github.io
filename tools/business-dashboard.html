@@ -13,17 +13,11 @@
   --dark-border:#444;
 }
 *{box-sizing:border-box;transition:background .2s,color .2s}
-body{
-  font-family:Poppins,Arial,sans-serif;margin:0;padding:18px;
-  background:var(--bg);color:var(--text);
-}
+body{font-family:Poppins,Arial,sans-serif;margin:0;padding:18px;background:var(--bg);color:var(--text)}
 body.dark{background:var(--dark-bg);color:var(--dark-text)}
 h1{color:var(--orange);margin:0;font-size:20px}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
-.theme-btn,.small-btn{
-  background:var(--orange);color:#fff;border:none;
-  padding:8px 10px;border-radius:8px;cursor:pointer;transition:.15s;
-}
+.theme-btn,.small-btn{background:var(--orange);color:#fff;border:none;padding:8px 10px;border-radius:8px;cursor:pointer;transition:.15s}
 .theme-btn:hover,.small-btn:hover{background:var(--orange-dark)}
 .tabs{display:flex;gap:8px;margin:6px 0 18px;justify-content:center;flex-wrap:wrap}
 .tab{background:#eee;padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600}
@@ -57,7 +51,7 @@ body.dark .help-content{background:var(--dark-card);color:var(--dark-text)}
   <div class="tab" data-tab="wanting">🛒 Wanting</div>
 </div>
 
-<!-- Sections injected below -->
+<!-- Sections -->
 <section id="types" class="section active"></section>
 <section id="stock" class="section"></section>
 <section id="sales" class="section"></section>
@@ -72,10 +66,10 @@ body.dark .help-content{background:var(--dark-card);color:var(--dark-text)}
   <div class="help-content">
     <h2>📘 Quick Help</h2>
     <ul style="padding-left:18px;line-height:1.6">
-      <li>🗂 Manage item <b>Types</b></li>
-      <li>📦 Add stock & track history</li>
-      <li>💰 Record Sales (Cash/Credit)</li>
-      <li>🛒 Auto Wanting alerts</li>
+      <li>🗂 Add & manage item <b>Types</b></li>
+      <li>📦 Add stock, set low limit, auto alert</li>
+      <li>💰 Record Sales (Cash / Credit)</li>
+      <li>🛒 Auto Wanting when stock finishes</li>
       <li>☁️ Data saved offline</li>
     </ul>
     <button class="small-btn" onclick="toggleHelp()">Close</button>
@@ -102,9 +96,7 @@ body.dark .help-content{background:var(--dark-card);color:var(--dark-text)}
     tab.classList.add('active');
     document.getElementById(tab.dataset.tab)?.classList.add('active');
   }
-  tabs.forEach(tab=>{
-    tab.addEventListener('click',()=>activate(tab));
-  });
+  tabs.forEach(tab=>tab.addEventListener('click',()=>activate(tab)));
 })();
 
 /* 📘 Help Modal */
@@ -114,11 +106,11 @@ function toggleHelp(){
 }
 document.getElementById('helpLink').onclick=e=>{e.preventDefault();toggleHelp();};
 </script>
-  <!-- ✅ PART 2 : TYPES + STOCK ENHANCED -->
+<!-- ✅ PART 2 : TYPES + STOCK ENHANCED -->
 <section id="types" class="section active">
   <h3>🗂 Manage Item Types</h3>
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-    <input type="text" id="typeName" placeholder="Add new type" style="flex:1;min-width:180px">
+    <input type="text" id="typeName" placeholder="Add new type (e.g. Mobiles, Accessories)" style="flex:1;min-width:200px">
     <button id="addTypeBtn">Add</button>
     <button class="small-btn" id="clearTypesBtn">Clear All</button>
   </div>
@@ -129,7 +121,7 @@ document.getElementById('helpLink').onclick=e=>{e.preventDefault();toggleHelp();
   <h3>📦 Current Stock</h3>
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
     <label>Low Stock Limit:</label>
-    <input type="number" id="globalLimit" placeholder="e.g.2" style="width:100px">
+    <input type="number" id="globalLimit" placeholder="e.g. 2" style="width:100px">
     <button class="small-btn" id="setLimitBtn">Set</button>
     <button class="small-btn" id="clearStockBtn">Clear All</button>
   </div>
@@ -149,28 +141,23 @@ document.getElementById('helpLink').onclick=e=>{e.preventDefault();toggleHelp();
   </div>
 
   <table id="stockTable">
-    <thead>
-      <tr><th>Date</th><th>Type</th><th>Product</th><th>Qty</th><th>Sold</th><th>Remain</th><th>Alert</th><th>Limit</th><th>Action</th></tr>
-    </thead>
+    <thead><tr><th>Date</th><th>Type</th><th>Product</th><th>Qty</th><th>Sold</th><th>Remain</th><th>Alert</th><th>Limit</th><th>Action</th></tr></thead>
     <tbody></tbody>
   </table>
 </section>
 
 <script>
 const K_TYPES='item-types',K_STOCK='stock-data',K_LIMIT='default-limit';
-window.types=JSON.parse(localStorage.getItem(K_TYPES)||'[]');
+window.types=JSON.parse(localStorage.getItem(K_TYPES)||'["Mobiles","Accessories"]');
 window.stock=JSON.parse(localStorage.getItem(K_STOCK)||'[]');
 
 /* Save */
-function saveAllLocal(){
-  localStorage.setItem(K_TYPES,JSON.stringify(types));
-  localStorage.setItem(K_STOCK,JSON.stringify(stock));
-}
+function saveAllLocal(){localStorage.setItem(K_TYPES,JSON.stringify(types));localStorage.setItem(K_STOCK,JSON.stringify(stock));}
 
 /* Render types */
 function renderTypes(){
   const list=document.getElementById('typeList');
-  list.innerHTML=types.length?types.map(t=>`<li>${t}</li>`).join(''):'<li>No types yet</li>';
+  list.innerHTML=types.map(t=>`<li>${t}</li>`).join('');
 }
 
 /* Dropdown update */
@@ -205,32 +192,29 @@ function getLimit(){const v=parseInt(localStorage.getItem(K_LIMIT));return isNaN
 /* Add stock */
 function addStock(){
   const d=pdate.value,t=ptype.value,n=pname.value.trim(),q=parseInt(pqty.value),c=parseFloat(pcost.value);
-  if(!d||!t||!n||!q||!c)return alert('Fill all');
+  if(!d||!t||!n||!q||!c)return alert('Fill all fields');
   let ex=stock.find(s=>s.type===t&&s.name.toLowerCase()===n.toLowerCase());
   if(ex){ex.qty+=q;ex.date=d;ex.cost=c;ex.history=ex.history||[];ex.history.push({date:d,qty:q,cost:c});}
   else stock.push({date:d,type:t,name:n,qty:q,sold:0,cost:c,history:[{date:d,qty:q,cost:c}]});
   saveAllLocal();renderStock();pname.value='';pqty.value='';pcost.value='';
 }
 
-/* Clear stock */
-function clearStock(){if(confirm('Clear all stock?')){stock=[];saveAllLocal();renderStock();}}
-
 /* Render stock */
 function renderStock(){
   const f=filterType.value,tb=document.querySelector('#stockTable tbody');
   tb.innerHTML=stock.filter(s=>f==='all'||s.type===f).map((s,i)=>{
-    const sold=s.sold||0,rem=s.qty-sold,lim=getLimit();let cls='ok',msg='OK';
+    const sold=s.sold||0,rem=s.qty-sold,lim=getLimit();
+    let cls='ok',msg='OK';
     if(rem<=0){cls='out';msg='OUT'}else if(rem<=lim){cls='low';msg='LOW'}
     return `<tr><td>${s.date}</td><td>${s.type}</td><td>${s.name}</td><td>${s.qty}</td><td>${sold}</td><td>${rem}</td><td class="${cls}">${msg}</td><td>${lim}</td><td><button onclick="viewHistory(${i})">📜</button></td></tr>`;
-  }).join('')||'<tr><td colspan="9">No data</td></tr>';
+  }).join('')||'<tr><td colspan="9">No Data</td></tr>';
 }
 
-/* View history */
+/* History */
 function viewHistory(i){
   const s=stock[i];
-  if(!s.history?.length)return alert('No history');
-  const hist=s.history.map(h=>`${h.date} → Qty:${h.qty} @₹${h.cost}`).join('\n');
-  alert(`📜 ${s.name} History:\n${hist}`);
+  if(!s.history)return alert('No history');
+  alert(`📜 ${s.name}:\n`+s.history.map(h=>`${h.date} — Qty:${h.qty} @₹${h.cost}`).join('\n'));
 }
 
 /* Events */
@@ -238,50 +222,11 @@ document.addEventListener('click',e=>{
   if(e.target.id==='addTypeBtn')addType();
   if(e.target.id==='clearTypesBtn')clearTypes();
   if(e.target.id==='setLimitBtn')setGlobalLimit();
-  if(e.target.id==='clearStockBtn')clearStock();
+  if(e.target.id==='clearStockBtn'){if(confirm('Clear all stock?')){stock=[];saveAllLocal();renderStock();}}
   if(e.target.id==='addStockBtn')addStock();
 });
 filterType?.addEventListener('change',renderStock);
 window.addEventListener('load',()=>{renderTypes();updateDropdowns();renderStock();});
 </script>
-  <!-- 🟧 Final Safe Closing (for Business Dashboard) -->
-<style>
-  /* Simple color highlights for alerts */
-  .ok { color: green; font-weight: 600; }
-  .low { color: orange; font-weight: 600; }
-  .out { color: red; font-weight: 700; }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 12px;
-  }
-  th, td {
-    border: 1px solid #ddd;
-    padding: 6px 8px;
-    text-align: center;
-  }
-  th {
-    background: var(--orange);
-    color: #fff;
-  }
-  body.dark th {
-    background: var(--orange-dark);
-  }
-</style>
-
-<!-- ✅ Initialize everything on load -->
-<script>
-window.addEventListener("load",()=>{
-  // If first time user has no data, preload basic example
-  if(!localStorage.getItem('item-types')){
-    localStorage.setItem('item-types',JSON.stringify(['Example Type']));
-  }
-  if(!localStorage.getItem('stock-data')){
-    localStorage.setItem('stock-data',JSON.stringify([]));
-  }
-  console.log("✅ KharchaSaathi loaded successfully!");
-});
-</script>
-
 </body>
 </html>
