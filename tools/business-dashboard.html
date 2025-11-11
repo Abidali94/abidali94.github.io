@@ -335,7 +335,7 @@ document.getElementById('themeBtn').onclick = () => {
   );
 };
 
-/* 🔄 Tabs Switching — Fixed Full Version */
+/* 🔄 Tabs Switching – Fully fixed version */
 const tabs = document.querySelectorAll('.tab');
 const sections = document.querySelectorAll('.section');
 
@@ -345,22 +345,26 @@ tabs.forEach(tab => {
     tabs.forEach(t => t.classList.remove('active'));
     sections.forEach(s => s.classList.remove('active'));
 
-    // activate selected
+    // activate clicked
     tab.classList.add('active');
     const target = document.getElementById(tab.dataset.tab);
     if (target) target.classList.add('active');
 
-    // ✅ Refresh logic (auto update)
-    if (tab.dataset.tab === 'types') {
-      renderTypes();
-      updateDropdowns();
-    }
-    if (tab.dataset.tab === 'stock') {
-      renderStock();
-    }
-    if (tab.dataset.tab === 'analytics') {
-      // If Smart Dashboard tab clicked
-      if (typeof renderAnalytics === 'function') renderAnalytics();
+    // ✅ Auto refresh logic per section
+    switch (tab.dataset.tab) {
+      case 'dashboard':
+        if (typeof updateSummaryCards === 'function') updateSummaryCards();
+        break;
+      case 'types':
+        renderTypes();
+        updateDropdowns();
+        break;
+      case 'stock':
+        renderStock();
+        break;
+      case 'analytics':
+        if (typeof renderAnalytics === 'function') renderAnalytics();
+        break;
     }
   });
 });
