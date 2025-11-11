@@ -7,116 +7,97 @@
 <meta name="theme-color" content="#ff7a00">
 
 <style>
-:root {
-  --orange:#ff7a00; --orange-dark:#cc6300;
-  --bg:#f8f9fa; --card:#fff; --text:#222;
-  --dark-bg:#0f0f0f; --dark-card:#1b1b1b; --dark-text:#f2f2f2;
+:root{
+  --orange:#ff7a00;
+  --orange-dark:#cc6300;
+  --bg:#f8f9fa;
+  --card:#fff;
+  --text:#222;
+  --dark-bg:#0f0f0f;
+  --dark-card:#1b1b1b;
+  --dark-text:#f2f2f2;
   --dark-border:#444;
 }
-* { box-sizing:border-box; transition:background .3s,color .3s; }
-body {
+*{box-sizing:border-box;transition:background .3s,color .3s}
+body{
   font-family:Poppins,Arial,sans-serif;
-  margin:0; padding:18px;
-  background:var(--bg); color:var(--text);
+  margin:0;padding:18px;
+  background:var(--bg);color:var(--text);
 }
-body.dark { background:var(--dark-bg); color:var(--dark-text); }
-h1 { color:var(--orange); }
-
-.topbar {
-  display:flex; justify-content:space-between;
-  align-items:center; flex-wrap:wrap;
+body.dark{background:var(--dark-bg);color:var(--dark-text)}
+h1{color:var(--orange)}
+.topbar{
+  display:flex;justify-content:space-between;
+  align-items:center;flex-wrap:wrap;
 }
-.theme-btn,.small-btn,.action-btn {
-  background:var(--orange); color:#fff; border:none;
-  padding:8px 10px; border-radius:8px; cursor:pointer; transition:.2s;
+.theme-btn,.small-btn{
+  background:var(--orange);color:#fff;border:none;
+  padding:8px 10px;border-radius:8px;cursor:pointer;
+  transition:.2s;
 }
-.theme-btn:hover,.small-btn:hover,.action-btn:hover {
-  background:var(--orange-dark);
+.theme-btn:hover,.small-btn:hover{background:var(--orange-dark)}
+.tabs{
+  display:flex;gap:8px;margin:18px 0;
+  justify-content:center;flex-wrap:wrap;
 }
-
-.tabs {
-  display:flex; gap:8px; margin:18px 0;
-  justify-content:center; flex-wrap:wrap;
+.tab{
+  background:#eee;padding:8px 12px;
+  border-radius:10px;cursor:pointer;font-weight:600;
+  transition:.2s;
 }
-.tab {
-  background:#eee; padding:8px 12px;
-  border-radius:10px; cursor:pointer;
-  font-weight:600; transition:.2s;
+body.dark .tab{background:#222;color:#ccc}
+.tab.active{background:var(--orange);color:#fff}
+.section{
+  display:none;background:var(--card);padding:14px;
+  border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.08);
+  margin-bottom:18px;
 }
-body.dark .tab { background:#222; color:#ccc; }
-.tab.active { background:var(--orange); color:#fff; }
-
-.section {
-  display:none; background:var(--card);
-  padding:14px; border-radius:12px;
-  box-shadow:0 6px 20px rgba(0,0,0,.08);
-  margin-bottom:18px; position:relative; z-index:2;
-}
-.section.active { display:block; }
-
-body.dark .section {
+.section.active{display:block}
+body.dark .section{
   background:var(--dark-card);
   border:1px solid var(--dark-border);
-  box-shadow:0 0 12px rgba(255,255,255,0.05);
   color:var(--dark-text);
 }
-
-table {
-  width:100%; border-collapse:separate !important;
-  border-spacing:0; margin-top:12px;
+table{width:100%;border-collapse:separate!important;border-spacing:0;margin-top:12px}
+th,td{
+  padding:8px;border:1px solid #ddd;
+  text-align:center;font-size:13px;
 }
-th,td {
-  padding:8px; border:1px solid #ddd;
-  text-align:center; font-size:13px;
+th{background:var(--orange);color:#fff}
+body.dark th{background:var(--orange-dark)}
+body.dark td{border:1px solid var(--dark-border)}
+.low{color:#ffbb33;font-weight:700}
+.out{color:#ff5555;font-weight:700}
+.ok{color:#4eff90;font-weight:700}
+.footer-btns{text-align:center;margin-top:20px}
+.footer-btns a{
+  background:var(--orange);color:#fff;
+  padding:10px 16px;border-radius:8px;
+  text-decoration:none;margin:6px;display:inline-block;
 }
-th { background:var(--orange); color:#fff; }
-body.dark th { background:var(--orange-dark); }
-body.dark td { border:1px solid var(--dark-border); }
-
-.low { color:#ffbb33; font-weight:700; }
-.out { color:#ff5555; font-weight:700; }
-.ok { color:#4eff90; font-weight:700; }
-
-.footer-btns { text-align:center; margin-top:20px; }
-.footer-btns a {
-  background:var(--orange); color:#fff;
-  padding:10px 16px; border-radius:8px;
-  text-decoration:none; margin:6px;
-  display:inline-block;
-}
-.footer-btns a:hover { background:var(--orange-dark); }
-
-.help-modal {
-  position:fixed; top:0; left:0; width:100%; height:100%;
+.footer-btns a:hover{background:var(--orange-dark)}
+.help-modal{
+  position:fixed;top:0;left:0;width:100%;height:100%;
   background:rgba(0,0,0,0.6);
-  display:none; justify-content:center;
-  align-items:center; z-index:1000;
+  display:none;justify-content:center;align-items:center;z-index:1000;
 }
-.help-content {
-  background:var(--card); padding:20px;
-  max-width:550px; border-radius:12px;
-  color:var(--text); overflow-y:auto;
+.help-content{
+  background:var(--card);padding:20px;max-width:550px;
+  border-radius:12px;color:var(--text);overflow-y:auto;
   max-height:85vh;
 }
-body.dark .help-content {
-  background:var(--dark-card);
-  color:var(--dark-text);
+body.dark .help-content{background:var(--dark-card);color:var(--dark-text)}
+input,select{
+  padding:6px;border:1px solid #ccc;border-radius:6px;
+  margin:4px;outline:none;font-size:14px;
 }
-
-input, select {
-  padding:6px; border:1px solid #ccc;
-  border-radius:6px; margin:4px;
-  outline:none; font-size:14px;
-}
-body.dark input, body.dark select {
-  background:#222; color:#fff;
-  border:1px solid var(--dark-border);
+body.dark input,body.dark select{
+  background:#222;color:#fff;border:1px solid var(--dark-border);
 }
 </style>
 </head>
 
 <body>
-
 <div class="topbar">
   <h1>📦 KharchaSaathi (Offline)</h1>
   <button class="theme-btn" id="themeBtn">🌙</button>
@@ -130,14 +111,11 @@ body.dark input, body.dark select {
 </div>
 
 <script>
-// Theme Toggle
-if(localStorage.getItem('ks-theme')==='dark') document.body.classList.add('dark');
+if(localStorage.getItem('ks-theme')==='dark')document.body.classList.add('dark');
 document.getElementById('themeBtn').onclick=()=>{
   document.body.classList.toggle('dark');
   localStorage.setItem('ks-theme',document.body.classList.contains('dark')?'dark':'light');
 };
-
-// Tabs Handling
 const tabs=document.querySelectorAll('.tab');
 const sections=document.querySelectorAll('.section');
 tabs.forEach(tab=>{
@@ -145,12 +123,11 @@ tabs.forEach(tab=>{
     tabs.forEach(t=>t.classList.remove('active'));
     sections.forEach(s=>s.classList.remove('active'));
     tab.classList.add('active');
-    const section=document.getElementById(tab.dataset.tab);
-    if(section) section.classList.add('active');
+    document.getElementById(tab.dataset.tab)?.classList.add('active');
   };
 });
 </script>
-<!-- PART 2/4: TYPES + STOCK -->
+<!-- PART 2/5 : TYPES + STOCK -->
 <section id="types" class="section active">
   <h3>🗂 Manage Item Types</h3>
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
@@ -163,9 +140,10 @@ tabs.forEach(tab=>{
 
 <section id="stock" class="section">
   <h3>📦 Current Stock</h3>
+
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
     <label>Low Stock Limit:</label>
-    <input type="number" id="globalLimit" placeholder="e.g. 2" style="width:100px">
+    <input type="number" id="globalLimit" placeholder="e.g. 2" style="width:100px;">
     <button class="small-btn" id="setLimitBtn">Set</button>
     <button class="small-btn" id="clearStockBtn">Clear All</button>
   </div>
@@ -188,8 +166,9 @@ tabs.forEach(tab=>{
   <table id="stockTable">
     <thead>
       <tr>
-        <th>Date</th><th>Type</th><th>Product</th><th>Qty</th>
-        <th>Sold</th><th>Remain</th><th>Alert</th><th>Limit</th><th>Action</th>
+        <th>Date</th><th>Type</th><th>Product</th>
+        <th>Qty</th><th>Sold</th><th>Remain</th>
+        <th>Alert</th><th>Limit</th><th>Action</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -213,7 +192,9 @@ function saveAllLocal(){
 
 function renderTypes(){
   const el=document.getElementById('typeList');
-  el.innerHTML=types.length?types.map(t=>`<li>${t}</li>`).join(''):'<li>No types yet</li>';
+  el.innerHTML=types.length
+    ?types.map(t=>`<li>${t}</li>`).join('')
+    :'<li>No types yet</li>';
 }
 
 function updateDropdowns(){
@@ -301,6 +282,7 @@ document.addEventListener('click',e=>{
   if(e.target.id==='clearStockBtn')clearStock();
   if(e.target.id==='addStockBtn')addStock();
 });
+
 document.getElementById('filterType')?.addEventListener('change',renderStock);
 
 function initPart2(){
@@ -310,7 +292,7 @@ function initPart2(){
 }
 window.addEventListener('load',initPart2);
 </script>
-<!-- PART 3/4: SALES + CREDIT MANAGEMENT -->
+<!-- PART 3/5 : SALES + CREDIT MANAGEMENT -->
 <section id="sales" class="section">
   <h3>💰 Sales Ledger</h3>
 
@@ -373,8 +355,12 @@ function settleCredit(i){
   if(sale.status!=='Credit')return alert('Not a credit sale!');
   if(!confirm(`Settle credit for ${sale.product} — ₹${sale.amount}?`))return;
   const ex=stock.find(x=>x.type===sale.type&&x.name.toLowerCase()===sale.product.toLowerCase());
-  if(ex){ex.qty=(ex.qty||0)+sale.qty;ex.sold=Math.max(0,(ex.sold||0)-sale.qty);}
-  else{stock.push({date:new Date().toISOString().split('T')[0],type:sale.type,name:sale.product,qty:sale.qty,sold:0});}
+  if(ex){
+    ex.qty=(ex.qty||0)+sale.qty;
+    ex.sold=Math.max(0,(ex.sold||0)-sale.qty);
+  }else{
+    stock.push({date:new Date().toISOString().split('T')[0],type:sale.type,name:sale.product,qty:sale.qty,sold:0});
+  }
   sales.splice(i,1);
   if(typeof saveAllLocal==='function')saveAllLocal();
   renderSales();renderStock();
@@ -399,7 +385,9 @@ function renderSales(){
 
 function clearSales(){
   if(!confirm('Clear all sales?'))return;
-  sales=[];if(typeof saveAllLocal==='function')saveAllLocal();renderSales();
+  sales=[];
+  if(typeof saveAllLocal==='function')saveAllLocal();
+  renderSales();
 }
 
 document.addEventListener('click',e=>{
@@ -413,9 +401,10 @@ window.addEventListener('load',()=>{
   renderSales();
 });
 </script>
-<!-- PART 4/4: WANTING + HELP + FIREBASE CLOUD SYNC -->
+<!-- PART 4/5 : WANTING + HELP SECTION -->
 <section id="wanting" class="section">
   <h3>🛒 Wanting List</h3>
+
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
     <input type="date" id="wdate" style="min-width:150px;">
     <select id="wtype" style="min-width:140px;"></select>
@@ -521,35 +510,38 @@ document.addEventListener('click',e=>{
 
 window.addEventListener('load',()=>renderWant());
 </script>
-
+<!-- PART 5/5 : FIREBASE CLOUD SYNC + FINAL INIT -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-const firebaseConfig={
-  apiKey:"AIzaSyC1TSwODhcD88-IizbteOGF-bbebAP6Poc",
-  authDomain:"kharchasaathi-main.firebaseapp.com",
-  projectId:"kharchasaathi-main",
-  storageBucket:"kharchasaathi-main.firebasestorage.app",
-  messagingSenderId:"116390837159",
-  appId:"1:116390837159:web:6e3900fa3b25a07d4c9482",
-  measurementId:"G-1M4H9VRSBY"
+const firebaseConfig = {
+  apiKey: "AIzaSyC1TSwODhcD88-IizbteOGF-bbebAP6Poc",
+  authDomain: "kharchasaathi-main.firebaseapp.com",
+  projectId: "kharchasaathi-main",
+  storageBucket: "kharchasaathi-main.firebasestorage.app",
+  messagingSenderId: "116390837159",
+  appId: "1:116390837159:web:6e3900fa3b25a07d4c9482",
+  measurementId: "G-1M4H9VRSBY"
 };
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
 
 export async function syncToCloud(){
   try{
-    const uid=localStorage.getItem('ks-user')||'guest';
+    const uid = localStorage.getItem('ks-user') || 'guest';
     await setDoc(doc(db,"users",uid,"data","dashboard"),{
-      types,stock,sales,want,lastSync:new Date().toLocaleString()
+      types, stock, sales, want,
+      lastSync: new Date().toLocaleString()
     });
     console.log("✅ Cloud Sync Successful");
   }catch(err){
-    console.warn("⚠️ Cloud Sync Failed:",err.message||err);
+    console.warn("⚠️ Cloud Sync Failed:", err.message || err);
   }
 }
 
+/* ✅ Re-render everything after module load */
 window.addEventListener('load',()=>{
   if(typeof renderTypes==='function')renderTypes();
   if(typeof updateDropdowns==='function')updateDropdowns();
@@ -557,15 +549,8 @@ window.addEventListener('load',()=>{
   if(typeof renderSales==='function')renderSales();
   if(typeof renderWant==='function')renderWant();
 });
-</script>
-  <!-- Tabs HTML (unchanged) -->
 
-
-<!-- ... (all sections code here: types, stock, sales, wanting) ... -->
-
-<!-- 👇 Move this script to END of BODY -->
-<script>
-// ✅ Tabs Handling (Run only after all sections exist)
+/* ✅ Tabs Logic (final safeguard for switching sections) */
 document.addEventListener("DOMContentLoaded", ()=>{
   const tabs=document.querySelectorAll('.tab');
   const sections=document.querySelectorAll('.section');
