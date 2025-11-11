@@ -153,5 +153,173 @@ document.getElementById('helpLink').addEventListener('click',e=>{
   toggleHelp();
 });
 </script>
+  <!-- ✅ PART 2 : TYPES + STOCK ENHANCED -->
+<section id="types" class="section active">
+  <h3>🗂 Manage Item Types</h3>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <input type="text" id="typeName" placeholder="Add new type" style="flex:1;min-width:180px">
+    <button id="addTypeBtn">Add</button>
+    <button class="small-btn" id="clearTypesBtn">Clear All</button>
+  </div>
+  <ul id="typeList" style="margin-top:10px;padding-left:18px"></ul>
+</section>
+
+<section id="stock" class="section">
+  <h3>📦 Current Stock</h3>
+
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <label>Low Stock Limit:</label>
+    <input type="number" id="globalLimit" placeholder="e.g. 2" style="width:100px">
+    <button class="small-btn" id="setLimitBtn">Set</button>
+    <button class="small-btn" id="clearStockBtn">Clear All</button>
+  </div>
+
+  <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <input type="date" id="pdate" style="min-width:150px">
+    <select id="ptype" style="min-width:140px"></select>
+    <input type="text" id="pname" placeholder="Product name" style="min-width:160px">
+    <input type="number" id="pqty" placeholder="Qty" style="width:80px">
+    <input type="number" id="pcost" placeholder="Cost ₹" style="width:100px">
+    <button id="addStockBtn">Add</button>
+  </div>
+
+  <div style="margin-top:12px">
+    <label><b>Filter by Type:</b></label>
+    <select id="filterType" style="min-width:160px">
+      <option value="all">All Types</option>
+    </select>
+  </div>
+
+  <table id="stockTable">
+    <thead>
+      <tr>
+        <th>Date</th><th>Type</th><th>Product</th><th>Qty</th>
+        <th>Sold</th><th>Remain</th><th>Alert</th><th>Limit</th><th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<script>
+const K_TYPES='item-types',K_STOCK='stock-data',K_LIMIT='default-limit';
+window.types=JSON.parse(localStorage.getItem(K_TYPES)||'[]');
+window.stock=JSON.parse(localStorage.getItem(K_STOCK)||'[]');
+
+/* --- save all --- */
+function saveAllLocal(){
+  localStorage.setItem(K_TYPES,JSON.stringify(types));
+  localStorage.setItem(K_STOCK,JSON.stringify(stock));
+}
+
+/* --- render types --- */
+function renderTypes(){
+  const list=document.getElementById('typeList');
+  list.innerHTML=types.length?types.map(t=>`<li>${t}</li>`).join(''):'<li>No types yet</li>';
+}
+
+/* --- update dropdowns --- */
+function updateDropdowns(){
+  ['ptype','filterType'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const base=id==='filterType'
+      ?'<option value="all">All Types</option>'
+      :'<option value="">Select</option>';
+    el.innerHTML=base+types.map(t=>`<option value="${t}">${t}</option>`).join('');
+  });
+}
+
+/* --- add type --- */
+function addType(){
+  const inp=document.getElementById('typeName');
+  const val=inp.value.trim();
+  if(!val)return alert('Enter type name');
+  if(types.includes(val))return alert('Type exists');
+  types.push(val);saveAllLocal();renderTypes();updateDropdowns();
+  inp.value='';
+}
+
+/* --- clear types --- */
+function clearTypes(){
+  if(!confirm('Clear all types?'))return;
+  types=[];saveAllLocal();renderTypes();updateDropdowns();
+}
+
+/* --- limit --- */
+function setGlobalLimit(){
+  const v=parseInt(document.getElementById('globalLimit').value);
+  if(isNaN(v)||v<0)return alert('Invalid limit');
+  localStorage.setItem(K_LIMIT,v);alert('Limit set '+v);
+}
+function getLimit(){
+  const v=parseInt(localStorage.getItem(K_LIMIT));
+  return isNaN(v)?0:v;
+}
+
+/* --- add stock --- */
+function addStock(){
+  const d=pdate.value,t=ptype.value,n=pname.value.trim(),
+        q=parseInt(pqty.value),c=parseFloat(pcost.value);
+  if(!d||!t||!n||!q||!c)return alert('Fill all fields');
+  let ex=stock.find(s=>s.type===t&&s.name.toLowerCase()===n.toLowerCase());
+  if(ex){
+    ex.qty+=q;
+    ex.date=d;
+    ex.cost=c;
+    ex.history=ex.history||[];
+    ex.history.push({date:d,qty:q,cost:c});
+  }else{
+    stock.push({date:d,type:t,name:n,qty:q,sold:0,cost:c,history:[{date:d,qty:q,cost:c}]});
+  }
+  saveAllLocal();renderStock();
+  pname.value='';pqty.value='';pcost.value='';
+}
+
+/* --- clear stock --- */
+function clearStock(){
+  if(!confirm('Clear all stock?'))return;
+  stock=[];saveAllLocal();renderStock();
+}
+
+/* --- render stock --- */
+function renderStock(){
+  const f=filterType.value;
+  const tb=document.querySelector('#stockTable tbody');
+  tb.innerHTML=stock
+  .filter(s=>f==='all'||s.type===f)
+  .map((s,i)=>{
+    const sold=s.sold||0,rem=s.qty-sold,lim=getLimit();
+    let cls='ok',msg='OK';
+    if(rem<=0){cls='out';msg='OUT'}
+    else if(rem<=lim){cls='low';msg='LOW'}
+    return `<tr>
+      <td>${s.date}</td><td>${s.type}</td><td>${s.name}</td>
+      <td>${s.qty}</td><td>${sold}</td><td>${rem}</td>
+      <td class="${cls}">${msg}</td><td>${lim}</td>
+      <td><button onclick="viewHistory(${i})">📜</button></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="9">No data</td></tr>';
+}
+
+/* --- view stock history --- */
+function viewHistory(i){
+  const s=stock[i];
+  if(!s.history||!s.history.length)return alert('No history yet');
+  const hist=s.history.map(h=>`${h.date} — Qty:${h.qty} @₹${h.cost}`).join('\n');
+  alert(`📜 ${s.name} History:\n${hist}`);
+}
+
+/* --- events --- */
+document.addEventListener('click',e=>{
+  if(e.target.id==='addTypeBtn')addType();
+  if(e.target.id==='clearTypesBtn')clearTypes();
+  if(e.target.id==='setLimitBtn')setGlobalLimit();
+  if(e.target.id==='clearStockBtn')clearStock();
+  if(e.target.id==='addStockBtn')addStock();
+});
+filterType?.addEventListener('change',renderStock);
+window.addEventListener('load',()=>{renderTypes();updateDropdowns();renderStock();});
+</script>
 </body>
 </html>
