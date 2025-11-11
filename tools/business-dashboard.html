@@ -100,98 +100,237 @@ body.dark .tab {
   border-radius:12px;
   box-shadow:0 6px 20px rgba(0,0,0,.06);
   margin-bottom:18px;
+<style>
+:root {
+  --orange: #ff7a00;
+  --orange-dark: #cc6300;
+  --bg: #f8f9fa;
+  --card: #fff;
+  --text: #222;
+  --dark-bg: #0f0f0f;
+  --dark-card: #1b1b1b;
+  --dark-text: #f2f2f2;
+  --dark-border: #444;
+}
+
+/* 🌐 Base resets */
+* {
+  box-sizing: border-box;
+  transition: background 0.2s, color 0.2s;
+}
+
+/* 🧱 Body style */
+body {
+  font-family: Poppins, Arial, sans-serif;
+  margin: 0;
+  padding: 18px;
+  background: var(--bg);
+  color: var(--text);
+}
+body.dark {
+  background: var(--dark-bg);
+  color: var(--dark-text);
+}
+
+/* 🧭 Topbar & Headings */
+h1 {
+  color: var(--orange);
+  margin: 0;
+  font-size: 20px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.theme-btn, .small-btn {
+  background: var(--orange);
+  color: #fff;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.theme-btn:hover, .small-btn:hover {
+  background: var(--orange-dark);
+}
+
+/* 📁 Tabs */
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin: 6px 0 18px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.tab {
+  background: #eee;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+body.dark .tab {
+  background: #222;
+  color: #ccc;
+}
+
+.tab.active {
+  background: var(--orange);
+  color: #fff;
+}
+
+/* 📦 Sections */
+.section {
+  display: none;
+  background: var(--card);
+  padding: 14px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  margin-bottom: 18px;
 }
 .section.active {
-  display:block;
+  display: block;
 }
 body.dark .section {
-  background:var(--dark-card);
-  border:1px solid var(--dark-border);
-  color:var(--dark-text);
+  background: var(--dark-card);
+  border: 1px solid var(--dark-border);
+  color: var(--dark-text);
 }
 
-/* Dashboard cards — dark mode fix */
+/* 🧾 Dashboard Cards */
 #summaryCards .card {
-  transition:background .3s, color .3s;
+  transition: background 0.3s, color 0.3s;
 }
 body.dark #summaryCards .card {
-  background:var(--dark-card) !important;
-  color:var(--dark-text) !important;
-  border:1px solid var(--dark-border);
+  background: var(--dark-card) !important;
+  color: var(--dark-text) !important;
+  border: 1px solid var(--dark-border);
 }
 body.dark #summaryCards .card div {
-  filter:brightness(1.2);
+  filter: brightness(1.2);
 }
 
-/* Footer buttons */
+/* 🦶 Footer Buttons */
 .footer-btns {
-  text-align:center;
-  margin-top:20px;
+  text-align: center;
+  margin-top: 20px;
 }
 .footer-btns a {
-  background:var(--orange);
-  color:#fff;
-  padding:10px 16px;
-  border-radius:8px;
-  text-decoration:none;
-  margin:6px;
-  display:inline-block;
+  background: var(--orange);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  margin: 6px;
+  display: inline-block;
 }
 .footer-btns a:hover {
-  background:var(--orange-dark);
+  background: var(--orange-dark);
 }
 
-/* Help modal */
+/* ❓ Help Modal (Dark + Light mode compatible) */
 .help-modal {
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.6);
-  display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  transition: opacity 0.3s ease;
 }
 .help-content {
-  background:var(--card);
-  padding:20px;
-  max-width:640px;
-  border-radius:12px;
-  color:var(--text);
-  overflow-y:auto;
-  max-height:85vh;
+  background: var(--card);
+  padding: 24px;
+  max-width: 640px;
+  width: 90%;
+  border-radius: 14px;
+  color: var(--text);
+  overflow-y: auto;
+  max-height: 85vh;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
 }
 body.dark .help-content {
-  background:var(--dark-card);
-  color:var(--dark-text);
+  background: var(--dark-card);
+  color: var(--dark-text);
+  box-shadow: 0 8px 24px rgba(255,255,255,0.1);
 }
 
-/* Status colors */
-.ok {color:green;font-weight:600;}
-.low {color:orange;font-weight:600;}
-.out {color:red;font-weight:700;}
+/* ✅ Status colors */
+.ok {
+  color: #43a047;  /* green */
+  font-weight: 600;
+}
+.low {
+  color: #ffa726;  /* orange */
+  font-weight: 600;
+}
+.out {
+  color: #e53935;  /* red */
+  font-weight: 700;
+}
 
-/* Tables */
+/* 🧾 Table Styling */
 table {
-  width:100%;
-  border-collapse:collapse;
-  margin-top:12px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 14px;
+  border-radius: 10px;
+  overflow: hidden;
 }
-th,td {
-  border:1px solid #ddd;
-  padding:6px 8px;
-  text-align:center;
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px 10px;
+  text-align: center;
+  font-size: 14px;
 }
 th {
-  background:var(--orange);
-  color:#fff;
+  background: var(--orange);
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.3px;
 }
 body.dark th {
-  background:var(--orange-dark);
+  background: var(--orange-dark);
 }
-</style>
+tr:nth-child(even) {
+  background: #fdfdfd;
+}
+body.dark tr:nth-child(even) {
+  background: #1f1f1f;
+}
+tr:hover {
+  background: #fff3e0;
+  transition: 0.2s;
+}
+body.dark tr:hover {
+  background: #2a2a2a;
+}
+
+/* 📊 Smart Dashboard Align (Right side layout) */
+#analytics h3 {
+  text-align: right;
+  margin-right: 10px;
+}
+#analytics canvas {
+  display: block;
+  margin-left: auto;
+  margin-right: 0;
+}
+  </style>
 </head>
 
 <body>
