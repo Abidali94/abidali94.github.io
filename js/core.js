@@ -1,4 +1,4 @@
-// core.js — Theme, Tabs, Lazy Loader, Safe Init, Summary Updater
+// core.js — Theme, Tabs, Lazy Loader, Safe Init, Summary Updater + Cloud Sync
 (function () {
   console.log("%c⚙️ KharchaSaathi Core Loaded", "color:#ff7a00;font-weight:bold;");
 
@@ -136,7 +136,7 @@
   };
 
   /* -----------------------------
-     💾 AUTO-SAVE ON CLOSE
+     💾 AUTO-SAVE ON CLOSE (Local)
   ----------------------------- */
   window.addEventListener("beforeunload", () => {
     try {
@@ -144,6 +144,21 @@
       if (typeof window.saveSales === "function") window.saveSales();
     } catch (e) {
       console.warn("⚠️ Auto-save skipped:", e);
+    }
+  });
+
+  /* -----------------------------
+     ☁️ CLOUD AUTO SYNC (Firebase)
+  ----------------------------- */
+  window.addEventListener("beforeunload", async () => {
+    try {
+      if (typeof cloudSave === "function" && typeof localStorage !== "undefined") {
+        await cloudSave("sales", JSON.parse(localStorage.getItem("sales-data") || "[]"));
+        await cloudSave("stock", JSON.parse(localStorage.getItem("stock-data") || "[]"));
+        await cloudSave("types", JSON.parse(localStorage.getItem("types-data") || "[]"));
+      }
+    } catch (e) {
+      console.warn("☁️ Cloud sync skipped:", e);
     }
   });
 
