@@ -762,7 +762,7 @@ function updateSummaryCards(){
 window.addEventListener('load', () => {
   updateSummaryCards();
 });
-<script>
+
 /* ===== ✅ FINAL APP INITIALIZATION & SAFE EXIT ===== */
 window.addEventListener("load", () => {
   try { if (typeof updateSummaryCards === "function") updateSummaryCards(); } catch(e){}
@@ -789,11 +789,14 @@ window.addEventListener("beforeunload", () => {
   try {
     if (typeof saveAll === "function") saveAll();
     if (typeof saveSales === "function") saveSales();
-  } catch (e) { console.warn("Auto-save skipped:", e); }
+  } catch (e) {
+    console.warn("Auto-save skipped:", e);
+  }
 });
 
-/* 🎉 Console confirmation */
-console.log("%cKharchaSaathi Dashboard Loaded Successfully ✅", "color: #ff7a00; font-weight: bold;");
+/* ✅ Console confirmation */
+console.log("%cKharchaSaathi Dashboard Loaded Successfully ✅", "color:#ff7a00;font-weight:bold;");
+
 </script>
 
 </body>
