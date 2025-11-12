@@ -75,29 +75,37 @@ h1 {
 .theme-btn:hover, .small-btn:hover {
   background:var(--orange-dark);
 }
-
-/* Tabs */
+/* 📁 Tabs */
 .tabs {
-  display:flex;
-  gap:8px;
-  margin:6px 0 18px;
-  justify-content:center;
-  flex-wrap:wrap;
+  display: flex;
+  gap: 8px;
+  margin: 6px 0 18px;
+  justify-content: center;
+  flex-wrap: nowrap;       /* ✅ no wrapping */
+  overflow-x: auto;        /* ✅ scroll if too wide */
+  scrollbar-width: none;   /* ✅ hide scrollbar (Firefox) */
 }
+.tabs::-webkit-scrollbar {
+  display: none;           /* ✅ hide scrollbar (Chrome/Safari) */
+}
+
 .tab {
-  background:#eee;
-  padding:8px 12px;
-  border-radius:10px;
-  cursor:pointer;
-  font-weight:600;
+  background: #eee;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;     /* ✅ prevent line breaks in tab text */
 }
+
 body.dark .tab {
-  background:#222;
-  color:#ccc;
+  background: #222;
+  color: #ccc;
 }
+
 .tab.active {
-  background:var(--orange);
-  color:#fff;
+  background: var(--orange);
+  color: #fff;
 }
 
 /* Sections (containers) */
