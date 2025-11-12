@@ -296,12 +296,15 @@ tr:hover {
   background: #fff3e0;
   transition: 0.2s;
 }
-body.dark tr:hover {
-  background: #2a2a2a;
-}
-    #summaryCards {
-  justify-content: flex-end;
+#summaryCards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end; /* ✅ right side align */
   text-align: right;
+  gap: 10px;
+}
+#summaryCards .card {
+  text-align: right; /* ✅ individual cards text right */
 }
 #summaryCards .card small {
   font-size: 13px;
