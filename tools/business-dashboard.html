@@ -226,11 +226,20 @@
     </table>
   </section>
 
-  <!-- WANTING -->
-  <section id="wanting" class="section">
-    <h3>🛒 Wanting</h3>
-    <div id="wantingList" style="margin-top:10px">No items</div>
-  </section>
+<!-- WANTING -->
+<section id="wanting" class="section">
+  <h3>🛒 Wanting List</h3>
+  <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;">
+    <button id="addWantBtn" class="small-btn">➕ Add Item</button>
+    <button id="clearWantBtn" class="small-btn">🗑 Clear All</button>
+  </div>
+  <table style="width:100%;border-collapse:collapse;">
+    <thead>
+      <tr><th>Date</th><th>Type</th><th>Product</th><th>Note</th><th>Action</th></tr>
+    </thead>
+    <tbody id="wantingList"></tbody>
+  </table>
+</section>
 
   <!-- ANALYTICS / SMART DASHBOARD -->
   <section id="analytics" class="section">
