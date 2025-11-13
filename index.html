@@ -10,6 +10,8 @@
 </head>
 
 <body>
+
+  <!-- TOP BAR -->
   <div class="topbar">
     <div class="top-left">
       <button id="backBtn" class="small-btn">🏠 Back</button>
@@ -21,6 +23,7 @@
     </div>
   </div>
 
+  <!-- NAV TABS -->
   <nav class="tabs" role="tablist" aria-label="Main tabs">
     <div class="tab active" data-tab="dashboard">📊 Overview</div>
     <div class="tab" data-tab="types">🗂 Types</div>
@@ -32,24 +35,29 @@
 
   <main id="mainContent">
 
+    <!-- DASHBOARD -->
     <section id="dashboard" class="section active" aria-hidden="false">
       <h2>📊 Business Overview</h2>
+
       <div id="summaryCards" class="summary-cards">
         <div class="card card-sales">
           <div class="card-emoji">💰</div>
           <div class="card-value"><b id="todaySales">₹0</b></div>
           <div class="card-label"><small>Today's Sales</small></div>
         </div>
+
         <div class="card card-credit">
           <div class="card-emoji">💳</div>
           <div class="card-value"><b id="todayCredit">₹0</b></div>
           <div class="card-label"><small>Today's Credit</small></div>
         </div>
+
         <div class="card card-stock">
           <div class="card-emoji">📦</div>
           <div class="card-value"><b id="stockRemain">0%</b></div>
           <div class="card-label"><small>Stock Remaining</small></div>
         </div>
+
         <div class="card card-profit">
           <div class="card-emoji">📈</div>
           <div class="card-value"><b id="todayProfit">₹0</b></div>
@@ -58,33 +66,37 @@
       </div>
     </section>
 
+    <!-- TYPES -->
     <section id="types" class="section" aria-hidden="true">
       <h2>🗂 Types</h2>
       <div id="typesContainer">Loading types module…</div>
     </section>
 
+    <!-- STOCK -->
     <section id="stock" class="section" aria-hidden="true">
       <h2>📦 Stock</h2>
       <div id="stockContainer">Loading stock module…</div>
     </section>
 
+    <!-- SALES -->
     <section id="sales" class="section" aria-hidden="true">
       <h2>📈 Sales & Profit</h2>
       <div id="salesContainer">Loading sales module…</div>
     </section>
 
+    <!-- WANTING -->
     <section id="wanting" class="section" aria-hidden="true">
       <h2>🛒 Wanting</h2>
       <div id="wantingContainer">Loading wanting module…</div>
     </section>
 
+    <!-- ANALYTICS -->
     <section id="analytics" class="section" aria-hidden="true">
       <h2>📊 Smart Dashboard</h2>
       <div id="analyticsContainer">Loading analytics module…</div>
     </section>
 
   </main>
-
 
   <!-- HELP MODAL -->
   <div id="helpModal" class="help-modal" aria-hidden="true">
@@ -98,11 +110,10 @@
     </div>
   </div>
 
-
-  <!-- CORE -->
+  <!-- CORE JS -->
   <script src="js/core.js"></script>
 
-  <!-- FINAL SAFETY BLOCK -->
+  <!-- SAFETY BLOCK -->
   <script>
   (function(){
     console.log('%c🧩 Running Closing Safety Script...', 'color:#ff7a00;font-weight:bold;');
@@ -112,18 +123,18 @@
         if (typeof window.saveAll === 'function') window.saveAll();
         if (typeof window.saveSales === 'function') window.saveSales();
         if (typeof window.saveWanting === 'function') window.saveWanting();
-        console.log('%c💾 All data saved before unload', 'color:#43a047;font-weight:bold;');
-      } catch (e) { console.warn('⚠️ Auto-save failed:', e); }
+        console.log('%c💾 All data saved before unload','color:#43a047;font-weight:bold;');
+      } catch (e) {}
     });
 
     console.log('%c✅ KharchaSaathi - Closing safety active','color:#4caf50;font-weight:bold;');
   })();
   </script>
 
-  <!-- SECURITY MODULE -->
+  <!-- SECURITY JS -->
   <script src="js/security.js"></script>
 
-  <!-- FIREBASE MODULE -->
+  <!-- FIREBASE JS -->
   <script type="module" src="js/firebase.js"></script>
 
 </body>
