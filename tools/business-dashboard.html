@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>📦 KharchaSaathi — Business Dashboard (v1.2 Final)</title>
+  <title>📦 KharchaSaathi — Business Dashboard (v1.2 Updated)</title>
   <meta name="theme-color" content="#ff7a00" />
   <link rel="icon" href="../favicon.png" />
   <link rel="apple-touch-icon" href="../favicon.png" />
@@ -83,6 +83,10 @@
     /* action buttons inside table */
     .action-btn{padding:6px 8px;border-radius:6px;border:none;background:#eee;cursor:pointer}
     .action-btn:hover{background:#ddd}
+
+    /* Wanting inputs */
+    .want-form { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; align-items:center; }
+    .want-form input, .want-form select { padding:7px; border-radius:6px; border:1px solid #ddd; }
   </style>
 </head>
 <body>
@@ -94,58 +98,18 @@
     </div>
   </div>
 
-  <div class="tabs" role="tablist">
-    <div class="tab active" data-tab="dashboard">📊 Overview</div>
-    <div class="tab" data-tab="types">🗂 Types</div>
+  <!-- NEW TAB ORDER: Types, Stock, Sales, Wanting, Overview, Smart dashboard -->
+  <div class="tabs" role="tablist" aria-label="Main tabs">
+    <div class="tab active" data-tab="types">🗂 Types</div>
     <div class="tab" data-tab="stock">📦 Stock</div>
     <div class="tab" data-tab="sales">📈 Sales</div>
     <div class="tab" data-tab="wanting">🛒 Wanting</div>
+    <div class="tab" data-tab="dashboard">📊 Overview</div>
     <div class="tab" data-tab="analytics">📈 Smart Dashboard</div>
   </div>
 
-  <!-- OVERVIEW -->
-  <section id="dashboard" class="section active">
-    <h3>📊 Business Overview</h3>
-    <div class="flex-row" id="overview-row">
-      <div id="overview-left">
-        <div id="summaryCards" aria-live="polite">
-          <div class="card">
-            <div style="font-size:20px">💰</div>
-            <b id="todaySales">₹0</b><br><small>Today's Sales</small>
-          </div>
-          <div class="card">
-            <div style="font-size:20px">💳</div>
-            <b id="todayCredit">₹0</b><br><small>Today's Credit</small>
-          </div>
-          <div class="card">
-            <div style="font-size:20px">📦</div>
-            <b id="stockRemain">0%</b><br><small>Stock Remaining</small>
-          </div>
-          <div class="card">
-            <div style="font-size:20px">📈</div>
-            <b id="todayProfit">₹0</b><br><small>Today's Profit</small>
-          </div>
-        </div>
-      </div>
-
-      <div id="overview-right">
-        <!-- small analytics preview (non-chart) -->
-        <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
-          <div style="flex:1;min-width:140px;background:#fff;padding:12px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.05)">
-            <div style="font-size:14px;font-weight:600">Quick</div>
-            <div id="quickInfo" style="margin-top:6px;opacity:.85">No data yet</div>
-          </div>
-          <div style="flex:1;min-width:140px;background:#fff;padding:12px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.05)">
-            <div style="font-size:14px;font-weight:600">Status</div>
-            <div id="quickStatus" style="margin-top:6px;opacity:.85">Idle</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TYPES -->
-  <section id="types" class="section">
+  <!-- ===== TYPES ===== -->
+  <section id="types" class="section active">
     <h3>🗂 Manage Item Types</h3>
     <div class="row-inline" style="margin-top:8px">
       <input id="typeName" type="text" placeholder="Add new type (e.g. Mobiles)" style="flex:1;min-width:160px">
@@ -155,7 +119,7 @@
     <ul id="typeList" style="margin-top:10px;padding-left:18px"></ul>
   </section>
 
-  <!-- STOCK -->
+  <!-- ===== STOCK ===== -->
   <section id="stock" class="section">
     <h3>📦 Current Stock</h3>
 
@@ -190,7 +154,7 @@
     </table>
   </section>
 
-  <!-- SALES -->
+  <!-- ===== SALES ===== -->
   <section id="sales" class="section">
     <h3>💰 Sales & Profit</h3>
 
@@ -226,22 +190,71 @@
     </table>
   </section>
 
-<!-- WANTING -->
-<section id="wanting" class="section">
-  <h3>🛒 Wanting List</h3>
-  <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;">
-    <button id="addWantBtn" class="small-btn">➕ Add Item</button>
-    <button id="clearWantBtn" class="small-btn">🗑 Clear All</button>
-  </div>
-  <table style="width:100%;border-collapse:collapse;">
-    <thead>
-      <tr><th>Date</th><th>Type</th><th>Product</th><th>Note</th><th>Action</th></tr>
-    </thead>
-    <tbody id="wantingList"></tbody>
-  </table>
-</section>
+  <!-- ===== WANTING ===== -->
+  <section id="wanting" class="section">
+    <h3>🛒 Wanting List</h3>
 
-  <!-- ANALYTICS / SMART DASHBOARD -->
+    <!-- Full UI for Wanting (type select, name, note) -->
+    <div class="want-form">
+      <select id="wantType" style="min-width:160px">
+        <option value="">Select Type</option>
+      </select>
+      <input id="wantName" type="text" placeholder="Product name" style="min-width:200px">
+      <input id="wantNote" type="text" placeholder="Note (optional)" style="min-width:200px">
+      <button id="addWantBtn" class="small-btn">➕ Add Item</button>
+      <button id="clearWantBtn" class="small-btn">🗑 Clear All</button>
+      <button id="printWantBtn" class="small-btn">🖨 Print</button>
+    </div>
+
+    <table id="wantingTable" style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr><th>Date</th><th>Type</th><th>Product</th><th>Note</th><th>Action</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- ===== OVERVIEW ===== -->
+  <section id="dashboard" class="section">
+    <h3>📊 Business Overview</h3>
+    <div class="flex-row" id="overview-row">
+      <div id="overview-left">
+        <div id="summaryCards" aria-live="polite">
+          <div class="card">
+            <div style="font-size:20px">💰</div>
+            <b id="todaySales">₹0</b><br><small>Today's Sales</small>
+          </div>
+          <div class="card">
+            <div style="font-size:20px">💳</div>
+            <b id="todayCredit">₹0</b><br><small>Today's Credit</small>
+          </div>
+          <div class="card">
+            <div style="font-size:20px">📦</div>
+            <b id="stockRemain">0%</b><br><small>Stock Remaining</small>
+          </div>
+          <div class="card">
+            <div style="font-size:20px">📈</div>
+            <b id="todayProfit">₹0</b><br><small>Today's Profit</small>
+          </div>
+        </div>
+      </div>
+
+      <div id="overview-right">
+        <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <div style="flex:1;min-width:140px;background:#fff;padding:12px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.05)">
+            <div style="font-size:14px;font-weight:600">Quick</div>
+            <div id="quickInfo" style="margin-top:6px;opacity:.85">No data yet</div>
+          </div>
+          <div style="flex:1;min-width:140px;background:#fff;padding:12px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.05)">
+            <div style="font-size:14px;font-weight:600">Status</div>
+            <div id="quickStatus" style="margin-top:6px;opacity:.85">Idle</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SMART DASHBOARD / ANALYTICS ===== -->
   <section id="analytics" class="section">
     <h3>📊 Smart Sales Dashboard</h3>
     <div style="display:flex;flex-wrap:wrap;gap:20px;justify-content:flex-end;align-items:center">
@@ -254,447 +267,67 @@
   <!-- HELP -->
   <div class="footer-btns" style="margin-top:18px">
     <a href="#" id="helpLink" class="small-btn">📘 Help & Guide</a>
-    <div class="version-info">v1.2 — optimized single-file</div>
+    <div class="version-info">v1.2 — updated 700-line model</div>
   </div>
 
-  <div id="helpModal" class="help-modal">
+  <div id="helpModal" class="help-modal" role="dialog" aria-hidden="true">
     <div class="help-content">
       <h2>📘 Quick Help</h2>
       <ul style="line-height:1.6">
         <li>Types → add and manage item categories</li>
         <li>Stock → add stock, set low limits, quick actions</li>
         <li>Sales → record Paid / Credit sales, print & filter</li>
-        <li>Smart Dashboard → click tab to view charts</li>
+        <li>Wanting → add reorder items manually or auto-add when stock ends</li>
+        <li>Smart Dashboard → charts auto-update</li>
       </ul>
       <div style="text-align:right;margin-top:12px"><button class="small-btn" onclick="toggleHelp()">Close</button></div>
     </div>
   </div>
 
-  <!-- SCRIPTS -->
+  <!-- SCRIPTS: minimal UI glue + module includes (order matters) -->
   <script>
-  /* -------------------
-     Lightweight Helpers
-     ------------------- */
-  const qs = sel => document.querySelector(sel);
-  const qsa = sel => Array.from(document.querySelectorAll(sel));
-  function escapeHtml(s){ if(!s && s !== 0) return ''; return String(s).replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'})[c]); }
+    // minimal helpers
+    const qs = s => document.querySelector(s);
+    const qsa = s => Array.from(document.querySelectorAll(s));
+    function toggleHelp(){ const m = qs('#helpModal'); m.style.display = (m.style.display==='flex'?'none':'flex'); }
+    qs('#helpLink').addEventListener('click', e=>{ e.preventDefault(); toggleHelp(); });
 
-  /* -------------------
-     Local keys and data
-     ------------------- */
-  const K_TYPES = 'item-types';
-  const K_STOCK = 'stock-data';
-  const K_SALES = 'sales-data';
-  const K_LIMIT = 'default-limit';
-  const K_ADMIN = 'ks-admin-pw';
+    // theme toggle (keeps CSS rules already defined)
+    (function(){
+      if(localStorage.getItem('ks-theme') === 'dark') document.body.classList.add('dark');
+      qs('#themeBtn').addEventListener('click', ()=>{
+        const isDark = document.body.classList.toggle('dark');
+        localStorage.setItem('ks-theme', isDark ? 'dark' : 'light');
+      });
+    })();
 
-  window.types = JSON.parse(localStorage.getItem(K_TYPES) || '["Mobiles","Accessories"]');
-  window.stock = JSON.parse(localStorage.getItem(K_STOCK) || '[]');
-  window.sales = JSON.parse(localStorage.getItem(K_SALES) || '[]');
-
-  /* -------------------
-     Save helpers
-     ------------------- */
-  function saveAll(){
-    localStorage.setItem(K_TYPES, JSON.stringify(window.types));
-    localStorage.setItem(K_STOCK, JSON.stringify(window.stock));
-    // sales saved by saveSales when needed
-  }
-  function saveSales(){ localStorage.setItem(K_SALES, JSON.stringify(window.sales)); }
-
-  /* -------------------
-     THEME
-     ------------------- */
-  (function initTheme(){
-    if(localStorage.getItem('ks-theme')==='dark') document.body.classList.add('dark');
-    qs('#themeBtn').addEventListener('click', ()=>{
-      document.body.classList.toggle('dark');
-      localStorage.setItem('ks-theme', document.body.classList.contains('dark') ? 'dark':'light');
-    });
-  })();
-
-  /* -------------------
-     TABS
-     ------------------- */
-  const tabs = qsa('.tab'), sections = qsa('.section');
-  function activateTab(name){
-    tabs.forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
-    sections.forEach(s=>s.classList.toggle('active', s.id===name));
-    // on-demand actions
-    if(name==='dashboard') updateSummaryCards();
-    if(name==='types') { renderTypes(); updateDropdowns(); }
-    if(name==='stock') { renderStock(); patchStockActions(); }
-    if(name==='sales') { initSalesModule(); }
-    if(name==='analytics') { ensureChartsLoadedAndRender(); }
-  }
-  tabs.forEach(t => t.addEventListener('click', ()=> activateTab(t.dataset.tab)));
-
-  /* -------------------
-     HELP MODAL
-     ------------------- */
-  function toggleHelp(){
-    const m = qs('#helpModal');
-    m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
-  }
-  qs('#helpLink').addEventListener('click', e=>{ e.preventDefault(); toggleHelp(); });
-
-  /* -------------------
-     TYPES
-     ------------------- */
-  function renderTypes(){
-    const ul = qs('#typeList'); if(!ul) return;
-    if(!Array.isArray(window.types)) window.types = [];
-    ul.innerHTML = window.types.map(t=>`<li>${escapeHtml(t)}</li>`).join('') || '<li>No types</li>';
-  }
-  function updateDropdowns(){
-    ['ptype','filterType','saleType'].forEach(id=>{
-      const el = qs('#'+id); if(!el) return;
-      const base = id==='filterType' ? '<option value="all">All Types</option>' : '<option value="">Select</option>';
-      el.innerHTML = base + (window.types || []).map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
-    });
-    // update sale product selector too (separate function can refine)
-    refreshSaleSelectors();
-  }
-  qs('#addTypeBtn').addEventListener('click', ()=>{
-    const v = qs('#typeName').value.trim(); if(!v) return alert('Enter a type'); if(window.types.includes(v)) return alert('Type exists');
-    window.types.push(v); saveAll(); renderTypes(); updateDropdowns(); qs('#typeName').value='';
-  });
-  qs('#clearTypesBtn').addEventListener('click', ()=>{
-    if(confirm('Clear all types?')){ window.types=[]; saveAll(); renderTypes(); updateDropdowns(); }
-  });
-
-  /* -------------------
-     STOCK
-     ------------------- */
-  function getLimit(){ const v = parseInt(localStorage.getItem(K_LIMIT)); return isNaN(v)?0:v; }
-  qs('#setLimitBtn').addEventListener('click', ()=>{
-    const v = parseInt(qs('#globalLimit').value); if(isNaN(v)||v<0) return alert('Invalid'); localStorage.setItem(K_LIMIT, v); alert('Limit set: '+v);
-  });
-
-  function renderStock(){
-    const f = qs('#filterType') ? qs('#filterType').value : 'all';
-    const tbody = qs('#stockTable tbody'); if(!tbody) return;
-    const list = (window.stock||[]).filter(s => f==='all' || s.type===f);
-    if(!list.length) { tbody.innerHTML = '<tr><td colspan="9">No Data</td></tr>'; return; }
-    tbody.innerHTML = list.map((s,i)=>{
-      const sold = s.sold||0; const rem = (s.qty||0)-sold; const lim = getLimit();
-      let cls='ok', msg='OK'; if(rem<=0){cls='out';msg='OUT'} else if(rem<=lim){cls='low';msg='LOW'}
-      return `<tr data-i="${i}">
-        <td>${escapeHtml(s.date||'')}</td>
-        <td>${escapeHtml(s.type)}</td>
-        <td>${escapeHtml(s.name)}</td>
-        <td>${s.qty||0}</td>
-        <td>${sold}</td>
-        <td>${rem}</td>
-        <td class="${cls}">${msg}</td>
-        <td>${lim}</td>
-        <td>
-          <button class="action-btn history-btn" data-i="${i}">📜</button>
-          <button class="action-btn sale-btn" data-i="${i}">💸</button>
-          <button class="action-btn credit-btn" data-i="${i}">📒</button>
-        </td>
-      </tr>`;
-    }).join('');
-  }
-
-  qs('#addStockBtn').addEventListener('click', ()=>{
-    const d = qs('#pdate').value, t = qs('#ptype').value, n = qs('#pname').value.trim();
-    const q = parseInt(qs('#pqty').value), c = parseFloat(qs('#pcost').value);
-    if(!d || !t || !n || !q || !c) return alert('Please fill all fields');
-    const ex = (window.stock||[]).find(s => s.type===t && s.name.toLowerCase()===n.toLowerCase());
-    if(ex){ ex.qty = (ex.qty||0)+q; ex.date=d; ex.cost=c; ex.history=ex.history||[]; ex.history.push({date:d,qty:q,cost:c}); }
-    else { window.stock.push({date:d,type:t,name:n,qty:q,sold:0,cost:c,history:[{date:d,qty:q,cost:c}]}); }
-    saveAll(); renderStock(); qs('#pname').value=''; qs('#pqty').value=''; qs('#pcost').value='';
-  });
-
-  qs('#clearStockBtn').addEventListener('click', ()=>{
-    if(confirm('Clear all stock?')){ window.stock=[]; saveAll(); renderStock(); }
-  });
-
-  qs('#filterType')?.addEventListener('change', renderStock);
-
-  /* -------------- Stock actions (history / quick sale / credit) -------------- */
-  function patchStockActions(){
-    // left intentionally simple: actions are rendered in renderStock's HTML
-    // event delegation handles the clicks below
-  }
-
-  document.addEventListener('click', (e)=>{
-    const t = e.target;
-    if(t.classList.contains('history-btn')){ const i = t.dataset.i; viewHistory(i); }
-    if(t.classList.contains('sale-btn')){ const i = t.dataset.i; handleSaleOrCredit(i,'Paid'); }
-    if(t.classList.contains('credit-btn')){ const i = t.dataset.i; handleSaleOrCredit(i,'Credit'); }
-  });
-
-  function viewHistory(i){
-    const s = (window.stock||[])[i]; if(!s||!s.history) return alert('No history'); alert(`${s.name} —\n` + s.history.map(h=>`${h.date} — Qty ${h.qty} @₹${h.cost}`).join('\n'));
-  }
-
-  function handleSaleOrCredit(i, mode){
-    const s = (window.stock||[])[i]; if(!s) return alert('Invalid item');
-    const remain = (s.qty||0) - (s.sold||0); if(remain<=0) return alert('No stock left');
-    const qty = parseInt(prompt(`Enter qty for ${s.name} (remaining ${remain})`)); if(!qty||qty<=0||qty>remain) return;
-    const price = parseFloat(prompt('Enter sale price ₹:')); if(!price||price<=0) return;
-    s.sold = (s.sold||0) + qty;
-    const d = new Date().toISOString().split('T')[0];
-    const cost = parseFloat(s.cost||0); const profit = Math.round((price - cost) * qty * 100)/100;
-    const sale = {date:d,type:s.type,product:s.name,qty,price,amount:qty*price,profit,status:mode};
-    window.sales.push(sale); saveSales();
-    if(s.sold >= s.qty){ // add to wanting
-      const w = JSON.parse(localStorage.getItem('wanting-data')||'[]'); w.push({date:d,type:s.type,name:s.name,note:'Auto'}); localStorage.setItem('wanting-data', JSON.stringify(w));
-    }
-    saveAll(); renderStock(); renderSales(); updateSummaryCards(); alert(`${mode} sale recorded`);
-  }
-
-  /* -------------------
-     SALES MODULE
-     ------------------- */
-  const saleDate = qs('#saleDate'), saleType = qs('#saleType'), saleProduct = qs('#saleProduct'),
-        saleQty = qs('#saleQty'), salePrice = qs('#salePrice'), saleStatus = qs('#saleStatus'),
-        includeGst = qs('#includeGst'), gstPercent = qs('#gstPercent'),
-        salesTableBody = qs('#salesTable tbody'), salesTotalEl = qs('#salesTotal'), profitTotalEl = qs('#profitTotal');
-
-  const todayStr = new Date().toISOString().split('T')[0];
-  if(saleDate && !saleDate.value) saleDate.value = todayStr;
-
-  function refreshSaleSelectors(){
-    const typesList = Array.isArray(window.types) ? window.types : (window.types = JSON.parse(localStorage.getItem(K_TYPES)||'[]'));
-    if(saleType) saleType.innerHTML = `<option value="">All Types</option>` + typesList.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
-    // products unique
-    const prodOptions = (window.stock||[]).map(s=>({type:s.type,name:s.name})).filter((v,i,a)=> a.findIndex(x=>x.type===v.type && x.name===v.name)===i);
-    if(saleProduct) saleProduct.innerHTML = '<option value="">Select</option>' + prodOptions.map(p=>`<option value="${escapeHtml(p.type)}|||${escapeHtml(p.name)}">${escapeHtml(p.type)} — ${escapeHtml(p.name)}</option>`).join('');
-  }
-
-  saleType?.addEventListener('change', ()=>{
-    const t = saleType.value;
-    const filtered = (window.stock||[]).filter(s => !t || s.type===t).map(s=>({type:s.type,name:s.name})).filter((v,i,a)=> a.findIndex(x=>x.type===v.type && x.name===v.name)===i);
-    if(saleProduct) saleProduct.innerHTML = '<option value="">Select</option>' + filtered.map(p=>`<option value="${escapeHtml(p.type)}|||${escapeHtml(p.name)}">${escapeHtml(p.type)} — ${escapeHtml(p.name)}</option>`).join('');
-  });
-
-  function getProductCost(type,name){
-    const ex = (window.stock||[]).find(s => s.type===type && s.name.toLowerCase()===name.toLowerCase()); if(!ex) return 0;
-    if(ex.cost) return parseFloat(ex.cost)||0;
-    if(Array.isArray(ex.history) && ex.history.length){
-      const tot = ex.history.reduce((a,h)=>a + ((h.qty||0)*(h.cost||0)),0);
-      const qtot = ex.history.reduce((a,h)=>a + (h.qty||0),0);
-      return qtot? tot/qtot:0;
-    }
-    return 0;
-  }
-
-  function addSale(){
-    const d = saleDate.value || todayStr;
-    const prodVal = (saleProduct && saleProduct.value) || '';
-    const qty = parseInt(saleQty.value,10);
-    const price = parseFloat(salePrice.value);
-    const status = saleStatus.value || 'Paid';
-    if(!prodVal) return alert('Select product'); if(!qty || qty<=0) return alert('Invalid qty'); if(!price || price<=0) return alert('Invalid price');
-    const [type,name] = prodVal.split('|||');
-    const idx = (window.stock||[]).findIndex(s => s.type===type && s.name.toLowerCase()===name.toLowerCase());
-    if(idx>=0){
-      const stockItem = window.stock[idx];
-      const remain = (stockItem.qty||0) - (stockItem.sold||0);
-      if(qty>remain) if(!confirm(`Only ${remain} left. Proceed?`)) return;
-      stockItem.sold = (stockItem.sold||0) + qty;
-    }
-    const cost = getProductCost(type,name)||0;
-    let netSalePrice = price;
-    if(includeGst && includeGst.checked){ const g=parseFloat(gstPercent.value)||0; if(g>0) netSalePrice = price/(1+(g/100)); }
-    const profit = Math.round((netSalePrice - cost) * qty * 100)/100;
-    const entry = {date:d,type,product:name,qty,price,amount:price*qty,costPerUnit:cost,profit:Math.round(profit*100)/100,status};
-    window.sales.push(entry); saveSales(); renderSales(); renderStock(); updateSummaryCards();
-    saleQty.value=''; salePrice.value='';
-    alert('Sale recorded');
-  }
-
-  qs('#addSaleBtn').addEventListener('click', addSale);
-
-  function renderSales(filterDate){
-    const list = window.sales||[];
-    const rows = filterDate ? list.filter(s=>s.date===filterDate) : list;
-    if(!salesTableBody) return;
-    let total=0,pTotal=0;
-    salesTableBody.innerHTML = rows.length ? rows.map((s,i)=>{ total += (s.amount||0); pTotal += (s.profit||0);
-      return `<tr data-index="${i}"><td>${s.date}</td><td>${escapeHtml(s.type)}</td><td>${escapeHtml(s.product)}</td><td>${s.qty}</td><td>${s.price}</td><td>${s.amount}</td><td class="profit-cell">${s.profit}</td><td>${s.status}</td></tr>`;
-    }).join('') : '<tr><td colspan="8">No Sales Yet</td></tr>';
-    if(salesTotalEl) salesTotalEl.textContent = Math.round(total*100)/100;
-    if(profitTotalEl) profitTotalEl.textContent = Math.round(pTotal*100)/100;
-    applyProfitVisibility();
-  }
-
-  qs('#viewSalesBtn')?.addEventListener('click', ()=>{ const d = saleDate.value || todayStr; renderSales(d); });
-
-  qs('#printSalesBtn')?.addEventListener('click', ()=>{
-    const rowsHtml = salesTableBody.innerHTML;
-    const printHtml = `<html><head><title>Sales Print</title><style>table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px;text-align:center}</style></head><body><h3>Sales — ${saleDate.value || 'All'}</h3><table><thead>${qs('#salesTable thead').innerHTML}</thead><tbody>${rowsHtml}</tbody></table></body></html>`;
-    const w = window.open('','_blank'); w.document.write(printHtml); w.document.close(); w.print();
-  });
-
-  /* profit lock */
-  let profitLocked = false;
-  function applyProfitVisibility(){
-    const colIndex = 6;
-    const ths = qsa('#salesTable thead th');
-    if(ths && ths[colIndex]) ths[colIndex].style.display = profitLocked ? 'none' : '';
-    qsa('#salesTable tbody tr').forEach(tr => { const pc = tr.querySelector('.profit-cell'); if(pc) pc.style.display = profitLocked ? 'none' : ''; });
-    if(profitTotalEl) profitTotalEl.style.display = profitLocked ? 'none' : '';
-  }
-  qs('#toggleProfitBtn')?.addEventListener('click', ()=>{
-    if(!profitLocked){ profitLocked=true; applyProfitVisibility(); alert('Profit column hidden (locked)'); return; }
-    const pw = prompt('Enter admin password to unlock:'); if(!pw) return;
-    const stored = localStorage.getItem(K_ADMIN) || '';
-    if(pw===stored){ profitLocked=false; applyProfitVisibility(); alert('Unlocked'); } else alert('Wrong password');
-  });
-  qs('#setAdminBtn')?.addEventListener('click', ()=>{
-    const cur = localStorage.getItem(K_ADMIN) || '';
-    if(cur){ const old = prompt('Enter current admin pw (cancel leaves)'); if(!old) return; if(old!==cur){ alert('Wrong'); return; } }
-    const np = prompt('Enter new admin pw (min 4 char)'); if(!np || np.length<4) return alert('Too short'); localStorage.setItem(K_ADMIN,np); alert('Updated');
-  });
-
-  function initSalesModule(){ refreshSaleSelectors(); renderSales(); applyProfitVisibility(); }
-
-  /* -------------------
-     SUMMARY PANEL
-     ------------------- */
-  function updateSummaryCards(){
-    const today = new Date().toISOString().split('T')[0];
-    const salesList = JSON.parse(localStorage.getItem(K_SALES)||'[]');
-    const stockList = JSON.parse(localStorage.getItem(K_STOCK)||'[]');
-    let todaySales=0,todayCredit=0,todayProfit=0;
-    salesList.forEach(s=>{ if(s.date===today){ if(s.status==='Paid') todaySales += s.amount||0; if(s.status==='Credit') todayCredit += s.amount||0; todayProfit += s.profit||0; }});
-    const totalQty = stockList.reduce((a,b)=>a + (Number(b.qty)||0),0);
-    const soldQty = stockList.reduce((a,b)=>a + (Number(b.sold)||0),0);
-    const remainPct = totalQty>0 ? Math.round(((totalQty - soldQty)/totalQty) * 100) : 0;
-    qs('#todaySales').textContent = '₹' + (Math.round(todaySales*100)/100).toFixed(2);
-    qs('#todayCredit').textContent = '₹' + (Math.round(todayCredit*100)/100).toFixed(2);
-    qs('#todayProfit').textContent = '₹' + (Math.round(todayProfit*100)/100).toFixed(2);
-    qs('#stockRemain').textContent = remainPct + '%';
-    // quick info
-    qs('#quickInfo').textContent = `Total stock items: ${stockList.length}, Sales entries: ${salesList.length}`;
-    qs('#quickStatus').textContent = (salesList.length ? 'Active' : 'Idle');
-  }
-  window.addEventListener('storage', ()=>{ renderStock(); renderSales(); updateSummaryCards(); });
-
-  /* -------------------
-     ANALYTICS (Chart.js) - load on demand
-     ------------------- */
-  let chartsLoaded = false, salesBarChart = null, salesPieChart = null, analyticsInterval = null;
-  function loadChartJsOnce(cb){
-    if(window.Chart){ chartsLoaded=true; return cb && cb(); }
-    const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/chart.js'; s.onload = ()=>{ chartsLoaded=true; cb && cb(); }; document.head.appendChild(s);
-  }
-
-  function getSalesData(){
-    const sales = JSON.parse(localStorage.getItem(K_SALES) || '[]');
-    const today = new Date(); const todayStr = today.toISOString().split('T')[0];
-    const startOfWeek = new Date(today); startOfWeek.setDate(today.getDate() - today.getDay());
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    let todaySales=0, weekSales=0, monthSales=0, creditSales=0, paidSales=0, totalProfit=0;
-    sales.forEach(s=>{
-      const d = new Date(s.date);
-      const amt = s.amount || 0; const prof = s.profit || 0;
-      if(s.date===todayStr) todaySales += amt;
-      if(d >= startOfWeek) weekSales += amt;
-      if(d >= startOfMonth) monthSales += amt;
-      if(s.status === 'Credit') creditSales += amt; else paidSales += amt;
-      totalProfit += prof;
-    });
-    return { todaySales, weekSales, monthSales, creditSales, paidSales, totalProfit };
-  }
-
-  function renderAnalytics(){
-    if(!chartsLoaded) return;
-    const { todaySales, weekSales, monthSales, creditSales, paidSales, totalProfit } = getSalesData();
-    const ctx1 = qs('#salesBar').getContext('2d'); const ctx2 = qs('#salesPie').getContext('2d');
-    if(salesBarChart) salesBarChart.destroy(); if(salesPieChart) salesPieChart.destroy();
-    salesBarChart = new Chart(ctx1, { type:'bar', data:{ labels:['Today','This Week','This Month'], datasets:[{ label:'Sales ₹', data:[todaySales,weekSales,monthSales], backgroundColor:['#ffb74d','#ff9800','#f57c00'], borderRadius:6 }] }, options:{ plugins:{ title:{display:true,text:'Sales Summary'}, legend:{display:false} }, scales:{ y:{ beginAtZero:true } } } });
-    salesPieChart = new Chart(ctx2, { type:'pie', data:{ labels:['Paid','Credit'], datasets:[{ data:[paidSales,creditSales], backgroundColor:['#43a047','#42a5f5'] }] }, options:{ plugins:{ legend:{position:'bottom'}, title:{display:true,text:`Total Profit ₹${(totalProfit||0).toFixed(2)}`} } } });
-  }
-
-  function ensureChartsLoadedAndRender(){
-    loadChartJsOnce(()=>{
-      renderAnalytics();
-      // refresh when analytics tab visible every 60s
-      if(analyticsInterval) clearInterval(analyticsInterval);
-      analyticsInterval = setInterval(()=>{ const active = qs('.tab.active'); if(active && active.dataset.tab==='analytics') renderAnalytics(); }, 60000);
-    });
-  }
-
-  /* -------------------
-     INITIALIZATION (single entry)
-     ------------------- */
-  function initAll(){
-    renderTypes(); updateDropdowns(); renderStock(); renderSales(); updateSummaryCards(); patchStockActions();
-    // default inits
-    if(!localStorage.getItem(K_ADMIN)) localStorage.setItem(K_ADMIN,'admin123');
-    // ensure sale selectors updated after stock/types loaded
-    refreshSaleSelectors();
-    // safe auto-save on beforeunload
-    window.addEventListener('beforeunload', ()=>{ try{ saveAll(); saveSales(); }catch(e){} });
-    // update summary periodically
-    setInterval(updateSummaryCards, 60000);
-    console.log('%cKharchaSaathi Dashboard Loaded Successfully ✅','color:#ff7a00;font-weight:bold;');
-  }
-
-  // run init once DOM ready (defer minimal)
-  if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', initAll); }
-  else initAll();
-
-  /* expose for debugging */
-  window.updateSummaryCards = updateSummaryCards;
-  window.renderStock = renderStock;
-  window.renderSales = renderSales;
-  window.refreshSaleSelectors = refreshSaleSelectors;
-  window.ensureChartsLoadedAndRender = ensureChartsLoadedAndRender;
-</script> <!-- ✅ close previous script properly -->
-
-<!-- ===== FINAL CLOSING / SAFETY SECTION ===== -->
-<script>
-(function(){
-  console.log('%c🧩 Running Closing Safety Script...', 'color:#ff7a00;font-weight:bold;');
-
-  // --- Auto-save on close (if modules implement save functions) ---
-  window.addEventListener('beforeunload', function(){
-    try {
-      if (typeof window.saveAll === 'function') window.saveAll();
-      if (typeof window.saveSales === 'function') window.saveSales();
-      if (typeof window.saveWanting === 'function') window.saveWanting();
-      console.log('%c💾 All data saved before unload', 'color:#43a047;font-weight:bold;');
-    } catch (e) {
-      console.warn('⚠️ Auto-save failed:', e);
-    }
-  });
-
-  // --- Pause heavy intervals when tab hidden, resume when visible ---
-  document.addEventListener('visibilitychange', function(){
-    if (document.hidden) {
-      if (window.analyticsInterval) {
-        clearInterval(window.analyticsInterval);
-        console.log('⏸ Analytics updates paused');
+    // Tabs switching (custom order as requested)
+    (function(){
+      const tabs = qsa('.tab'), sections = qsa('.section');
+      function activate(name){
+        tabs.forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
+        sections.forEach(s=>s.classList.toggle('active', s.id===name));
+        // call some on-demand renders if functions available
+        if(name==='types' && typeof renderTypes==='function'){ renderTypes(); if(typeof updateDropdowns==='function') updateDropdowns(); }
+        if(name==='stock' && typeof renderStock==='function'){ renderStock(); if(typeof patchStockActions==='function') patchStockActions(); }
+        if(name==='sales' && typeof initSalesModule==='function'){ initSalesModule(); }
+        if(name==='wanting' && typeof renderWanting==='function'){ renderWanting(); if(typeof updateTypeDropdowns==='function') updateTypeDropdowns(); }
+        if(name==='dashboard' && typeof updateSummaryCards==='function'){ updateSummaryCards(); }
+        if(name==='analytics' && typeof ensureChartsLoadedAndRender==='function'){ ensureChartsLoadedAndRender(); }
       }
-    } else {
-      if (typeof window.ensureChartsLoadedAndRender === 'function') {
-        window.ensureChartsLoadedAndRender();
-        console.log('▶️ Analytics resumed');
-      }
-    }
-  });
+      tabs.forEach(t=> t.addEventListener('click', ()=> activate(t.dataset.tab)));
+      // expose
+      window.activateTab = activate;
+    })();
+  </script>
 
-  // --- Refresh summary on focus ---
-  window.addEventListener('focus', function(){
-    try {
-      if (typeof updateSummaryCards === 'function') {
-        updateSummaryCards();
-        console.log('🔁 Summary refreshed on focus');
-      }
-    } catch(e){}
-  });
-
-  console.log('%c✅ KharchaSaathi - Closing safety active','color:#4caf50;font-weight:bold;');
-})();
-</script>
-
-<!-- ===== SECURITY MODULE (Admin PIN & Protection) ===== -->
-<script src="../js/security.js"></script>
+  <!-- External JS modules (ensure these files exist and are replaced with the JS you already prepared) -->
+  <script src="../js/core.js"></script>
+  <script src="../js/types.js"></script>
+  <script src="../js/stock.js"></script>
+  <script src="../js/sales.js"></script>
+  <script src="../js/wanting.js"></script>
+  <script src="../js/analytics.js"></script>
+  <script src="../js/security.js"></script>
 </body>
 </html>
