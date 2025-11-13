@@ -1,14 +1,7 @@
-// firebase.js - Cloud Sync Layer for KharchaSaathi
-import { initializeApp } 
-  from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+// firebase.js - Cloud Sync Layer (NON-MODULE VERSION)
 
-import { 
-  getFirestore, 
-  collection, 
-  setDoc, 
-  doc, 
-  getDoc 
-} from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+importScripts("https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js");
 
 const firebaseConfig = {
   apiKey: "AIzaSyC1TSwODhcD88-IizbtZkh3DLWMWR4CV9o",
@@ -20,20 +13,19 @@ const firebaseConfig = {
   measurementId: "G-7F1V1N1YTR"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-console.log("%c☁️ Firebase connected successfully!", "color:#4caf50;font-weight:bold;");
+console.log("Firebase connected (compat) ✔️");
 
 // Cloud Save
 window.cloudSave = async function (collectionName, data) {
   try {
     const userId = localStorage.getItem("userId") || "owner";
-    await setDoc(doc(db, collectionName, userId), data, { merge: true });
-    console.log("Saved to cloud:", collectionName);
+    await db.collection(collectionName).doc(userId).set(data, { merge: true });
+    console.log("Saved to cloud →", collectionName);
   } catch (e) {
-    console.error("Cloud Save Error:", e);
+    console.error("CloudSave ERROR:", e);
   }
 };
 
@@ -41,10 +33,10 @@ window.cloudSave = async function (collectionName, data) {
 window.cloudLoad = async function (collectionName) {
   try {
     const userId = localStorage.getItem("userId") || "owner";
-    const snap = await getDoc(doc(db, collectionName, userId));
-    return snap.exists() ? snap.data() : null;
+    const snap = await db.collection(collectionName).doc(userId).get();
+    return snap.exists ? snap.data() : null;
   } catch (e) {
-    console.error("Cloud Load Error:", e);
+    console.error("CloudLoad ERROR:", e);
     return null;
   }
 };
