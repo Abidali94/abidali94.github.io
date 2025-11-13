@@ -1,115 +1,134 @@
-// core.js — tabs, theme, module loader, dashboard calculations
-(function () {
+/* ===========================================================
+   📌 core.js — Master Storage + Utility Engine
+   Controls: LocalStorage, Data Sync, Safe Updates
+   Works with: types.js, stock.js, sales.js, wanting.js, analytics.js
+   =========================================================== */
 
-  console.log("⚙️ Core Loaded");
+/* ------------------------------------
+   🔐 LOCAL STORAGE KEYS
+------------------------------------ */
+const KEY_TYPES   = "item-types";
+const KEY_STOCK   = "stock-data";
+const KEY_SALES   = "sales-data";
+const KEY_WANTING = "wanting-data";
+const KEY_LIMIT   = "default-limit";
+const KEY_ADMIN   = "ks-admin-pw";
 
-  // --- Theme Toggle ---
-  const themeBtn = document.getElementById("themeBtn");
-  if (localStorage.getItem("ks-theme") === "dark")
-    document.body.classList.add("dark");
+/* ------------------------------------
+   🔧 GLOBAL DATA (Auto-loaded)
+------------------------------------ */
+window.types   = JSON.parse(localStorage.getItem(KEY_TYPES)   || "[]");
+window.stock   = JSON.parse(localStorage.getItem(KEY_STOCK)   || "[]");
+window.sales   = JSON.parse(localStorage.getItem(KEY_SALES)   || "[]");
+window.wanting = JSON.parse(localStorage.getItem(KEY_WANTING) || "[]");
 
-  themeBtn.onclick = () => {
-    document.body.classList.toggle("dark");
-    localStorage.setItem(
-      "ks-theme",
-      document.body.classList.contains("dark") ? "dark" : "light"
-    );
-  };
+/* ------------------------------------
+   💾 SAVE ALL DATA SAFELY
+------------------------------------ */
+function saveAllLocal() {
+  localStorage.setItem(KEY_TYPES,   JSON.stringify(window.types));
+  localStorage.setItem(KEY_STOCK,   JSON.stringify(window.stock));
+  localStorage.setItem(KEY_SALES,   JSON.stringify(window.sales));
+  localStorage.setItem(KEY_WANTING, JSON.stringify(window.wanting));
 
-  // --- Help Modal ---
-  document.getElementById("helpBtn").onclick = () =>
-    document.getElementById("helpModal").setAttribute("aria-hidden", "false");
+  // Broadcast change to other tabs (Business Dashboard auto-refresh)
+  window.dispatchEvent(new Event("storage"));
+}
 
-  document.getElementById("closeHelp").onclick = () =>
-    document.getElementById("helpModal").setAttribute("aria-hidden", "true");
+/* Save individual modules */
+function saveTypes()   { localStorage.setItem(KEY_TYPES,   JSON.stringify(window.types)); }
+function saveStock()   { localStorage.setItem(KEY_STOCK,   JSON.stringify(window.stock)); }
+function saveSales()   { localStorage.setItem(KEY_SALES,   JSON.stringify(window.sales)); }
+function saveWanting() { localStorage.setItem(KEY_WANTING, JSON.stringify(window.wanting)); }
 
-  // --- Tabs ---
-  const tabs = document.querySelectorAll(".tab");
-  const sections = document.querySelectorAll(".section");
+/* ------------------------------------
+   📌 LIMIT HANDLER
+------------------------------------ */
+function setGlobalLimit(v) {
+  localStorage.setItem(KEY_LIMIT, v);
+}
+function getGlobalLimit() {
+  const v = parseInt(localStorage.getItem(KEY_LIMIT));
+  return isNaN(v) ? 0 : v;
+}
 
-  tabs.forEach(t =>
-    t.onclick = () => activateTab(t.dataset.tab)
+/* ------------------------------------
+   🔐 ADMIN PASSWORD UTIL
+------------------------------------ */
+function setAdminPassword(pw) {
+  if (!pw || pw.length < 4) return false;
+  localStorage.setItem(KEY_ADMIN, pw);
+  return true;
+}
+
+function validateAdminPassword(pw) {
+  return pw === localStorage.getItem(KEY_ADMIN);
+}
+
+/* ------------------------------------
+   📆 Today's Date Helper
+------------------------------------ */
+function todayDate() {
+  return new Date().toISOString().split("T")[0];
+}
+
+/* ------------------------------------
+   🔠 Escape HTML
+------------------------------------ */
+function esc(text) {
+  if (!text) return "";
+  return text.replace(/[&<>"']/g, m => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[m]);
+}
+
+/* ------------------------------------
+   📦 FIND PRODUCT
+------------------------------------ */
+function findProduct(type, name) {
+  return window.stock.find(
+    s => s.type === type && s.name.toLowerCase() === name.toLowerCase()
   );
+}
 
-  function activateTab(id) {
-    tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === id));
-    sections.forEach(s => s.classList.toggle("active", s.id === id));
+/* ------------------------------------
+   💰 GET PRODUCT COST (Auto avg)
+------------------------------------ */
+function getProductCost(type, name) {
+  const p = findProduct(type, name);
+  if (!p) return 0;
 
-    lazyLoad(id);
+  if (p.cost) return parseFloat(p.cost);
+
+  if (p.history && p.history.length) {
+    let total = 0, qty = 0;
+    p.history.forEach(h => {
+      total += (h.cost * h.qty);
+      qty   += h.qty;
+    });
+    return qty ? total / qty : 0;
   }
+  return 0;
+}
 
-  // --- Module Map ---
-  const map = {
-    types: "js/types.js",
-    stock: "js/stock.js",
-    sales: "js/sales.js",
-    wanting: "js/wanting.js",
-    analytics: "js/analytics.js"
-  };
+/* ------------------------------------
+   🔄 SYNC DATA WHEN LS CHANGES
+------------------------------------ */
+window.addEventListener("storage", () => {
+  try {
+    window.types   = JSON.parse(localStorage.getItem(KEY_TYPES)   || "[]");
+    window.stock   = JSON.parse(localStorage.getItem(KEY_STOCK)   || "[]");
+    window.sales   = JSON.parse(localStorage.getItem(KEY_SALES)   || "[]");
+    window.wanting = JSON.parse(localStorage.getItem(KEY_WANTING) || "[]");
+  } catch (e) {}
 
-  const loaded = {};
-
-  // --- Lazy Load Modules ---
-  function lazyLoad(id) {
-    if (loaded[id]) {
-      runInit(id);
-      return;
-    }
-
-    if (!map[id]) return;
-
-    const s = document.createElement("script");
-    s.src = map[id];
-    s.onload = () => {
-      loaded[id] = true;
-      console.log("Module loaded:", id);
-      runInit(id);
-    };
-    document.body.appendChild(s);
-  }
-
-  // --- Module Init router ---
-  function runInit(id) {
-    if (id === "wanting" && typeof wantingModuleInit === "function")
-      wantingModuleInit();
-
-    if (typeof moduleInit === "function")
-      moduleInit(id);
-
-    if (typeof perTabUpdate === "function")
-      perTabUpdate(id);
-  }
-
-  // --- Summary Boxes Update ---
-  window.updateSummaryCards = function () {
-    try {
-      const sales = JSON.parse(localStorage.getItem("sales-data") || "[]");
-      const stock = JSON.parse(localStorage.getItem("stock-data") || "[]");
-
-      const today = new Date().toISOString().split("T")[0];
-      let todaySales = 0, todayCredit = 0, todayProfit = 0;
-
-      sales.forEach(s => {
-        if (s.date === today) {
-          if (s.status === "Paid") todaySales += +s.amount;
-          if (s.status === "Credit") todayCredit += +s.amount;
-          todayProfit += +s.profit || 0;
-        }
-      });
-
-      const total = stock.reduce((a,b)=>a+ +b.qty,0);
-      const sold = stock.reduce((a,b)=>a+ +b.sold,0);
-
-      document.getElementById("todaySales").textContent = "₹" + todaySales;
-      document.getElementById("todayCredit").textContent = "₹" + todayCredit;
-      document.getElementById("todayProfit").textContent = "₹" + todayProfit;
-      document.getElementById("stockRemain").textContent = total ? Math.round((total - sold) / total * 100) + "%" : "0%";
-
-    } catch (e) {
-      console.log("Summary error:", e);
-    }
-  };
-
-  window.addEventListener("load", updateSummaryCards);
-
-})();
+  if (typeof renderTypes === "function") renderTypes();
+  if (typeof renderStock === "function") renderStock();
+  if (typeof renderSales === "function") renderSales();
+  if (typeof renderAnalytics === "function") renderAnalytics();
+  if (typeof updateSummaryCards === "function") updateSummaryCards();
+});
