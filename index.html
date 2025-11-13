@@ -6,9 +6,9 @@
   <title>📦 KharchaSaathi — Business Dashboard (Stable)</title>
   <meta name="theme-color" content="#ff7a00" />
   <link rel="icon" href="assets/favicon.png" />
-  <!-- main style -->
   <link rel="stylesheet" href="css/style.css" />
 </head>
+
 <body>
   <div class="topbar">
     <div class="top-left">
@@ -31,11 +31,10 @@
   </nav>
 
   <main id="mainContent">
-    <!-- Sections are placeholders — content for each section will either be inline (small) or loaded by module files -->
-    <section id="dashboard" class="section active" aria-labelledby="overviewTitle">
-      <h2 id="overviewTitle">📊 Business Overview</h2>
+
+    <section id="dashboard" class="section active" aria-hidden="false">
+      <h2>📊 Business Overview</h2>
       <div id="summaryCards" class="summary-cards">
-        <!-- cards filled by updateSummaryCards() -->
         <div class="card card-sales">
           <div class="card-emoji">💰</div>
           <div class="card-value"><b id="todaySales">₹0</b></div>
@@ -57,14 +56,9 @@
           <div class="card-label"><small>Today's Profit</small></div>
         </div>
       </div>
-      <!-- A compact area where analytics small preview can show (but full charts in analytics tab) -->
-      <div id="analyticsPreview" class="analytics-preview" aria-hidden="true">
-        <small>Smart Dashboard preview — click Smart Dashboard tab to open full charts</small>
-      </div>
     </section>
 
     <section id="types" class="section" aria-hidden="true">
-      <!-- simple placeholder: detailed UI loaded by types.js (Part2) -->
       <h2>🗂 Types</h2>
       <div id="typesContainer">Loading types module…</div>
     </section>
@@ -88,77 +82,49 @@
       <h2>📊 Smart Dashboard</h2>
       <div id="analyticsContainer">Loading analytics module…</div>
     </section>
+
   </main>
 
-  <!-- Help modal (simple) -->
+
+  <!-- HELP MODAL -->
   <div id="helpModal" class="help-modal" aria-hidden="true">
     <div class="help-content">
       <h3>Quick Help</h3>
       <ul>
         <li>Manage Types, Stock, Sales and Wanting lists.</li>
-        <li>Smart Dashboard uses your sales data to render charts (loads only when needed).</li>
+        <li>Smart Dashboard uses your data to show charts.</li>
       </ul>
       <button id="closeHelp" class="small-btn">Close</button>
     </div>
   </div>
 
-  <!-- ===== Core Script (tabs + theme + safe init) ===== -->
-<script src="js/core.js"></script>
 
-<!-- ===== FINAL CLOSING / SAFETY SECTION ===== -->
-<script>
-(function(){
-  console.log('%c🧩 Running Closing Safety Script...', 'color:#ff7a00;font-weight:bold;');
+  <!-- CORE -->
+  <script src="js/core.js"></script>
 
-  // --- Auto-save on close (for all modules) ---
-  window.addEventListener('beforeunload', function(){
-    try {
-      if (typeof window.saveAll === 'function') window.saveAll();
-      if (typeof window.saveSales === 'function') window.saveSales();
-      if (typeof window.saveWanting === 'function') window.saveWanting();
-      console.log('%c💾 All data saved before unload', 'color:#43a047;font-weight:bold;');
-    } catch (e) {
-      console.warn('⚠️ Auto-save failed:', e);
-    }
-  });
+  <!-- FINAL SAFETY BLOCK -->
+  <script>
+  (function(){
+    console.log('%c🧩 Running Closing Safety Script...', 'color:#ff7a00;font-weight:bold;');
 
-  // --- Pause heavy intervals when tab hidden, resume when visible ---
-  document.addEventListener('visibilitychange', function(){
-    if (document.hidden) {
-      if (window.analyticsInterval) {
-        clearInterval(window.analyticsInterval);
-        console.log('⏸ Analytics paused');
-      }
-    } else {
-      if (typeof window.ensureChartsLoadedAndRender === 'function') {
-        window.ensureChartsLoadedAndRender();
-        console.log('▶️ Analytics resumed');
-      }
-    }
-  });
+    window.addEventListener('beforeunload', function(){
+      try {
+        if (typeof window.saveAll === 'function') window.saveAll();
+        if (typeof window.saveSales === 'function') window.saveSales();
+        if (typeof window.saveWanting === 'function') window.saveWanting();
+        console.log('%c💾 All data saved before unload', 'color:#43a047;font-weight:bold;');
+      } catch (e) { console.warn('⚠️ Auto-save failed:', e); }
+    });
 
-  // --- Refresh summary when window refocuses ---
-  window.addEventListener('focus', function(){
-    try {
-      if (typeof updateSummaryCards === 'function') {
-        updateSummaryCards();
-        console.log('🔁 Summary refreshed on focus');
-      }
-    } catch(e){}
-  });
+    console.log('%c✅ KharchaSaathi - Closing safety active','color:#4caf50;font-weight:bold;');
+  })();
+  </script>
 
-  console.log('%c✅ KharchaSaathi - Closing safety active','color:#4caf50;font-weight:bold;');
-})();
-<script>
-  console.log('%c✅ KharchaSaathi - Closing safety active', 'color:#4caf50;font-weight:bold;');
-})();
-</script>
+  <!-- SECURITY MODULE -->
+  <script src="js/security.js"></script>
 
-<!-- ===== SECURITY MODULE (Admin PIN & Protection) ===== -->
-<script src="js/security.js"></script>
-
-<!-- ===== FIREBASE CLOUD CONNECTION ===== -->
-<script type="module" src="js/firebase.js"></script>
+  <!-- FIREBASE MODULE -->
+  <script type="module" src="js/firebase.js"></script>
 
 </body>
 </html>
