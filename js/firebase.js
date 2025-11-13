@@ -1,8 +1,15 @@
-// firebase.js — Cloud Sync Layer for KharchaSaathi
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-import { getFirestore, collection, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+// firebase.js - Cloud Sync Layer for KharchaSaathi
+import { initializeApp } 
+  from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
 
-// --- Firebase Config ---
+import { 
+  getFirestore, 
+  collection, 
+  setDoc, 
+  doc, 
+  getDoc 
+} from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyC1TSwODhcD88-IizbtZkh3DLWMWR4CV9o",
   authDomain: "kharchasaathi-main.firebaseapp.com",
@@ -19,28 +26,25 @@ export const db = getFirestore(app);
 
 console.log("%c☁️ Firebase connected successfully!", "color:#4caf50;font-weight:bold;");
 
-// --- CLOUD SAVE ---
+// Cloud Save
 window.cloudSave = async function (collectionName, data) {
   try {
     const userId = localStorage.getItem("userId") || "owner";
     await setDoc(doc(db, collectionName, userId), data, { merge: true });
-    console.log(`☁️ Saved to cloud: ${collectionName}`);
+    console.log("Saved to cloud:", collectionName);
   } catch (e) {
-    console.error("❌ Cloud Save Error:", e);
+    console.error("Cloud Save Error:", e);
   }
 };
 
-// --- CLOUD LOAD ---
+// Cloud Load
 window.cloudLoad = async function (collectionName) {
   try {
     const userId = localStorage.getItem("userId") || "owner";
     const snap = await getDoc(doc(db, collectionName, userId));
-    if (snap.exists()) {
-      return snap.data();
-    }
-    return null;
+    return snap.exists() ? snap.data() : null;
   } catch (e) {
-    console.error("❌ Cloud Load Error:", e);
+    console.error("Cloud Load Error:", e);
     return null;
   }
 };
