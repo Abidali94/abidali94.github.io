@@ -1,8 +1,9 @@
 /* ==========================================================
-   📊 analytics.js — Smart Dashboard (v2.0)
-   Works with: sales.js, stock.js, core.js
+   📊 analytics.js — Smart Dashboard (v3.0)
+   Now includes EXPENSES → Net Profit Calculation
+   Works with: sales.js, expenses.js, core.js
    Uses: Chart.js
-   ========================================================== */
+========================================================== */
 
 let salesBarChart = null;
 let salesPieChart = null;
@@ -15,11 +16,20 @@ function formatDate(d) {
 }
 
 /* ----------------------------------------------------------
-   GET RANGE DATES
+   ⭐ EXPENSES: Get Expense for a given date
+---------------------------------------------------------- */
+function getExpensesByDate(date) {
+  return (window.expenses || [])
+    .filter(e => e.date === date)
+    .reduce((sum, e) => sum + Number(e.amount || 0), 0);
+}
+
+/* ----------------------------------------------------------
+   DATE HELPERS
 ---------------------------------------------------------- */
 function getStartOfWeek() {
   const today = new Date();
-  const day = today.getDay(); // 0 = Sunday
+  const day = today.getDay();
   const diff = today.getDate() - day;
   return formatDate(new Date(today.setDate(diff)));
 }
@@ -30,10 +40,11 @@ function getStartOfMonth() {
 }
 
 /* ----------------------------------------------------------
-   COLLECT SALES DATA
+   COLLECT SALES + EXPENSES + NET PROFIT DATA
 ---------------------------------------------------------- */
 function getAnalyticsData() {
   const sales = window.sales || [];
+  const expenses = window.expenses || [];
 
   const today = todayDate();
   const weekStart = getStartOfWeek();
@@ -44,11 +55,16 @@ function getAnalyticsData() {
       monthSales = 0,
       paidSales = 0,
       creditSales = 0,
-      totalProfit = 0;
+      totalSalesProfit = 0;
 
+  // expenses
+  let todayExpenses = 0,
+      weekExpenses = 0,
+      monthExpenses = 0;
+
+  // SALES CALCULATION
   sales.forEach(s => {
     const d = s.date;
-
     if (!d) return;
 
     if (d === today) todaySales += s.amount || 0;
@@ -58,16 +74,30 @@ function getAnalyticsData() {
     if (s.status === "Credit") creditSales += s.amount || 0;
     else paidSales += s.amount || 0;
 
-    totalProfit += s.profit || 0;
+    totalSalesProfit += s.profit || 0;
   });
 
+  // EXPENSE CALCULATION
+  expenses.forEach(e => {
+    const d = e.date;
+    if (!d) return;
+
+    if (d === today) todayExpenses += Number(e.amount || 0);
+    if (d >= weekStart) weekExpenses += Number(e.amount || 0);
+    if (d >= monthStart) monthExpenses += Number(e.amount || 0);
+  });
+
+  // NET PROFIT (Sales Profit – Expenses)
+  const todayNet = todaySales - todayExpenses;
+  const weekNet = weekSales - weekExpenses;
+  const monthNet = monthSales - monthExpenses;
+
   return {
-    todaySales,
-    weekSales,
-    monthSales,
-    paidSales,
-    creditSales,
-    totalProfit
+    todaySales, weekSales, monthSales,
+    paidSales, creditSales,
+    todayExpenses, weekExpenses, monthExpenses,
+    todayNet, weekNet, monthNet,
+    totalSalesProfit
   };
 }
 
@@ -82,11 +112,12 @@ function renderAnalytics() {
 
   if (!barCanvas || !pieCanvas) return;
 
-  // Destroy old charts to prevent "canvas already in use"
   if (salesBarChart) salesBarChart.destroy();
   if (salesPieChart) salesPieChart.destroy();
 
-  /* ========== BAR CHART ========== */
+  /* ---------------------------------
+       BAR CHART (Sales + Expenses)
+  -----------------------------------*/
   salesBarChart = new Chart(barCanvas, {
     type: "bar",
     data: {
@@ -95,8 +126,20 @@ function renderAnalytics() {
         {
           label: "Sales (₹)",
           data: [data.todaySales, data.weekSales, data.monthSales],
-          backgroundColor: ["#ffa726", "#fb8c00", "#ef6c00"],
-          borderRadius: 8,
+          backgroundColor: "#ff9800",
+          borderRadius: 8
+        },
+        {
+          label: "Expenses (₹)",
+          data: [data.todayExpenses, data.weekExpenses, data.monthExpenses],
+          backgroundColor: "#e53935",
+          borderRadius: 8
+        },
+        {
+          label: "Net Profit (₹)",
+          data: [data.todayNet, data.weekNet, data.monthNet],
+          backgroundColor: "#43a047",
+          borderRadius: 8
         }
       ]
     },
@@ -104,68 +147,59 @@ function renderAnalytics() {
       responsive: true,
       scales: { y: { beginAtZero: true } },
       plugins: {
-        title: { display: true, text: "Sales Summary" },
-        legend: { display: false }
+        title: { display: true, text: "Sales vs Expenses vs Net Profit" },
+        legend: { position: "bottom" }
       }
     }
   });
 
-  /* ========== PIE CHART ========== */
+  /* ---------------------------------
+       PIE CHART (Paid vs Credit Sales)
+  -----------------------------------*/
   salesPieChart = new Chart(pieCanvas, {
     type: "pie",
     data: {
       labels: ["Paid Sales", "Credit Sales"],
-      datasets: [
-        {
-          data: [data.paidSales, data.creditSales],
-          backgroundColor: ["#43a047", "#42a5f5"],
-          borderWidth: 1
-        }
-      ]
+      datasets: [{
+        data: [data.paidSales, data.creditSales],
+        backgroundColor: ["#4caf50", "#42a5f5"],
+        borderWidth: 1
+      }]
     },
     options: {
       responsive: true,
       plugins: {
         legend: { position: "bottom" },
-        title: {
-          display: true,
-          text: `Total Profit: ₹${data.totalProfit}`
-        }
+        title: { display: true, text: `Total Sales Profit (Before Expenses): ₹${data.totalSalesProfit}` }
       }
     }
   });
 
-  // Also update summary cards if that module exists
+  // CALL SUMMARY CARDS UPDATE (Dashboard)
   if (typeof updateSummaryCards === "function") {
     updateSummaryCards();
   }
 }
 
 /* ----------------------------------------------------------
-   AUTO UPDATE EVERY 60s
+   AUTO UPDATE
 ---------------------------------------------------------- */
 setInterval(() => {
-  try {
-    renderAnalytics();
-  } catch (err) {}
+  try { renderAnalytics(); } catch (e) {}
 }, 60000);
 
 /* ----------------------------------------------------------
-   LISTEN FOR LOCALSTORAGE CHANGES
+   STORAGE CHANGE LISTENER
 ---------------------------------------------------------- */
 window.addEventListener("storage", () => {
-  try {
-    renderAnalytics();
-  } catch (e) {}
+  try { renderAnalytics(); } catch (e) {}
 });
 
 /* ----------------------------------------------------------
    INITIAL LOAD
 ---------------------------------------------------------- */
 window.addEventListener("load", () => {
-  try {
-    renderAnalytics();
-  } catch (e) {}
+  try { renderAnalytics(); } catch (e) {}
 });
 
 /* Export */
