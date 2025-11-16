@@ -1,14 +1,24 @@
 /* ==========================================================
-   🛒 wanting.js — Wanting (Re-order) List Manager
+   🛒 wanting.js — Wanting (Re-order) List Manager (v2.0)
    Works with: core.js, stock.js, sales.js
    Storage Key: wanting-data
    ========================================================== */
 
-window.wanting = JSON.parse(localStorage.getItem("wanting-data") || "[]");
+const WANT_KEY = "wanting-data";
+window.wanting = JSON.parse(localStorage.getItem(WANT_KEY) || "[]");
 
-/* ==========================================================
+/* ----------------------------------------------------------
+   SAVE WANTING
+---------------------------------------------------------- */
+function saveWanting() {
+  localStorage.setItem(WANT_KEY, JSON.stringify(window.wanting));
+  window.dispatchEvent(new Event("storage"));
+  cloudSaveDebounced("wanting", window.wanting);
+}
+
+/* ----------------------------------------------------------
    RENDER WANTING LIST
-========================================================== */
+---------------------------------------------------------- */
 function renderWanting() {
   const tbody = document.querySelector("#wantingTable tbody");
   if (!tbody) return;
@@ -26,17 +36,17 @@ function renderWanting() {
         <td>${esc(w.name)}</td>
         <td>${esc(w.note || "")}</td>
         <td>
-          <button class="want-edit" data-i="${i}" title="Edit">✏️</button>
-          <button class="want-remove" data-i="${i}" title="Remove">🗑️</button>
+          <button class="small-btn" data-edit="${i}">✏️</button>
+          <button class="small-btn" data-del="${i}">🗑️</button>
         </td>
       </tr>
     `)
     .join("");
 }
 
-/* ==========================================================
-   MANUAL ADD WANTING ITEM
-========================================================== */
+/* ----------------------------------------------------------
+   MANUAL ADD WANTING
+---------------------------------------------------------- */
 function addWanting() {
   const type = document.getElementById("wantType")?.value.trim() || "";
   const name = document.getElementById("wantName")?.value.trim();
@@ -45,6 +55,7 @@ function addWanting() {
   if (!name) return alert("Please enter product name");
 
   const entry = {
+    id: uid("want"),
     date: todayDate(),
     type,
     name,
@@ -55,17 +66,17 @@ function addWanting() {
   saveWanting();
   renderWanting();
 
-  if (document.getElementById("wantName")) document.getElementById("wantName").value = "";
-  if (document.getElementById("wantNote")) document.getElementById("wantNote").value = "";
+  document.getElementById("wantName").value = "";
+  document.getElementById("wantNote").value = "";
 }
 
-/* ==========================================================
-   AUTO ADD WANTING ITEM (From Stock when finished)
-========================================================== */
+/* ----------------------------------------------------------
+   AUTO ADD WANTING (Stock → Finished)
+---------------------------------------------------------- */
 function autoAddToWanting(obj) {
   if (!obj || !obj.name) return;
 
-  // prevent duplicates
+  // avoid duplicates
   const exists = window.wanting.find(
     w =>
       w.name.toLowerCase() === obj.name.toLowerCase() &&
@@ -75,49 +86,47 @@ function autoAddToWanting(obj) {
   if (exists) return;
 
   window.wanting.push({
-    date: obj.date || todayDate(),
-    type: obj.type || "",
+    id: uid("want"),
+    date: todayDate(),
+    type: obj.type,
     name: obj.name,
-    note: obj.note || "Auto Added"
+    note: obj.note || "Auto Added (Out of Stock)"
   });
 
   saveWanting();
   renderWanting();
 }
 
-/* ==========================================================
+/* ----------------------------------------------------------
    EDIT WANTING
-========================================================== */
+---------------------------------------------------------- */
 function editWant(index) {
-  index = parseInt(index);
-  if (!window.wanting[index]) return;
+  index = Number(index);
+  const item = window.wanting[index];
+  if (!item) return;
 
-  const cur = window.wanting[index];
+  const nName = prompt("Product Name:", item.name);
+  if (!nName) return;
 
-  const newName = prompt("Product Name:", cur.name);
-  if (!newName) return;
-
-  const newType = prompt("Type:", cur.type);
-  const newNote = prompt("Note:", cur.note);
+  const nType = prompt("Type:", item.type);
+  const nNote = prompt("Note:", item.note);
 
   window.wanting[index] = {
+    id: item.id,
     date: todayDate(),
-    type: newType || "",
-    name: newName,
-    note: newNote || ""
+    type: nType || "",
+    name: nName,
+    note: nNote || ""
   };
 
   saveWanting();
   renderWanting();
 }
 
-/* ==========================================================
+/* ----------------------------------------------------------
    REMOVE WANTING
-========================================================== */
+---------------------------------------------------------- */
 function removeWant(index) {
-  index = parseInt(index);
-  if (!window.wanting[index]) return;
-
   if (!confirm("Remove this item?")) return;
 
   window.wanting.splice(index, 1);
@@ -125,42 +134,43 @@ function removeWant(index) {
   renderWanting();
 }
 
-/* ==========================================================
-   CLEAR ENTIRE WANTING LIST
-========================================================== */
+/* ----------------------------------------------------------
+   CLEAR ALL
+---------------------------------------------------------- */
 function clearWanting() {
-  if (!confirm("Clear entire Wanting list?")) return;
+  if (!confirm("Clear entire wanting list?")) return;
 
   window.wanting = [];
   saveWanting();
   renderWanting();
 }
 
-/* ==========================================================
+/* ----------------------------------------------------------
    PRINT WANTING LIST
-========================================================== */
+---------------------------------------------------------- */
 function printWanting() {
   const rows = document.querySelector("#wantingTable tbody").innerHTML;
 
   const html = `
   <html>
-  <head>
-    <title>Wanting List</title>
-    <style>
-      table { width:100%; border-collapse:collapse; }
-      th,td { border:1px solid #ccc; padding:6px; }
-    </style>
-  </head>
-  <body>
-    <h3>Wanting List — ${todayDate()}</h3>
-    <table>
-      <thead>
-        <tr><th>Date</th><th>Type</th><th>Product</th><th>Note</th></tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>
-  </body>
-  </html>`;
+    <head>
+      <title>Wanting List</title>
+      <style>
+        table { width:100%; border-collapse:collapse; }
+        th,td { border:1px solid #ccc; padding:6px; }
+      </style>
+    </head>
+    <body>
+      <h3>Wanting List — ${todayDate()}</h3>
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Type</th><th>Product</th><th>Note</th></tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </body>
+  </html>
+  `;
 
   const w = window.open("", "_blank");
   w.document.write(html);
@@ -168,33 +178,28 @@ function printWanting() {
   w.print();
 }
 
-/* ==========================================================
-   EVENT LISTENERS
-========================================================== */
+/* ----------------------------------------------------------
+   EVENTS
+---------------------------------------------------------- */
 document.addEventListener("click", e => {
   if (e.target.id === "addWantBtn") addWanting();
   if (e.target.id === "clearWantBtn") clearWanting();
   if (e.target.id === "printWantBtn") printWanting();
 
-  if (e.target.classList.contains("want-remove"))
-    removeWant(e.target.dataset.i);
-
-  if (e.target.classList.contains("want-edit"))
-    editWant(e.target.dataset.i);
+  if (e.target.dataset.del) removeWant(e.target.dataset.del);
+  if (e.target.dataset.edit) editWant(e.target.dataset.edit);
 });
 
-/* ==========================================================
+/* ----------------------------------------------------------
    INITIAL LOAD
-========================================================== */
+---------------------------------------------------------- */
 window.addEventListener("load", () => {
   renderWanting();
-
-  if (typeof updateTypeDropdowns === "function")
-    updateTypeDropdowns();
+  updateTypeDropdowns?.();
 });
 
-/* ==========================================================
-   EXPORT FUNCTIONS
-========================================================== */
+/* ----------------------------------------------------------
+   EXPORT
+---------------------------------------------------------- */
 window.autoAddToWanting = autoAddToWanting;
 window.renderWanting = renderWanting;
