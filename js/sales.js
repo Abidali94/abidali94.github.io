@@ -117,6 +117,15 @@ function markSalePaid(id) {
   saveSales();
   renderSales();
 }
+qs('#clearSalesBtn')?.addEventListener('click', () => {
+  if (!confirm("Delete ALL sales permanently? This cannot be undone.")) return;
+
+  window.sales = [];
+  saveSales();        // Save only sales (not entire storage)
+  renderSales();
+  updateSummaryCards?.();
+  renderAnalytics?.();
+});
 
 /* ----------------------------------------------------------
    DELETE A SALE
