@@ -359,7 +359,7 @@
     })();
   </script>
 
-  <!-- 🔐 LOGIN CHECK + LOGOUT -->
+<!-- 🔐 LOGIN CHECK + LOGOUT (ONLY ONCE, Correct Version) -->
 <script>
   if (!isLoggedIn()) {
     window.location.href = "/login.html";
@@ -368,9 +368,9 @@
   qs("#emailTag").textContent = "Logged in: " + getUserEmail();
 
   qs("#logoutBtn").addEventListener("click", () => {
-    if(confirm("Logout now?")){
+    if (confirm("Logout now?")) {
       logoutUser();
-      window.location.href="/login.html";
+      window.location.href = "/login.html";
     }
   });
 </script>
@@ -392,22 +392,6 @@
 <script src="../js/wanting.js"></script>
 <script src="../js/analytics.js"></script>
 <script src="../js/security.js"></script>
-
-<!-- 🔐 LOGIN CHECK (RUN LAST ONLY) -->
-<script>
-  if (!isLoggedIn()) {
-    window.location.href = "/login.html";
-  }
-
-  qs("#emailTag").textContent = "Logged in: " + getUserEmail();
-
-  qs("#logoutBtn").addEventListener("click", () => {
-    if (confirm("Logout now?")) {
-      logoutUser();
-      window.location.href = "/login.html";
-    }
-  });
-</script>
 
 </body>
 </html>
