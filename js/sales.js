@@ -89,7 +89,7 @@ function addSale() {
     amount: price * qty,
     profit,
     status,
-    customer    // **NEW field**
+    customer    // NEW FIELD
   });
 
   saveSales();
@@ -129,20 +129,20 @@ function deleteSale(id) {
 }
 
 /* ----------------------------------------------------------
-   CLEAR ALL SALES (✔ Added from your message)
+   CLEAR ALL SALES (✔ Added)
 ---------------------------------------------------------- */
 qs('#clearSalesBtn') &&
 qs('#clearSalesBtn').addEventListener('click', ()=>{
-  if(!confirm('Are you sure? This will permanently delete ALL sales records.')) return;
+  if(!confirm('Are you sure? This will permanently delete ALL sales records?')) return;
   if(!confirm('Final confirm: Delete ALL sales? This cannot be undone.')) return;
 
   window.sales = [];
-  saveAllLocal();
+  saveSales();
   renderSales();
 });
 
 /* ----------------------------------------------------------
-   RENDER SALES TABLE (Customer Column Added)
+   RENDER SALES TABLE
 ---------------------------------------------------------- */
 function renderSales() {
   const tbody = qs("#salesTable tbody");
@@ -168,9 +168,11 @@ function renderSales() {
           <td class="profit-cell">${s.profit}</td>
           <td>${s.customer || ""}</td>
           <td>
-            ${s.status === "Credit"
-              ? `<button onclick="markSalePaid('${s.id}')" class="small-btn">💳 Pay</button>`
-              : `<span class="ok">Paid</span>`}
+            ${
+              s.status === "Credit"
+                ? `<button onclick="markSalePaid('${s.id}')" class="small-btn">💳 Pay</button>`
+                : `<span class="ok">💰 Paid</span>`
+            }
           </td>
         </tr>`;
     })
