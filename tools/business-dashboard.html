@@ -292,7 +292,34 @@
     </div>
     <p style="text-align:center;opacity:.7;font-size:13px">Auto updates every 60s</p>
   </section>
+  
+<!-- ===== EXPENSES ===== -->
+<section id="expenses" class="section">
+  <h3>🧾 Expenses</h3>
 
+  <div class="row-inline" style="margin-bottom:8px">
+    <input id="expDate" type="date" value="">
+    <input id="expCategory" type="text" placeholder="Category" style="min-width:140px">
+    <input id="expAmount" type="number" placeholder="Amount" style="width:120px">
+    <input id="expNote" type="text" placeholder="Note" style="min-width:200px">
+    <button id="addExpBtn" class="small-btn">Add Expense</button>
+  </div>
+
+  <table id="expensesTable">
+    <thead>
+      <tr><th>Date</th><th>Category</th><th>Amount</th><th>Note</th><th>Action</th></tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2" style="text-align:right">Total:</td>
+        <td id="expensesTotal">0</td>
+        <td></td>
+        <td></td>
+      </tr>
+    </tfoot>
+  </table>
+</section>
   <!-- HELP -->
   <div class="footer-btns" style="margin-top:18px">
     <a href="#" id="helpLink" class="small-btn">📘 Help & Guide</a>
