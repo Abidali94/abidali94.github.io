@@ -339,6 +339,7 @@
 
   <!-- Tabs -->
   
+<!-- Tabs -->
 <script>
 (function () {
   const tabs = qsa('.tab'),
@@ -356,7 +357,10 @@
       s.classList.toggle('active', s.id === name)
     );
 
-    // Now call real module functions (safe check)
+    // --------------------------
+    // Correct functions for v1.3
+    // --------------------------
+
     if (name === 'types' && typeof renderTypes === "function") {
       renderTypes();
     }
@@ -366,7 +370,7 @@
     }
 
     if (name === 'sales' && typeof renderSales === "function") {
-      renderSales();
+      renderSales();        /* UPDATED */
     }
 
     if (name === 'wanting' && typeof renderWanting === "function") {
@@ -374,11 +378,11 @@
     }
 
     if (name === 'dashboard' && typeof updateSummaryCards === "function") {
-      updateSummaryCards();
+      updateSummaryCards();  /* KEEP THIS */
     }
 
     if (name === 'analytics' && typeof renderAnalytics === "function") {
-      renderAnalytics();
+      renderAnalytics();      /* UPDATED */
     }
   }
 
