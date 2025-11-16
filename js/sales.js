@@ -140,14 +140,14 @@ function deleteSale(id) {
 /* ----------------------------------------------------------
    CLEAR ALL SALES (✔ Added)
 ---------------------------------------------------------- */
-qs('#clearSalesBtn') &&
-qs('#clearSalesBtn').addEventListener('click', ()=>{
-  if(!confirm('Are you sure? This will permanently delete ALL sales records?')) return;
-  if(!confirm('Final confirm: Delete ALL sales? This cannot be undone.')) return;
+qs('#clearSalesBtn')?.addEventListener('click', () => {
+  if (!confirm("Delete ALL sales permanently? This cannot be undone.")) return;
 
   window.sales = [];
   saveSales();
   renderSales();
+  updateSummaryCards?.();
+  renderAnalytics?.();
 });
 
 /* ----------------------------------------------------------
