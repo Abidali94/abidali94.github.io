@@ -1,6 +1,6 @@
 /* ==========================================================
-   📊 analytics.js — Smart Dashboard Charts
-   Works with: sales.js, core.js, stock.js
+   📊 analytics.js — Smart Dashboard (v2.0)
+   Works with: sales.js, stock.js, core.js
    Uses: Chart.js
    ========================================================== */
 
@@ -8,38 +8,57 @@ let salesBarChart = null;
 let salesPieChart = null;
 
 /* ----------------------------------------------------------
-   GET AGGREGATED SALES DATA
+   FORMAT DATE TO YYYY-MM-DD
 ---------------------------------------------------------- */
-function getSalesData() {
-  const sales = JSON.parse(localStorage.getItem("sales-data") || "[]");
+function formatDate(d) {
+  return new Date(d).toISOString().split("T")[0];
+}
 
-  const todayStr = todayDate();
+/* ----------------------------------------------------------
+   GET RANGE DATES
+---------------------------------------------------------- */
+function getStartOfWeek() {
   const today = new Date();
-  const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - today.getDay());
+  const day = today.getDay(); // 0 = Sunday
+  const diff = today.getDate() - day;
+  return formatDate(new Date(today.setDate(diff)));
+}
 
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+function getStartOfMonth() {
+  const d = new Date();
+  return formatDate(new Date(d.getFullYear(), d.getMonth(), 1));
+}
+
+/* ----------------------------------------------------------
+   COLLECT SALES DATA
+---------------------------------------------------------- */
+function getAnalyticsData() {
+  const sales = window.sales || [];
+
+  const today = todayDate();
+  const weekStart = getStartOfWeek();
+  const monthStart = getStartOfMonth();
 
   let todaySales = 0,
-    weekSales = 0,
-    monthSales = 0,
-    paidSales = 0,
-    creditSales = 0,
-    totalProfit = 0;
+      weekSales = 0,
+      monthSales = 0,
+      paidSales = 0,
+      creditSales = 0,
+      totalProfit = 0;
 
   sales.forEach(s => {
-    const d = new Date(s.date);
-    const amount = s.amount || 0;
-    const profit = s.profit || 0;
+    const d = s.date;
 
-    if (s.date === todayStr) todaySales += amount;
-    if (d >= startOfWeek) weekSales += amount;
-    if (d >= startOfMonth) monthSales += amount;
+    if (!d) return;
 
-    if (s.status === "Credit") creditSales += amount;
-    else paidSales += amount;
+    if (d === today) todaySales += s.amount || 0;
+    if (d >= weekStart) weekSales += s.amount || 0;
+    if (d >= monthStart) monthSales += s.amount || 0;
 
-    totalProfit += profit;
+    if (s.status === "Credit") creditSales += s.amount || 0;
+    else paidSales += s.amount || 0;
+
+    totalProfit += s.profit || 0;
   });
 
   return {
@@ -48,22 +67,22 @@ function getSalesData() {
     monthSales,
     paidSales,
     creditSales,
-    totalProfit,
+    totalProfit
   };
 }
 
 /* ----------------------------------------------------------
-   RENDER FULL ANALYTICS DASHBOARD
+   RENDER ANALYTICS CHARTS
 ---------------------------------------------------------- */
 function renderAnalytics() {
-  const data = getSalesData();
+  const data = getAnalyticsData();
 
   const barCanvas = document.getElementById("salesBar");
   const pieCanvas = document.getElementById("salesPie");
 
   if (!barCanvas || !pieCanvas) return;
 
-  /* Destroy old charts (avoid duplicate rendering errors) */
+  // Destroy old charts to prevent "canvas already in use"
   if (salesBarChart) salesBarChart.destroy();
   if (salesPieChart) salesPieChart.destroy();
 
@@ -78,18 +97,17 @@ function renderAnalytics() {
           data: [data.todaySales, data.weekSales, data.monthSales],
           backgroundColor: ["#ffa726", "#fb8c00", "#ef6c00"],
           borderRadius: 8,
-        },
-      ],
+        }
+      ]
     },
     options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true } },
       plugins: {
         title: { display: true, text: "Sales Summary" },
-        legend: { display: false },
-      },
-      scales: {
-        y: { beginAtZero: true },
-      },
-    },
+        legend: { display: false }
+      }
+    }
   });
 
   /* ========== PIE CHART ========== */
@@ -101,37 +119,55 @@ function renderAnalytics() {
         {
           data: [data.paidSales, data.creditSales],
           backgroundColor: ["#43a047", "#42a5f5"],
-          borderWidth: 1,
-        },
-      ],
+          borderWidth: 1
+        }
+      ]
     },
     options: {
+      responsive: true,
       plugins: {
         legend: { position: "bottom" },
         title: {
           display: true,
-          text: `Total Profit: ₹${data.totalProfit.toFixed(2)}`,
-        },
-      },
-    },
+          text: `Total Profit: ₹${data.totalProfit}`
+        }
+      }
+    }
   });
+
+  // Also update summary cards if that module exists
+  if (typeof updateSummaryCards === "function") {
+    updateSummaryCards();
+  }
 }
 
 /* ----------------------------------------------------------
-   AUTO REFRESH ANALYTICS
+   AUTO UPDATE EVERY 60s
 ---------------------------------------------------------- */
-window.addEventListener("load", () => {
-  renderAnalytics();
-});
-
-window.addEventListener("storage", () => {
-  renderAnalytics();
-});
-
-/* Auto update every 60 seconds */
 setInterval(() => {
-  renderAnalytics();
+  try {
+    renderAnalytics();
+  } catch (err) {}
 }, 60000);
 
-/* Expose for debugging */
+/* ----------------------------------------------------------
+   LISTEN FOR LOCALSTORAGE CHANGES
+---------------------------------------------------------- */
+window.addEventListener("storage", () => {
+  try {
+    renderAnalytics();
+  } catch (e) {}
+});
+
+/* ----------------------------------------------------------
+   INITIAL LOAD
+---------------------------------------------------------- */
+window.addEventListener("load", () => {
+  try {
+    renderAnalytics();
+  } catch (e) {}
+});
+
+/* Export */
 window.renderAnalytics = renderAnalytics;
+window.ensureChartsLoadedAndRender = renderAnalytics;
