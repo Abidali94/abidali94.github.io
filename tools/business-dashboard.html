@@ -359,71 +359,36 @@
     })();
   </script>
 
-<!-- ==============================
-     1️⃣ LOGIN UTILS (LOAD FIRST)
-================================= -->
-<script src="../js/login-utils.js"></script>
+<!-- LOGIN UTILS (FIRST) -->
+<script src="/js/login-utils.js"></script>
 
-<!-- ==============================
-     2️⃣ FIREBASE SDK (CDN)
-================================= -->
-<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
-
-<!-- ==============================
-     3️⃣ FIREBASE CONFIG
-================================= -->
-<script src="../js/firebase.js"></script>
-
-<!-- ==============================
-     4️⃣ CORE MODULES
-================================= -->
-<script src="../js/core.js"></script>
-<script src="../js/types.js"></script>
-<script src="../js/stock.js"></script>
-<script src="../js/sales.js"></script>
-<script src="../js/wanting.js"></script>
-
-<!-- ==============================
-     5️⃣ CHART LIBRARY
-================================= -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
-
-<!-- ==============================
-     6️⃣ ANALYTICS (Add missing function)
-================================= -->
-<script src="../js/analytics.js"></script>
-
-<script>
-  // ADD THIS FIX — missing function
-  function ensureChartsLoadedAndRender(){
-    if (typeof renderAnalytics === "function") {
-      renderAnalytics();
-    }
-  }
-</script>
-
-<!-- ==============================
-     7️⃣ SECURITY
-================================= -->
-<script src="../js/security.js"></script>
-
-<!-- ==============================
-     8️⃣ LOGIN CHECK (RUN LAST)
-================================= -->
+<!-- LOGIN CHECK -->
 <script>
   if (!isLoggedIn()) {
     window.location.href = "/login.html";
   }
-
   qs("#emailTag").textContent = "Logged in: " + getUserEmail();
-
   qs("#logoutBtn").addEventListener("click", () => {
-    if (confirm("Logout now?")) {
-      logoutUser();
-      window.location.href = "/login.html";
-    }
+    logoutUser();
+    window.location.href = "/login.html";
   });
 </script>
+
+<!-- CHARTS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
+
+<!-- MAIN MODULES: ABSOLUTE PATHS (ROOT BASED) -->
+<script src="/js/firebase.js"></script>
+<script src="/js/core.js"></script>
+<script src="/js/types.js"></script>
+<script src="/js/stock.js"></script>
+<script src="/js/sales.js"></script>
+<script src="/js/wanting.js"></script>
+<script src="/js/analytics.js"></script>
+<script src="/js/security.js"></script>
 </body>
 </html>
