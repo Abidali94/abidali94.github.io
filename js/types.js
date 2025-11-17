@@ -80,11 +80,13 @@ function updateTypeDropdowns() {
   }
 
   /* Sales → Type selector */
-  if (saleType) {
-    saleType.innerHTML =
-      `<option value="">All Types</option>` +
-      window.types.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join("");
-  }
+if (saleType) {
+  saleType.innerHTML =
+    `<option value="all">All Types</option>` +
+    window.types
+      .map(t => `<option value="${esc(t)}">${esc(t)}</option>`)
+      .join("");
+}
 
   /* Product list in sales depends on type → refresh */
   if (typeof refreshSaleSelectors === "function") {
