@@ -1,7 +1,11 @@
 /* =======================================================
-   📦 stock.js — Inventory Manager (FINAL v2.1)
+   📦 stock.js — Inventory Manager (v3.0 PRO)
+   Works with: core.js v3.2
    ======================================================= */
 
+/* -------------------------------------------------------
+   ➕ ADD STOCK
+------------------------------------------------------- */
 function addStock() {
   const date = qs("#pdate")?.value;
   const type = qs("#ptype")?.value;
@@ -37,11 +41,20 @@ function renderStock() {
     .forEach((p, i) => {
       const sold   = Number(p.sold || 0);
       const remain = Number(p.qty) - sold;
+
       const limit  = Number(p.limit ?? getGlobalLimit());
 
-      let status = "OK", cls = "ok";
-      if (remain <= 0) { status = "OUT"; cls = "out"; }
-      else if (remain <= limit) { status = "LOW"; cls = "low"; }
+      let status = "OK"; 
+      let cls = "ok";
+
+      if (remain <= 0) {
+        status = "OUT";
+        cls = "out";
+      } 
+      else if (remain <= limit) {
+        status = "LOW";
+        cls = "low";
+      }
 
       html += `
       <tr>
@@ -54,9 +67,9 @@ function renderStock() {
         <td class="${cls}">${status}</td>
         <td>${limit}</td>
         <td>
-          <button class="history-btn" data-i="${i}">📜</button>
-          <button class="sale-btn" data-i="${i}">💰</button>
-          <button class="credit-btn" data-i="${i}">💳</button>
+          <button class="history-btn" data-i="${i}">📜 History</button>
+          <button class="sale-btn" data-i="${i}">💰 Sale</button>
+          <button class="credit-btn" data-i="${i}">💳 Credit</button>
         </td>
       </tr>`;
     });
@@ -68,15 +81,16 @@ function renderStock() {
 }
 
 /* -------------------------------------------------------
-   📜 HISTORY
+   📜 PRODUCT HISTORY
 ------------------------------------------------------- */
 function showHistory(i) {
   const p = window.stock[i];
-  if (!p?.history?.length) return alert("No history found.");
+  if (!p?.history?.length)
+    return alert("No history found.");
 
-  let msg = `History for ${p.name}:\n\n`;
+  let msg = `📜 History for ${p.name}\n\n`;
   p.history.forEach(h => {
-    msg += `${h.date} — Qty ${h.qty} @ ₹${h.cost}\n`;
+    msg += `${h.date} → Qty: ${h.qty} @ ₹${h.cost}\n`;
   });
 
   alert(msg);
@@ -95,7 +109,7 @@ function stockQuickSale(i, mode) {
   const qty = Number(prompt(`Enter Qty (Available: ${remain})`));
   if (!qty || qty <= 0 || qty > remain) return;
 
-  const price = Number(prompt("Enter Sale Price ₹:"));
+  const price = Number(prompt("Enter Selling Price ₹:"));
   if (!price || price <= 0) return;
 
   const date = todayDate();
@@ -128,10 +142,11 @@ function stockQuickSale(i, mode) {
 }
 
 /* -------------------------------------------------------
-   🖱 EVENTS
+   🖱 BUTTON EVENTS
 ------------------------------------------------------- */
 document.addEventListener("click", e => {
-  if (e.target.id === "addStockBtn") return addStock();
+  if (e.target.id === "addStockBtn")
+    return addStock();
 
   if (e.target.id === "clearStockBtn") {
     if (confirm("Clear ALL stock?")) {
@@ -153,7 +168,7 @@ document.addEventListener("click", e => {
 });
 
 /* -------------------------------------------------------
-   🚀 INITIAL
+   🚀 INITIAL LOAD
 ------------------------------------------------------- */
 window.addEventListener("load", () => {
   updateTypeDropdowns?.();
