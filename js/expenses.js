@@ -1,111 +1,115 @@
-/* ==========================================================
-   🧾 expenses.js — Simple Expenses Manager
-   Works with: core.js (saveExpenses, cloudSaveDebounced)
-   ========================================================== */
+/* ===========================================================
+   🧾 expenses.js — Expense Manager (v2.2)
+   Works with: core.js, analytics.js, dashboard
+   =========================================================== */
 
-const EXP_KEY = 'expenses-data';
-window.expenses = JSON.parse(localStorage.getItem(EXP_KEY) || '[]');
+/* window.expenses already loaded from core.js */
 
-function saveExpenses() {
-  localStorage.setItem(EXP_KEY, JSON.stringify(window.expenses || []));
-  window.dispatchEvent(new Event('storage'));
-  cloudSaveDebounced?.('expenses', window.expenses || []);
-}
+/* ----------------------------------------------------------
+   ADD EXPENSE
+---------------------------------------------------------- */
+function addNewExpense() {
+  const date = document.getElementById("expDate")?.value || todayDate();
+  const category = document.getElementById("expCategory")?.value.trim();
+  const amount = parseFloat(document.getElementById("expAmount")?.value || 0);
+  const note = document.getElementById("expNote")?.value.trim();
 
-function addExpense() {
-  const date = qs('#expDate')?.value || todayDate();
-  const category = (qs('#expCategory')?.value || '').trim() || 'misc';
-  const amount = Number(qs('#expAmount')?.value || 0);
-  const note = (qs('#expNote')?.value || '').trim();
+  if (!category || !amount) {
+    return alert("Please enter category and amount.");
+  }
 
-  if (!amount || amount <= 0) return alert('Enter a valid amount');
+  window.expenses.push({
+    id: uid("exp"),
+    date,
+    category,
+    amount,
+    note
+  });
 
-  const it = { id: uid('exp'), date, category, amount, note };
-  window.expenses = window.expenses || [];
-  window.expenses.push(it);
   saveExpenses();
   renderExpenses();
 
-  // clear inputs
-  if (qs('#expAmount')) qs('#expAmount').value = '';
-  if (qs('#expNote')) qs('#expNote').value = '';
+  // clear form
+  document.getElementById("expCategory").value = "";
+  document.getElementById("expAmount").value = "";
+  document.getElementById("expNote").value = "";
 }
 
+/* ----------------------------------------------------------
+   DELETE EXPENSE
+---------------------------------------------------------- */
+function deleteExpense(id) {
+  if (!confirm("Delete this expense?")) return;
+
+  window.expenses = window.expenses.filter(e => e.id !== id);
+  saveExpenses();
+  renderExpenses();
+}
+
+/* ----------------------------------------------------------
+   RENDER TABLE
+---------------------------------------------------------- */
 function renderExpenses() {
-  const tbody = qs('#expensesTable tbody');
-  if (!tbody) return;
+  const tbody = document.querySelector("#expensesTable tbody");
+  const totalEl = document.getElementById("expensesTotal");
 
-  const list = (window.expenses || []).slice().sort((a,b)=> a.date < b.date ? 1 : -1);
+  if (!tbody || !totalEl) return;
 
-  if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="5">No Expenses</td></tr>`;
-    updateExpensesTotal();
+  if (!window.expenses || window.expenses.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5">No expenses found</td></tr>`;
+    totalEl.textContent = 0;
     return;
   }
 
-  tbody.innerHTML = list.map(e => `
-    <tr data-id="${esc(e.id)}">
-      <td>${esc(e.date)}</td>
-      <td>${esc(e.category)}</td>
-      <td>₹${Number(e.amount || 0)}</td>
-      <td>${esc(e.note || '')}</td>
-      <td>
-        <button class="exp-del small-btn" data-id="${esc(e.id)}">🗑️</button>
-      </td>
-    </tr>`).join('');
+  let total = 0;
 
-  updateExpensesTotal();
+  tbody.innerHTML = window.expenses
+    .map(e => {
+      total += Number(e.amount || 0);
+      return `
+        <tr>
+          <td>${e.date}</td>
+          <td>${esc(e.category)}</td>
+          <td>₹${e.amount}</td>
+          <td>${esc(e.note || "")}</td>
+          <td>
+            <button onclick="deleteExpense('${e.id}')" class="small-btn" style="background:#d32f2f;color:#fff">
+              ❌ Delete
+            </button>
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  totalEl.textContent = "₹" + total;
+
+  // Update Overview summary cards
+  if (typeof updateSummaryCards === "function") {
+    updateSummaryCards();
+  }
+
+  // Update Analytics
+  if (typeof renderAnalytics === "function") {
+    renderAnalytics();
+  }
 }
 
-function updateExpensesTotal() {
-  const total = (window.expenses || []).reduce((s, e) => s + Number(e.amount || 0), 0);
-  if (qs('#expensesTotal')) qs('#expensesTotal').textContent = total;
-}
-
-/* delete a single expense */
-function deleteExpense(id) {
-  if (!confirm('Delete this expense?')) return;
-  window.expenses = (window.expenses || []).filter(e => e.id !== id);
-  saveExpenses();
-  renderExpenses();
-}
-
-/* clear all expenses */
-function clearExpenses() {
-  if (!confirm('Clear all expenses?')) return;
-  window.expenses = [];
-  saveExpenses();
-  renderExpenses();
-}
-
-/* print */
-function printExpenses() {
-  const rows = qs('#expensesTable tbody').innerHTML;
-  const html = `<html><head><title>Expenses</title>
-    <style>table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px}</style>
-    </head><body><h3>Expenses — ${todayDate()}</h3><table><thead><tr><th>Date</th><th>Category</th><th>Amount</th><th>Note</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
-  const w = window.open('', '_blank');
-  w.document.write(html);
-  w.document.close();
-  w.print();
-}
-
-/* events */
-document.addEventListener('click', e => {
-  const t = e.target;
-  if (t.id === 'addExpBtn') return addExpense();
-  if (t.id === 'clearExpBtn') return clearExpenses();
-  if (t.id === 'printExpBtn') return printExpenses();
-
-  if (t.classList.contains('exp-del')) return deleteExpense(t.dataset.id);
+/* ----------------------------------------------------------
+   EVENTS
+---------------------------------------------------------- */
+document.addEventListener("click", e => {
+  if (e.target.id === "addExpBtn") addNewExpense();
 });
 
-/* initial render */
-window.addEventListener('load', () => {
+/* ----------------------------------------------------------
+   INITIAL LOAD
+---------------------------------------------------------- */
+window.addEventListener("load", () => {
   renderExpenses();
 });
 
-/* exports */
-window.saveExpenses = saveExpenses;
+/* Expose */
+window.addNewExpense = addNewExpense;
 window.renderExpenses = renderExpenses;
-window.addExpense = addExpense;
+window.deleteExpense = deleteExpense;
