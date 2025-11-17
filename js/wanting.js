@@ -1,55 +1,52 @@
 /* =======================================================
-   🛒 wanting.js — Wanting / Reorder List (Final v2.1)
-   Works with: core.js, stock.js
+   🛒 wanting.js — Wanting / Reorder Manager (v3.0 PRO)
+   Fully compatible with: core.js v3.2, stock.js v3.0
    ======================================================= */
 
-/* window.wanting already exists from core.js */
-
 /* -------------------------------------------------------
-   🔁 RENDER WANTING LIST
+   🔁 RENDER WANTING TABLE
 ------------------------------------------------------- */
 function renderWanting() {
-  const tbody = document.querySelector("#wantingTable tbody");
-  const typeDrop = document.querySelector("#wantType");
+  const tbody = qs("#wantingTable tbody");
+  const typeDD = qs("#wantType");
 
-  if (!tbody || !typeDrop) return;
+  if (!tbody || !typeDD) return;
 
-  /* ---- Fill Type Dropdown ---- */
-  typeDrop.innerHTML = window.types
-    .map(t => `<option value="${t.name}">${t.name}</option>`)
-    .join("");
+  /* --- Fill Types Dropdown --- */
+  typeDD.innerHTML =
+    `<option value="">Select Type</option>` +
+    window.types.map(t => `<option value="${t.name}">${esc(t.name)}</option>`).join("");
 
-  /* ---- Render Table ---- */
-  let html = "";
-  window.wanting.forEach((w, i) => {
-    html += `
-    <tr>
-      <td>${w.date}</td>
-      <td>${esc(w.type)}</td>
-      <td>${esc(w.name)}</td>
-      <td>${esc(w.note || "")}</td>
-      <td>
-        <button class="want-add-btn" data-i="${i}" title="Add to Stock">➕ Add</button>
-        <button class="want-del-btn" data-i="${i}" title="Delete">🗑️ Delete</button>
-      </td>
-    </tr>`;
-  });
+  /* --- Table Render --- */
+  if (window.wanting.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5">No items in Wanting</td></tr>`;
+    return;
+  }
 
-  if (!html)
-    html = `<tr><td colspan="5">No items in Wanting</td></tr>`;
-
-  tbody.innerHTML = html;
+  tbody.innerHTML = window.wanting
+    .map((w, i) => `
+      <tr>
+        <td>${w.date}</td>
+        <td>${esc(w.type)}</td>
+        <td>${esc(w.name)}</td>
+        <td>${esc(w.note || "")}</td>
+        <td>
+          <button class="want-add-btn small-btn" data-i="${i}">➕ Add to Stock</button>
+          <button class="want-del-btn small-btn" data-i="${i}" style="background:#e53935">🗑 Delete</button>
+        </td>
+      </tr>
+    `).join("");
 }
 
 /* -------------------------------------------------------
-   ➕ ADD NEW WANTING ITEM
+   ➕ MANUAL ADD WANTING ITEM
 ------------------------------------------------------- */
 function addWantingItem() {
-  const type = document.querySelector("#wantType")?.value;
-  const name = document.querySelector("#wantName")?.value.trim();
-  const note = document.querySelector("#wantNote")?.value.trim();
+  const type = qs("#wantType")?.value;
+  const name = qs("#wantName")?.value.trim();
+  const note = qs("#wantNote")?.value.trim();
 
-  if (!type || !name) return alert("Please enter type & product.");
+  if (!type || !name) return alert("Please enter Type and Product name");
 
   window.wanting.push({
     id: uid("want"),
@@ -62,24 +59,24 @@ function addWantingItem() {
   saveWanting();
   renderWanting();
 
-  document.querySelector("#wantName").value = "";
-  document.querySelector("#wantNote").value = "";
+  qs("#wantName").value = "";
+  qs("#wantNote").value = "";
 }
 
 /* -------------------------------------------------------
-   🔥 ADD “WANTED ITEM” TO STOCK
+   🚚 ADD WANTING ITEM → STOCK
 ------------------------------------------------------- */
 function wantingToStock(i) {
   const w = window.wanting[i];
   if (!w) return;
 
-  const qty = Number(prompt(`Enter quantity for "${w.name}"`));
-  if (!qty || qty <= 0) return alert("Invalid quantity.");
+  const qty = Number(prompt(`Enter Qty for "${w.name}"`));
+  if (!qty || qty <= 0) return alert("Invalid Quantity");
 
-  const cost = Number(prompt("Enter Purchase Cost ₹ for each item:"));
-  if (!cost || cost <= 0) return alert("Invalid cost.");
+  const cost = Number(prompt("Enter Cost ₹ per item:"));
+  if (!cost || cost <= 0) return alert("Invalid Cost");
 
-  // Add to stock
+  /* --- Update Stock --- */
   addStockEntry({
     date: todayDate(),
     type: w.type,
@@ -88,46 +85,51 @@ function wantingToStock(i) {
     cost
   });
 
-  // Remove from wanting list
+  /* --- Remove from Wanting --- */
   window.wanting.splice(i, 1);
   saveWanting();
 
   renderWanting();
   renderStock?.();
+  refreshSaleSelectors?.();    // IMPORTANT FIX
+  updateSummaryCards?.();
 }
 
 /* -------------------------------------------------------
-   ❌ DELETE FROM WANTING
+   ❌ DELETE ITEM
 ------------------------------------------------------- */
 function deleteWantingItem(i) {
-  if (confirm("Remove this item?")) {
-    window.wanting.splice(i, 1);
-    saveWanting();
-    renderWanting();
-  }
+  if (!confirm("Remove this item?")) return;
+
+  window.wanting.splice(i, 1);
+  saveWanting();
+  renderWanting();
+}
+
+/* -------------------------------------------------------
+   🧹 CLEAR ALL WANTING
+------------------------------------------------------- */
+function clearAllWanting() {
+  if (!confirm("Clear ALL wanting items?")) return;
+
+  window.wanting = [];
+  saveWanting();
+  renderWanting();
 }
 
 /* -------------------------------------------------------
    🖱 EVENT HANDLER
 ------------------------------------------------------- */
 document.addEventListener("click", e => {
-  if (e.target.id === "addWantBtn")
-    return addWantingItem();
+  if (e.target.id === "addWantBtn") return addWantingItem();
 
-  if (e.target.id === "clearWantBtn") {
-    if (confirm("Clear ALL wanting items?")) {
-      window.wanting = [];
-      saveWanting();
-      renderWanting();
-    }
-    return;
-  }
+  if (e.target.id === "clearWantBtn") return clearAllWanting();
 
   if (e.target.classList.contains("want-add-btn"))
-    return wantingToStock(e.target.dataset.i);
+    return wantingToStock(Number(e.target.dataset.i));
 
   if (e.target.classList.contains("want-del-btn"))
-    return deleteWantingItem(e.target.dataset.i);
+    return deleteWantingItem(Number(e.target.dataset.i));
 });
 
 /* -------------------------------------------------------
