@@ -1,204 +1,202 @@
 /* =======================================================
-   📦 stock.js — Product Stock Manager
+   📦 stock.js — Product Stock Manager (v2)
    Works with: core.js, types.js, sales.js, wanting.js
    ======================================================= */
 
-/* window.stock already loaded from core.js */
+/* NOTE:
+   Expects core.js to provide:
+     - window.stock (array)
+     - addStockEntry({date,type,name,qty,cost,limit})
+     - updateStockQty(type,name,delta)
+     - getGlobalLimit(), saveStock(), saveSales(), saveWanting()
+     - findProduct(), getProductCost(), autoAddWanting()
+     - qs(), esc(), todayDate(), uid()
+*/
 
-/* -------------------------------------------------------
-   ➕ ADD / UPDATE STOCK
-------------------------------------------------------- */
 function addStock() {
-  const date = document.getElementById("pdate")?.value;
-  const type = document.getElementById("ptype")?.value;
-  const name = document.getElementById("pname")?.value.trim();
-  const qty = parseInt(document.getElementById("pqty")?.value || 0);
-  const cost = parseFloat(document.getElementById("pcost")?.value || 0);
+  const date = qs('#pdate')?.value || todayDate();
+  const type = (qs('#ptype')?.value || '').trim();
+  const name = (qs('#pname')?.value || '').trim();
+  const qty = Number(qs('#pqty')?.value || 0);
+  const cost = Number(qs('#pcost')?.value || 0);
+  const limit = Number(qs('#pLimit')?.value || getGlobalLimit() || 0);
 
-  if (!date || !type || !name || !qty || !cost)
-    return alert("Please fill all fields.");
-
-  // Check if product already exists
-  let item = window.stock.find(
-    s => s.type === type && s.name.toLowerCase() === name.toLowerCase()
-  );
-
-  if (item) {
-    item.qty += qty;
-    item.cost = cost;
-    item.date = date;
-
-    item.history = item.history || [];
-    item.history.push({ date, qty, cost });
-  }
-  else {
-    window.stock.push({
-      date,
-      type,
-      name,
-      qty,
-      sold: 0,
-      cost,
-      history: [{ date, qty, cost }]
-    });
+  if (!type || !name || !qty || qty <= 0) {
+    return alert('Please fill Type, Product name and Qty.');
   }
 
-  saveStock();
-  renderStock();
+  // Use core helper to keep behaviour consistent
+  addStockEntry({ date, type, name, qty, cost, limit });
 
   // clear form
-  document.getElementById("pname").value = "";
-  document.getElementById("pqty").value = "";
-  document.getElementById("pcost").value = "";
+  if (qs('#pname')) qs('#pname').value = '';
+  if (qs('#pqty')) qs('#pqty').value = '';
+  if (qs('#pcost')) qs('#pcost').value = '';
+
+  // refresh UI
+  updateTypeDropdowns?.();
+  renderStock();
 }
 
 /* -------------------------------------------------------
    🔥 RENDER STOCK TABLE
 ------------------------------------------------------- */
 function renderStock() {
-  const filter = document.getElementById("filterType")?.value || "all";
-  const tbody = document.querySelector("#stockTable tbody");
-
+  const filter = qs('#filterType')?.value || 'all';
+  const tbody = document.querySelector('#stockTable tbody');
   if (!tbody) return;
 
-  let html = "";
+  const limitGlobal = getGlobalLimit();
 
-  window.stock
-    .filter(item => filter === "all" || item.type === filter)
-    .forEach((item, index) => {
-      const sold = item.sold || 0;
-      const remain = item.qty - sold;
-      const limit = getGlobalLimit();
+  const rows = window.stock
+    .filter(item => filter === 'all' || String(item.type) === String(filter))
+    .map((item, index) => {
+      const sold = Number(item.sold || 0);
+      const qty = Number(item.qty || 0);
+      const remain = qty - sold;
+      const limit = (typeof item.limit !== 'undefined') ? Number(item.limit) : Number(limitGlobal || 0);
 
-      let status = "OK", cls = "ok";
+      let status = 'OK', cls = 'ok';
+      if (remain <= 0) { status = 'OUT'; cls = 'out'; }
+      else if (limit && remain <= limit) { status = 'LOW'; cls = 'low'; }
 
-      if (remain <= 0) {
-        status = "OUT";
-        cls = "out";
-      } else if (remain <= limit) {
-        status = "LOW";
-        cls = "low";
-      }
-
-      html += `
-      <tr>
-        <td>${item.date}</td>
+      return `
+      <tr data-i="${index}">
+        <td>${esc(item.date)}</td>
         <td>${esc(item.type)}</td>
-        <td>${esc(item.name)}</td>
-        <td>${item.qty}</td>
+        <td style="text-align:left">${esc(item.name)}</td>
+        <td>${qty}</td>
         <td>${sold}</td>
         <td>${remain}</td>
         <td class="${cls}">${status}</td>
         <td>${limit}</td>
         <td>
-          <button class="history-btn" data-i="${index}">📜</button>
-          <button class="sale-btn" data-i="${index}">💸</button>
-          <button class="credit-btn" data-i="${index}">📒</button>
+          <button class="history-btn small-btn" data-i="${index}">📜 History</button>
+          <button class="sale-btn small-btn" data-i="${index}">💰 Sale</button>
+          <button class="credit-btn small-btn" data-i="${index}">💳 Credit</button>
         </td>
-        <td>
-  <button onclick="viewHistory('${p.id}')" class="small-btn">📜 History</button>
-  <button onclick="quickSale('${p.id}')" class="small-btn">💰 Sale</button>
-  <button onclick="addCredit('${p.id}')" class="small-btn">💳 Credit</button>
-</td>
       </tr>`;
     });
 
-  tbody.innerHTML = html || `<tr><td colspan="9">No Stock Found</td></tr>`;
+  tbody.innerHTML = rows.length ? rows.join('') : `<tr><td colspan="9">No Stock Found</td></tr>`;
 }
 
 /* -------------------------------------------------------
    📜 SHOW STOCK HISTORY
+   accepts index (from renderStock)
 ------------------------------------------------------- */
 function showHistory(i) {
+  i = Number(i);
   const s = window.stock[i];
-  if (!s || !s.history) return alert("No history available.");
+  if (!s) return alert('No such product');
 
-  let msg = `${s.name} History:\n\n`;
+  if (!s.history || !s.history.length) {
+    return alert(`${s.name} — No history available.`);
+  }
 
+  let msg = `${s.name} — History:\n\n`;
   s.history.forEach(h => {
     msg += `${h.date} — Qty: ${h.qty} @ ₹${h.cost}\n`;
   });
-
   alert(msg);
 }
 
 /* -------------------------------------------------------
-   💸 SALE / CREDIT FROM STOCK PAGE
+   💸 STOCK SALE / CREDIT (from stock table)
+   mode: "Paid" or "Credit"
 ------------------------------------------------------- */
-function stockSale(i, mode) {
+function stockSale(i, mode = 'Paid') {
+  i = Number(i);
   const s = window.stock[i];
-  if (!s) return;
+  if (!s) return alert('Product not found');
 
-  const remain = (s.qty - (s.sold || 0));
-  if (remain <= 0) return alert("No stock left!");
+  const remain = Number(s.qty || 0) - Number(s.sold || 0);
+  if (remain <= 0) return alert('No stock left!');
 
-  const qty = parseInt(prompt(`Enter Qty (Available: ${remain})`));
-  if (!qty || qty <= 0 || qty > remain) return;
+  const qty = parseInt(prompt(`Enter Qty (Available: ${remain})`) || '0');
+  if (!qty || qty <= 0 || qty > remain) return alert('Invalid quantity');
 
-  const price = parseFloat(prompt("Enter Sale Price ₹:"));
-  if (!price || price <= 0) return;
+  const price = parseFloat(prompt('Enter Sale Price ₹:') || '0');
+  if (!price || price <= 0) return alert('Invalid price');
 
   const date = todayDate();
-  const cost = getProductCost(s.type, s.name);
-  const profit = (price - cost) * qty;
+  const cost = getProductCost(s.type, s.name) || 0;
+  const profit = Math.round((price - cost) * qty);
 
-  // Update sold qty
-  s.sold = (s.sold || 0) + qty;
+  // update sold qty
+  s.sold = (Number(s.sold || 0) + Number(qty));
 
-  // Save sale entry
-  window.sales.push({
+  // ask customer name when credit
+  let customer = '';
+  if (mode === 'Credit') {
+    customer = prompt('Customer name for credit:') || 'Customer';
+  }
+
+  // create sale entry
+  const sale = {
+    id: uid('sale'),
     date,
     type: s.type,
     product: s.name,
     qty,
     price,
-    amount: price * qty,
-    profit: Math.round(profit),
-    status: mode
-  });
+    amount: Math.round(price * qty),
+    profit,
+    status: mode,
+    customer
+  };
 
+  window.sales = window.sales || [];
+  window.sales.push(sale);
+
+  // persist
   saveStock();
-  saveSales();
+  saveSales?.();
 
-  // Auto add to wanting when finished
-  if (s.sold >= s.qty) {
-    let want = window.wanting || [];
-    want.push({ date, type: s.type, name: s.name, note: "Auto Added" });
-    window.wanting = want;
-    saveWanting();
-    alert(`${s.name} finished! Auto-added to Wanting.`);
+  // auto-add wanting if finished
+  if (Number(s.sold || 0) >= Number(s.qty || 0)) {
+    autoAddWanting?.(s.type, s.name, 'Auto Added');
+    alert(`${s.name} finished — auto-added to Wanting`);
   }
 
+  // refresh UIs
   renderStock();
-  if (typeof renderSales === "function") renderSales();
+  typeof renderSales === 'function' && renderSales();
+  updateTypeDropdowns?.();
 }
 
 /* -------------------------------------------------------
-   🖱 EVENT HANDLING
+   EVENT HANDLING
 ------------------------------------------------------- */
-document.addEventListener("click", e => {
-  if (e.target.id === "addStockBtn") addStock();
-  if (e.target.id === "clearStockBtn") {
-    if (confirm("Clear all stock?")) {
+document.addEventListener('click', e => {
+  const t = e.target;
+
+  if (t.id === 'addStockBtn') return addStock();
+  if (t.id === 'clearStockBtn') {
+    if (confirm('Clear all stock? This cannot be undone.')) {
       window.stock = [];
       saveStock();
       renderStock();
     }
+    return;
   }
 
-  if (e.target.classList.contains("history-btn"))
-    showHistory(e.target.dataset.i);
-
-  if (e.target.classList.contains("sale-btn"))
-    stockSale(e.target.dataset.i, "Paid");
-
-  if (e.target.classList.contains("credit-btn"))
-    stockSale(e.target.dataset.i, "Credit");
+  if (t.classList.contains('history-btn')) return showHistory(t.dataset.i);
+  if (t.classList.contains('sale-btn')) return stockSale(t.dataset.i, 'Paid');
+  if (t.classList.contains('credit-btn')) return stockSale(t.dataset.i, 'Credit');
 });
 
 /* -------------------------------------------------------
-   🚀 INITIAL LOAD
+   INITIAL LOAD
 ------------------------------------------------------- */
-window.addEventListener("load", () => {
+window.addEventListener('load', () => {
+  // ensure type dropdowns synced
+  updateTypeDropdowns?.();
   renderStock();
 });
+
+/* EXPORT */
+window.renderStock = renderStock;
+window.addStock = addStock;
+window.showHistory = showHistory;
+window.stockSale = stockSale;
