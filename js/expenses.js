@@ -1,21 +1,19 @@
 /* ===========================================================
-   🧾 expenses.js — Expense Manager (v2.2)
-   Works with: core.js, analytics.js, dashboard
+   🧾 expenses.js — Expense Manager (v3.0 PRO)
+   Fully optimized for: core.js v3.2, analytics.js, dashboard
    =========================================================== */
 
-/* window.expenses already loaded from core.js */
-
 /* ----------------------------------------------------------
-   ADD EXPENSE
+   ➕ ADD EXPENSE
 ---------------------------------------------------------- */
 function addNewExpense() {
-  const date = document.getElementById("expDate")?.value || todayDate();
-  const category = document.getElementById("expCategory")?.value.trim();
-  const amount = parseFloat(document.getElementById("expAmount")?.value || 0);
-  const note = document.getElementById("expNote")?.value.trim();
+  const date = qs("#expDate")?.value || todayDate();
+  const category = qs("#expCategory")?.value.trim();
+  const amount = Number(qs("#expAmount")?.value || 0);
+  const note = qs("#expNote")?.value.trim();
 
   if (!category || !amount) {
-    return alert("Please enter category and amount.");
+    return alert("Please enter Category and Amount.");
   }
 
   window.expenses.push({
@@ -28,36 +26,50 @@ function addNewExpense() {
 
   saveExpenses();
   renderExpenses();
+  updateSummaryCards?.();
+  renderAnalytics?.();
 
-  // clear form
-  document.getElementById("expCategory").value = "";
-  document.getElementById("expAmount").value = "";
-  document.getElementById("expNote").value = "";
+  // Reset fields
+  qs("#expCategory").value = "";
+  qs("#expAmount").value = "";
+  qs("#expNote").value = "";
 }
 
 /* ----------------------------------------------------------
-   DELETE EXPENSE
+   ❌ DELETE EXPENSE (with better safety)
 ---------------------------------------------------------- */
 function deleteExpense(id) {
-  if (!confirm("Delete this expense?")) return;
+  const exp = window.expenses.find(e => e.id === id);
+  if (!exp) return;
+
+  const msg =
+    `Delete this expense?\n\n` +
+    `Category: ${exp.category}\n` +
+    `Amount: ₹${exp.amount}\n` +
+    `Date: ${exp.date}`;
+
+  if (!confirm(msg)) return;
 
   window.expenses = window.expenses.filter(e => e.id !== id);
+
   saveExpenses();
   renderExpenses();
+  updateSummaryCards?.();
+  renderAnalytics?.();
 }
 
 /* ----------------------------------------------------------
-   RENDER TABLE
+   📋 RENDER EXPENSES TABLE
 ---------------------------------------------------------- */
 function renderExpenses() {
-  const tbody = document.querySelector("#expensesTable tbody");
-  const totalEl = document.getElementById("expensesTotal");
+  const tbody = qs("#expensesTable tbody");
+  const totalEl = qs("#expensesTotal");
 
   if (!tbody || !totalEl) return;
 
-  if (!window.expenses || window.expenses.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5">No expenses found</td></tr>`;
-    totalEl.textContent = 0;
+  if (!window.expenses.length) {
+    tbody.innerHTML = `<tr><td colspan="5">No expenses added yet</td></tr>`;
+    totalEl.textContent = "₹0";
     return;
   }
 
@@ -65,7 +77,8 @@ function renderExpenses() {
 
   tbody.innerHTML = window.expenses
     .map(e => {
-      total += Number(e.amount || 0);
+      total += Number(e.amount);
+
       return `
         <tr>
           <td>${e.date}</td>
@@ -73,8 +86,10 @@ function renderExpenses() {
           <td>₹${e.amount}</td>
           <td>${esc(e.note || "")}</td>
           <td>
-            <button onclick="deleteExpense('${e.id}')" class="small-btn" style="background:#d32f2f;color:#fff">
-              ❌ Delete
+            <button onclick="deleteExpense('${e.id}')" 
+              class="small-btn" 
+              style="background:#c62828;color:#fff">
+              🗑 Delete
             </button>
           </td>
         </tr>
@@ -83,27 +98,17 @@ function renderExpenses() {
     .join("");
 
   totalEl.textContent = "₹" + total;
-
-  // Update Overview summary cards
-  if (typeof updateSummaryCards === "function") {
-    updateSummaryCards();
-  }
-
-  // Update Analytics
-  if (typeof renderAnalytics === "function") {
-    renderAnalytics();
-  }
 }
 
 /* ----------------------------------------------------------
-   EVENTS
+   🖱 EVENT HANDLER
 ---------------------------------------------------------- */
 document.addEventListener("click", e => {
-  if (e.target.id === "addExpBtn") addNewExpense();
+  if (e.target.id === "addExpBtn") return addNewExpense();
 });
 
 /* ----------------------------------------------------------
-   INITIAL LOAD
+   🚀 INITIAL LOAD
 ---------------------------------------------------------- */
 window.addEventListener("load", () => {
   renderExpenses();
