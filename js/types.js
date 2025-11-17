@@ -107,3 +107,6 @@ window.addEventListener("load", () => {
   renderTypes();
   updateTypeDropdowns();
 });
+if (typeof refreshSaleTypeSelector === "function") {
+  refreshSaleTypeSelector();
+}
