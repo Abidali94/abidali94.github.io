@@ -17,7 +17,7 @@ function saveSales() {
 }
 
 /* ----------------------------------------------------------
-   REFRESH PRODUCT DROPDOWNS (VIEW FILTER ONLY)
+   REFRESH FILTER DROPDOWNS (TYPE + PRODUCT)
 ---------------------------------------------------------- */
 function refreshSaleSelectors() {
   const tdd = qs("#saleType");
@@ -25,23 +25,25 @@ function refreshSaleSelectors() {
 
   if (!tdd || !pdd) return;
 
-  /* TYPES */
+  /* TYPE FILTER */
   tdd.innerHTML =
     `<option value="all">All Types</option>` +
     window.types
       .map(t => `<option value="${esc(t.name)}">${esc(t.name)}</option>`)
       .join("");
 
-  /* PRODUCTS */
-  const unique = [...new Set(window.sales.map(s => s.product))];
+  /* PRODUCT FILTER */
+  const uniqueProducts = [...new Set(window.sales.map(s => s.product))];
 
   pdd.innerHTML =
     `<option value="all">All Products</option>` +
-    unique.map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join("");
+    uniqueProducts
+      .map(p => `<option value="${esc(p)}">${esc(p)}</option>`)
+      .join("");
 }
 
 /* ----------------------------------------------------------
-   FILTER SALES
+   FILTER TRIGGER
 ---------------------------------------------------------- */
 function filterSales() {
   renderSales();
@@ -59,7 +61,6 @@ function markSalePaid(id) {
   if (!confirm("Mark this entry as PAID?")) return;
 
   s.status = "Paid";
-
   saveSales();
   renderSales();
   updateSummaryCards?.();
@@ -67,7 +68,7 @@ function markSalePaid(id) {
 }
 
 /* ----------------------------------------------------------
-   DELETE A SALE (Optional)
+   DELETE A SALE (OPTIONAL)
 ---------------------------------------------------------- */
 function deleteSale(id) {
   if (!confirm("Delete this sale entry?")) return;
@@ -93,7 +94,7 @@ qs('#clearSalesBtn')?.addEventListener('click', () => {
 });
 
 /* ----------------------------------------------------------
-   RENDER SALES TABLE (Filters Fixed)
+   RENDER SALES TABLE
 ---------------------------------------------------------- */
 function renderSales() {
   const tbody = qs("#salesTable tbody");
@@ -107,7 +108,6 @@ function renderSales() {
 
   let total = 0;
   let profit = 0;
-
   let rows = "";
 
   window.sales
