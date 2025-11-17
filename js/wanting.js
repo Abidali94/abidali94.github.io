@@ -1,205 +1,162 @@
 /* ==========================================================
-   🛒 wanting.js — Wanting (Re-order) List Manager (v2.0)
-   Works with: core.js, stock.js, sales.js
-   Storage Key: wanting-data
+   🛒 wanting.js — Wanting (Re-order) List Manager (v2)
+   Works with: core.js (autoAddWanting, addStockEntry), stock.js
    ========================================================== */
 
-const WANT_KEY = "wanting-data";
-window.wanting = JSON.parse(localStorage.getItem(WANT_KEY) || "[]");
+/* window.wanting loaded from core.js */
 
-/* ----------------------------------------------------------
-   SAVE WANTING
----------------------------------------------------------- */
-function saveWanting() {
-  localStorage.setItem(WANT_KEY, JSON.stringify(window.wanting));
-  window.dispatchEvent(new Event("storage"));
-  cloudSaveDebounced("wanting", window.wanting);
-}
-
-/* ----------------------------------------------------------
-   RENDER WANTING LIST
----------------------------------------------------------- */
 function renderWanting() {
-  const tbody = document.querySelector("#wantingTable tbody");
+  const tbody = document.querySelector('#wantingTable tbody');
   if (!tbody) return;
 
-  if (!window.wanting.length) {
+  if (!window.wanting || !window.wanting.length) {
     tbody.innerHTML = `<tr><td colspan="5">No items in Wanting list</td></tr>`;
     return;
   }
 
   tbody.innerHTML = window.wanting
     .map((w, i) => `
-      <tr>
-        <td>${w.date}</td>
-        <td>${esc(w.type)}</td>
-        <td>${esc(w.name)}</td>
-        <td>${esc(w.note || "")}</td>
+      <tr data-i="${i}">
+        <td>${esc(w.date)}</td>
+        <td>${esc(w.type || '')}</td>
+        <td style="text-align:left">${esc(w.name)}</td>
+        <td>${esc(w.note || '')}</td>
         <td>
-          <button class="small-btn" data-edit="${i}">✏️</button>
-          <button class="small-btn" data-del="${i}">🗑️</button>
+          <button class="want-to-stock small-btn" data-i="${i}">➕ Add to Stock</button>
+          <button class="want-edit small-btn" data-i="${i}">✏️ Edit</button>
+          <button class="want-remove small-btn" data-i="${i}">🗑️ Remove</button>
         </td>
-      </tr>
-    `)
-    .join("");
+      </tr>`).join('');
 }
 
-/* ----------------------------------------------------------
-   MANUAL ADD WANTING
----------------------------------------------------------- */
+/* ---------------------------------------------------------
+   MANUAL ADD WANTING ITEM
+--------------------------------------------------------- */
 function addWanting() {
-  const type = document.getElementById("wantType")?.value.trim() || "";
-  const name = document.getElementById("wantName")?.value.trim();
-  const note = document.getElementById("wantNote")?.value.trim() || "";
+  const type = (qs('#wantType')?.value || '').trim();
+  const name = (qs('#wantName')?.value || '').trim();
+  const note = (qs('#wantNote')?.value || '').trim();
 
-  if (!name) return alert("Please enter product name");
+  if (!name) return alert('Please enter product name');
 
-  const entry = {
-    id: uid("want"),
-    date: todayDate(),
-    type,
-    name,
-    note
-  };
-
-  window.wanting.push(entry);
+  const it = { id: uid('want'), date: todayDate(), type, name, note };
+  window.wanting = window.wanting || [];
+  window.wanting.push(it);
   saveWanting();
   renderWanting();
 
-  document.getElementById("wantName").value = "";
-  document.getElementById("wantNote").value = "";
+  if (qs('#wantName')) qs('#wantName').value = '';
+  if (qs('#wantNote')) qs('#wantNote').value = '';
+  updateTypeDropdowns?.();
 }
 
-/* ----------------------------------------------------------
-   AUTO ADD WANTING (Stock → Finished)
----------------------------------------------------------- */
-function autoAddToWanting(obj) {
-  if (!obj || !obj.name) return;
+/* ---------------------------------------------------------
+   ADD WANT ITEM BACK TO STOCK (prompt qty + cost)
+   If product exists -> increase qty, else add new entry
+--------------------------------------------------------- */
+function addWantingToStock(index) {
+  index = Number(index);
+  const w = window.wanting[index];
+  if (!w) return alert('Item not found');
 
-  // avoid duplicates
-  const exists = window.wanting.find(
-    w =>
-      w.name.toLowerCase() === obj.name.toLowerCase() &&
-      w.type === obj.type
-  );
+  const qty = Number(prompt(`Enter quantity to add to stock for "${w.name}":`, '1') || 0);
+  if (!qty || qty <= 0) return alert('Invalid quantity');
 
-  if (exists) return;
+  const cost = Number(prompt('Enter cost per unit (₹):', '0') || 0);
+  const date = todayDate();
+  const type = w.type || '';
 
-  window.wanting.push({
-    id: uid("want"),
-    date: todayDate(),
-    type: obj.type,
-    name: obj.name,
-    note: obj.note || "Auto Added (Out of Stock)"
-  });
+  // use core helper to add stock entry
+  addStockEntry({ date, type, name: w.name, qty, cost });
 
+  // remove from wanting
+  window.wanting.splice(index, 1);
   saveWanting();
+  saveStock?.();
+
   renderWanting();
+  renderStock?.();
+  updateTypeDropdowns?.();
 }
 
-/* ----------------------------------------------------------
-   EDIT WANTING
----------------------------------------------------------- */
+/* ---------------------------------------------------------
+   EDIT / REMOVE / CLEAR WANTING
+--------------------------------------------------------- */
 function editWant(index) {
   index = Number(index);
-  const item = window.wanting[index];
-  if (!item) return;
+  const cur = window.wanting[index];
+  if (!cur) return;
 
-  const nName = prompt("Product Name:", item.name);
-  if (!nName) return;
+  const newName = prompt('Product Name:', cur.name);
+  if (!newName) return;
 
-  const nType = prompt("Type:", item.type);
-  const nNote = prompt("Note:", item.note);
+  const newType = prompt('Type:', cur.type || '') || '';
+  const newNote = prompt('Note:', cur.note || '') || '';
 
-  window.wanting[index] = {
-    id: item.id,
-    date: todayDate(),
-    type: nType || "",
-    name: nName,
-    note: nNote || ""
-  };
-
+  window.wanting[index] = { ...cur, date: todayDate(), name: newName.trim(), type: newType.trim(), note: newNote.trim() };
   saveWanting();
   renderWanting();
 }
 
-/* ----------------------------------------------------------
-   REMOVE WANTING
----------------------------------------------------------- */
 function removeWant(index) {
-  if (!confirm("Remove this item?")) return;
-
+  index = Number(index);
+  if (!window.wanting[index]) return;
+  if (!confirm('Remove this item from Wanting?')) return;
   window.wanting.splice(index, 1);
   saveWanting();
   renderWanting();
 }
 
-/* ----------------------------------------------------------
-   CLEAR ALL
----------------------------------------------------------- */
 function clearWanting() {
-  if (!confirm("Clear entire wanting list?")) return;
-
+  if (!confirm('Clear entire Wanting list?')) return;
   window.wanting = [];
   saveWanting();
   renderWanting();
 }
 
-/* ----------------------------------------------------------
-   PRINT WANTING LIST
----------------------------------------------------------- */
+/* ---------------------------------------------------------
+   PRINT WANTING
+--------------------------------------------------------- */
 function printWanting() {
-  const rows = document.querySelector("#wantingTable tbody").innerHTML;
-
+  const rows = qs('#wantingTable tbody').innerHTML;
   const html = `
-  <html>
-    <head>
-      <title>Wanting List</title>
-      <style>
-        table { width:100%; border-collapse:collapse; }
-        th,td { border:1px solid #ccc; padding:6px; }
-      </style>
-    </head>
-    <body>
-      <h3>Wanting List — ${todayDate()}</h3>
-      <table>
-        <thead>
-          <tr><th>Date</th><th>Type</th><th>Product</th><th>Note</th></tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </body>
-  </html>
-  `;
-
-  const w = window.open("", "_blank");
+  <html><head><title>Wanting List</title>
+    <style>table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px}</style>
+  </head><body>
+    <h3>Wanting List — ${todayDate()}</h3>
+    <table><thead><tr><th>Date</th><th>Type</th><th>Product</th><th>Note</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+  </body></html>`;
+  const w = window.open('', '_blank');
   w.document.write(html);
   w.document.close();
   w.print();
 }
 
-/* ----------------------------------------------------------
+/* ---------------------------------------------------------
    EVENTS
----------------------------------------------------------- */
-document.addEventListener("click", e => {
-  if (e.target.id === "addWantBtn") addWanting();
-  if (e.target.id === "clearWantBtn") clearWanting();
-  if (e.target.id === "printWantBtn") printWanting();
+--------------------------------------------------------- */
+document.addEventListener('click', e => {
+  const t = e.target;
 
-  if (e.target.dataset.del) removeWant(e.target.dataset.del);
-  if (e.target.dataset.edit) editWant(e.target.dataset.edit);
+  if (t.id === 'addWantBtn') return addWanting();
+  if (t.id === 'clearWantBtn') return clearWanting();
+  if (t.id === 'printWantBtn') return printWanting();
+
+  if (t.classList.contains('want-remove')) return removeWant(t.dataset.i);
+  if (t.classList.contains('want-edit')) return editWant(t.dataset.i);
+  if (t.classList.contains('want-to-stock')) return addWantingToStock(t.dataset.i);
 });
 
-/* ----------------------------------------------------------
+/* ---------------------------------------------------------
    INITIAL LOAD
----------------------------------------------------------- */
-window.addEventListener("load", () => {
-  renderWanting();
+--------------------------------------------------------- */
+window.addEventListener('load', () => {
   updateTypeDropdowns?.();
+  renderWanting();
 });
 
-/* ----------------------------------------------------------
-   EXPORT
----------------------------------------------------------- */
-window.autoAddToWanting = autoAddToWanting;
+/* EXPORTS */
 window.renderWanting = renderWanting;
+window.addWanting = addWanting;
+window.addWantingToStock = addWantingToStock;
