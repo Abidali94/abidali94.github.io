@@ -69,26 +69,6 @@
 
     /* Summary + layout */
     .flex-row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
-    #overview-left{flex:1;min-width:280px}
-    #overview-right{flex:1;min-width:320px;max-width:620px}
-
-    #summaryCards{
-      display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-start
-    }
-    #summaryCards .card{
-      flex:1;min-width:140px;border-radius:12px;padding:12px;
-      text-align:center;background:var(--card);
-      box-shadow:0 6px 14px rgba(0,0,0,0.04)
-    }
-    #summaryCards .card small{font-size:13px;opacity:.85}
-    body.dark #summaryCards .card{
-      background:var(--dark-card);
-      color:var(--dark-text);border:1px solid var(--dark-border)
-    }
-    #summaryCards .card b {
-      color: var(--orange);
-      font-size: 20px;
-    }
 
     /* Table */
     table{
@@ -102,7 +82,7 @@
     body.dark tr:nth-child(even){background:#1f1f1f}
     tr:hover{background:#fff3e0}
 
-    /* small forms */
+    /* Small forms */
     .row-inline{
       display:flex;gap:8px;align-items:center;flex-wrap:wrap
     }
@@ -112,18 +92,6 @@
     .row-inline input[type="date"]{
       padding:6px;border-radius:6px;border:1px solid #ddd
     }
-
-    /* Wanting */
-    .want-form{
-      display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;align-items:center
-    }
-    .want-form input,.want-form select{
-      padding:7px;border-radius:6px;border:1px solid #ddd
-    }
-    /* Stock Alert Colors */
-    .ok { color: green; font-weight: bold; }
-    .low { background:#fff3cd; color:#ff9800; font-weight:bold; }
-    .out { background:#ffcdd2; color:#d32f2f; font-weight:bold; }
   </style>
 </head>
 
@@ -134,18 +102,13 @@
     <h1>📦 KharchaSaathi (Offline)</h1>
 
     <div style="display:flex;gap:10px;align-items:center">
-
       <span id="emailTag">Loading...</span>
-
       <button id="themeBtn" class="theme-btn">🌙</button>
-
       <a class="small-btn" href="/index.html">🏠 Back</a>
-
-      <button id="logoutBtn" class="small-btn" style="background:#e53935">
-        🔓 Logout
-      </button>
+      <button id="logoutBtn" class="small-btn" style="background:#e53935">🔓 Logout</button>
     </div>
   </div>
+
   <!-- ===== TABS ===== -->
   <div class="tabs" role="tablist">
     <div class="tab active" data-tab="types">🗂 Types</div>
@@ -156,18 +119,20 @@
     <div class="tab" data-tab="analytics">📈 Smart Dashboard</div>
     <div class="tab" data-tab="expenses">💸 Expenses</div>
   </div>
-  
-
   <!-- ===== TYPES ===== -->
   <section id="types" class="section active">
     <h3>🗂 Manage Item Types</h3>
+
     <div class="row-inline" style="margin-top:8px">
       <input id="typeName" type="text" placeholder="Add new type" style="flex:1;min-width:160px">
       <button id="addTypeBtn" class="small-btn">Add</button>
       <button id="clearTypesBtn" class="small-btn">Clear All</button>
     </div>
+
     <ul id="typeList" style="margin-top:10px;padding-left:18px"></ul>
   </section>
+
+
 
   <!-- ===== STOCK ===== -->
   <section id="stock" class="section">
@@ -204,55 +169,58 @@
       <tbody></tbody>
     </table>
   </section>
-  <!-- ===== SALES ===== -->
-<!-- ===== SALES ===== -->
-<section id="sales" class="section">
-  <h3>💰 Sales & Profit</h3>
 
-  <div class="row-inline" style="margin:10px 0">
-    <label>Date:</label>
-    <input id="saleDate" type="date">
 
-    <label style="margin-left:8px">Filter Type:</label>
-    <select id="saleType">
-      <option value="all">All Types</option>
-    </select>
 
-    <button id="filterSalesBtn" class="small-btn" style="margin-left:8px">Filter</button>
+  <!-- ===== SALES (NEW CLEAN FINAL) ===== -->
+  <section id="sales" class="section">
+    <h3>💰 Sales & Profit</h3>
 
-    <button id="clearSalesBtn" class="danger-btn"
-      style="background:#c62828;color:#fff;margin-left:10px">
-      🗑️ Clear All
-    </button>
-  </div>
+    <div class="row-inline" style="margin:10px 0">
+      <label>Date:</label>
+      <input id="saleDate" type="date">
 
-  <table id="salesTable">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Type</th>
-        <th>Product</th>
-        <th>Qty</th>
-        <th>Price</th>
-        <th>Total</th>
-        <th>Profit</th>
-        <th>Status</th>
-      </tr>
-    </thead>
+      <label style="margin-left:8px">Filter Type:</label>
+      <select id="saleType">
+        <option value="all">All Types</option>
+      </select>
 
-    <tbody></tbody>
+      <button id="filterSalesBtn" class="small-btn" style="margin-left:8px">
+        Filter
+      </button>
 
-    <tfoot>
-      <tr>
-        <td colspan="5" style="text-align:right">Total:</td>
-        <td id="salesTotal">0</td>
-        <td id="profitTotal">0</td>
-        <td></td>
-      </tr>
-    </tfoot>
-  </table>
-</section>
-  
+      <button id="clearSalesBtn" class="small-btn" 
+        style="background:#c62828;color:#fff;margin-left:10px">
+        🗑️ Clear All
+      </button>
+    </div>
+
+    <table id="salesTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Product</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>Total</th>
+          <th>Profit</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody></tbody>
+
+      <tfoot>
+        <tr>
+          <td colspan="5" style="text-align:right">Total:</td>
+          <td id="salesTotal">0</td>
+          <td id="profitTotal">0</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </section>
   <!-- ===== WANTING ===== -->
   <section id="wanting" class="section">
     <h3>🛒 Wanting List</h3>
@@ -267,12 +235,21 @@
     </div>
 
     <table id="wantingTable">
-      <thead><tr>
-        <th>Date</th><th>Type</th><th>Product</th><th>Note</th><th>Action</th>
-      </tr></thead>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Product</th>
+          <th>Note</th>
+          <th>Action</th>
+        </tr>
+      </thead>
       <tbody></tbody>
     </table>
   </section>
+
+
+
 
   <!-- ===== OVERVIEW ===== -->
   <section id="dashboard" class="section">
@@ -316,62 +293,72 @@
         <small>Stock Remaining</small>
 
         <div style="margin-top:6px;height:6px;background:#ddd;border-radius:4px">
-          <div id="stockRemainBar" style="height:6px;width:0%;background:var(--orange);border-radius:4px"></div>
+          <div id="stockRemainBar"
+               style="height:6px;width:0%;background:var(--orange);border-radius:4px">
+          </div>
         </div>
       </div>
 
     </div>
   </section>
+
+
+
+
   <!-- ===== ANALYTICS (SMART DASHBOARD) ===== -->
-<section id="analytics" class="section">
-  <h3>📈 Smart Dashboard</h3>
+  <section id="analytics" class="section">
+    <h3>📈 Smart Dashboard</h3>
 
-  <!-- Summary Cards -->
-  <div class="flex-row" style="margin-bottom:18px">
-    <div class="card" style="flex:1;min-width:140px">
-      <h4>Today Sales</h4>
-      <b id="sumToday">₹0</b>
+    <!-- Summary Cards -->
+    <div class="flex-row" style="margin-bottom:18px">
+
+      <div class="card" style="flex:1;min-width:140px">
+        <h4>Today Sales</h4>
+        <b id="sumToday">₹0</b>
+      </div>
+
+      <div class="card" style="flex:1;min-width:140px">
+        <h4>This Week</h4>
+        <b id="sumWeek">₹0</b>
+      </div>
+
+      <div class="card" style="flex:1;min-width:140px">
+        <h4>This Month</h4>
+        <b id="sumMonth">₹0</b>
+      </div>
+
+      <div class="card" style="flex:1;min-width:140px">
+        <h4>Gross Profit</h4>
+        <b id="sumGross">₹0</b>
+      </div>
+
+      <div class="card" style="flex:1;min-width:140px">
+        <h4>Net Profit</h4>
+        <b id="sumNet">₹0</b>
+      </div>
+
     </div>
 
-    <div class="card" style="flex:1;min-width:140px">
-      <h4>This Week</h4>
-      <b id="sumWeek">₹0</b>
+
+    <!-- Bar Chart -->
+    <div style="max-width:900px;margin:auto">
+      <canvas id="salesBar" height="150"></canvas>
     </div>
 
-    <div class="card" style="flex:1;min-width:140px">
-      <h4>This Month</h4>
-      <b id="sumMonth">₹0</b>
+    <br>
+
+    <!-- Pie Chart -->
+    <div style="max-width:600px;margin:auto">
+      <canvas id="salesPie" height="150"></canvas>
     </div>
 
-    <div class="card" style="flex:1;min-width:140px">
-      <h4>Gross Profit</h4>
-      <b id="sumGross">₹0</b>
-    </div>
-
-    <div class="card" style="flex:1;min-width:140px">
-      <h4>Net Profit</h4>
-      <b id="sumNet">₹0</b>
-    </div>
-  </div>
-
-  <!-- Bar Chart -->
-  <div style="max-width:900px;margin:auto">
-    <canvas id="salesBar" height="150"></canvas>
-  </div>
-
-  <br>
-
-  <!-- Pie Chart -->
-  <div style="max-width:600px;margin:auto">
-    <canvas id="salesPie" height="150"></canvas>
-  </div>
-</section>
+  </section>
   <!-- ===== EXPENSES ===== -->
   <section id="expenses" class="section">
     <h3>🧾 Expenses</h3>
 
     <div class="row-inline" style="margin-bottom:8px">
-      <input id="expDate" type="date" value="" onfocus="if(!this.value)this.value=todayDate()">
+      <input id="expDate" type="date" onfocus="if(!this.value)this.value=todayDate()">
       <input id="expCategory" type="text" placeholder="Category" style="min-width:140px">
       <input id="expAmount" type="number" placeholder="Amount" style="width:120px">
       <input id="expNote" type="text" placeholder="Note" style="min-width:200px">
@@ -380,19 +367,28 @@
 
     <table id="expensesTable">
       <thead>
-        <tr><th>Date</th><th>Category</th><th>Amount</th><th>Note</th><th>Action</th></tr>
+        <tr>
+          <th>Date</th>
+          <th>Category</th>
+          <th>Amount</th>
+          <th>Note</th>
+          <th>Action</th>
+        </tr>
       </thead>
       <tbody></tbody>
+
       <tfoot>
         <tr>
           <td colspan="2" style="text-align:right">Total:</td>
           <td id="expensesTotal">0</td>
-          <td></td>
-          <td></td>
+          <td></td><td></td>
         </tr>
       </tfoot>
     </table>
   </section>
+
+
+
   <!-- HELP -->
   <div class="footer-btns" style="margin-top:18px">
     <a href="#" id="helpLink" class="small-btn">📘 Help & Guide</a>
@@ -403,32 +399,37 @@
     <div class="help-content">
       <h2>📘 Quick Help</h2>
       <ul style="line-height:1.6">
-        <li>Types — manage categories</li>
-        <li>Stock — add/update inventory</li>
-        <li>Sales — track daily profit</li>
-        <li>Wanting — reorder items</li>
-        <li>Overview — today summary</li>
-        <li>Analytics — charts</li>
+        <li>Types — Manage categories</li>
+        <li>Stock — Add/Update inventory</li>
+        <li>Sales — Track daily sales & profit</li>
+        <li>Wanting — Reorder required items</li>
+        <li>Overview — Today’s summary</li>
+        <li>Analytics — Smart charts</li>
       </ul>
       <button class="small-btn" onclick="toggleHelp()">Close</button>
     </div>
   </div>
 
+
+
+
   <!-- ===== JS LOGIC ===== -->
 
-  <!-- Helpers + Theme -->
   <script>
     const qs = s => document.querySelector(s);
     const qsa = s => Array.from(document.querySelectorAll(s));
 
     function toggleHelp(){
       const m = qs('#helpModal');
-      m.style.display = (m.style.display==='flex'?'none':'flex');
+      m.style.display = (m.style.display==='flex' ? 'none' : 'flex');
     }
+
     qs('#helpLink').addEventListener('click', e=>{
-      e.preventDefault(); toggleHelp();
+      e.preventDefault();
+      toggleHelp();
     });
 
+    // Theme Load
     if(localStorage.getItem('ks-theme')==='dark'){
       document.body.classList.add('dark');
     }
@@ -438,151 +439,146 @@
       localStorage.setItem('ks-theme', d?'dark':'light');
     });
   </script>
-  
-  <!-- Tabs -->
-<script>
-(function () {
-  const tabs = qsa('.tab'),
-        sections = qsa('.section');
 
-  function activate(name) {
 
-    // Switch tab highlight
-    tabs.forEach(t =>
-      t.classList.toggle('active', t.dataset.tab === name)
-    );
 
-    // Switch visible section
-    sections.forEach(s =>
-      s.classList.toggle('active', s.id === name)
-    );
 
-    // --------------------------
-    // Correct functions for v1.3
-    // --------------------------
-
-    if (name === 'types' && typeof renderTypes === "function") {
-      renderTypes();
-    }
-
-    if (name === 'stock' && typeof renderStock === "function") {
-      renderStock();
-    }
-    if (name === 'sales') {
-     refreshSaleTypeSelector?.();
-     renderSales?.();
-    }
-    
-
-    if (name === 'wanting' && typeof renderWanting === "function") {
-      renderWanting();
-    }
-
-    if (name === 'dashboard' && typeof updateSummaryCards === "function") {
-      updateSummaryCards();
-    }
-
-    if (name === 'analytics' && typeof renderAnalytics === "function") {
-      renderAnalytics();
-    }
-
-    /* ⭐ EXPENSES TAB */
-    if (name === 'expenses' && typeof renderExpenses === "function") {
-      renderExpenses();
-    }
-  }
-
-  tabs.forEach(t =>
-    t.addEventListener('click', () => activate(t.dataset.tab))
-  );
-
-  window.activateTab = activate;
-})();
-</script>
-
-<!-- LOGIN UTILS FIRST -->
-<script src="/js/login-utils.js"></script>
-
-<!-- LOGIN CHECK -->
-<script>
-  if (!isLoggedIn()) {
-    window.location.href = "/login.html";
-  }
-
-  qs("#emailTag").textContent = "Logged in: " + getUserEmail();
-
-  qs("#logoutBtn").addEventListener("click", () => {
-    logoutUser();
-    window.location.href = "/login.html";
-  });
-</script>
-
-<!-- CHARTS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
-
-<!-- FIREBASE -->
-<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
-
-<!-- MAIN MODULES -->
-<script src="/js/firebase.js"></script>
-<script src="/js/core.js"></script>
-<script src="/js/types.js"></script>
-<script src="/js/stock.js"></script>
-<script src="/js/sales.js"></script>
-<script src="/js/wanting.js"></script>
-<script src="/js/analytics.js"></script>
-<script src="/js/security.js"></script>
-<script src="/js/expenses.js"></script>
+  <!-- ===== TABS SWITCHER ===== -->
   <script>
-function updateSummaryCards() {
-  const today = todayDate();
+    (function () {
+      const tabs = qsa('.tab'),
+            sections = qsa('.section');
 
-  let todaySales = 0, todayCredit = 0, todayProfit = 0;
+      function activate(name) {
 
-  window.sales.forEach(s => {
-    if (s.date === today) {
-      todaySales += s.amount;
-      if (s.status === "Credit") todayCredit += s.amount;
-      todayProfit += s.profit;
+        tabs.forEach(t =>
+          t.classList.toggle('active', t.dataset.tab === name)
+        );
+
+        sections.forEach(s =>
+          s.classList.toggle('active', s.id === name)
+        );
+
+        // Auto refresh correct tab:
+        if (name === 'types') renderTypes?.();
+        if (name === 'stock') renderStock?.();
+        if (name === 'sales') { 
+          refreshSaleTypeSelector?.(); 
+          renderSales?.(); 
+        }
+        if (name === 'wanting') renderWanting?.();
+        if (name === 'dashboard') updateSummaryCards?.();
+        if (name === 'analytics') renderAnalytics?.();
+        if (name === 'expenses') renderExpenses?.();
+      }
+
+      tabs.forEach(t =>
+        t.addEventListener('click', () => activate(t.dataset.tab))
+      );
+
+      window.activateTab = activate;
+    })();
+  </script>
+
+
+
+  <!-- LOGIN UTILS -->
+  <script src="/js/login-utils.js"></script>
+
+  <script>
+    if (!isLoggedIn()) {
+      window.location.href = "/login.html";
     }
-  });
 
-  let todayExpenses = 0;
-  window.expenses.forEach(e => {
-    if (e.date === today) todayExpenses += Number(e.amount || 0);
-  });
+    qs("#emailTag").textContent = "Logged in: " + getUserEmail();
 
-  let todayNet = todayProfit - todayExpenses;
+    qs("#logoutBtn").addEventListener("click", () => {
+      logoutUser();
+      window.location.href = "/login.html";
+    });
+  </script>
 
-  // stock %
-  let total = 0, remain = 0;
-  window.stock.forEach(s => {
-    total += Number(s.qty || 0) + Number(s.sold || 0);
-    remain += Number(s.qty || 0);
-  });
 
-  let pct = total ? Math.round((remain / total) * 100) : 0;
 
-  qs("#todaySales").textContent = "₹" + todaySales;
-  qs("#todayCredit").textContent = "₹" + todayCredit;
-  qs("#todayExpenses").textContent = "₹" + todayExpenses;
-  qs("#todayGross").textContent = "₹" + todayProfit;
-  qs("#todayNet").textContent = "₹" + todayNet;
-  qs("#stockRemainValue").textContent = pct + "%";
-  qs("#stockRemainBar").style.width = pct + "%";
-}
-</script>
-  <!-- AFTER ALL MODULES: SAFE INITIAL RENDER -->
-<script>
-  // First load all data to screen
-  if (typeof renderTypes === 'function') renderTypes();
-  if (typeof renderStock === 'function') renderStock();
-  if (typeof renderSales === 'function') renderSales();
-  if (typeof renderWanting === 'function') renderWanting();
-  if (typeof renderExpenses === 'function') renderExpenses();
-  if (typeof renderAnalytics === 'function') renderAnalytics();
-  if (typeof updateSummaryCards === 'function') updateSummaryCards();
-</script>
-</body>
+  <!-- CHART JS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
+
+  <!-- FIREBASE -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
+
+
+  <!-- MODULES -->
+  <script src="/js/firebase.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/types.js"></script>
+  <script src="/js/stock.js"></script>
+  <script src="/js/sales.js"></script>
+  <script src="/js/wanting.js"></script>
+  <script src="/js/analytics.js"></script>
+  <script src="/js/security.js"></script>
+  <script src="/js/expenses.js"></script>
+
+
+
+
+  <!-- SUMMARY CARDS -->
+  <script>
+    function updateSummaryCards() {
+      const today = todayDate();
+
+      let todaySales = 0,
+          todayCredit = 0,
+          todayProfit = 0;
+
+      window.sales.forEach(s => {
+        if (s.date === today) {
+          todaySales += s.amount;
+          if (s.status === "Credit") todayCredit += s.amount;
+          todayProfit += s.profit;
+        }
+      });
+
+      let todayExpenses = 0;
+      window.expenses.forEach(e => {
+        if (e.date === today) todayExpenses += Number(e.amount || 0);
+      });
+
+      const todayNet = todayProfit - todayExpenses;
+
+      let total = 0, remain = 0;
+      window.stock.forEach(s => {
+        total += Number(s.qty || 0) + Number(s.sold || 0);
+        remain += Number(s.qty || 0);
+      });
+
+      const pct = total ? Math.round((remain / total) * 100) : 0;
+
+      qs("#todaySales").textContent = "₹" + todaySales;
+      qs("#todayCredit").textContent = "₹" + todayCredit;
+      qs("#todayExpenses").textContent = "₹" + todayExpenses;
+      qs("#todayGross").textContent = "₹" + todayProfit;
+      qs("#todayNet").textContent = "₹" + todayNet;
+      qs("#stockRemainValue").textContent = pct + "%";
+      qs("#stockRemainBar").style.width = pct + "%";
+    }
+  </script>
+
+
+
+
+  <!-- FIRST LOAD -->
+  <script>
+    renderTypes?.();
+    renderStock?.();
+    refreshSaleTypeSelector?.();
+    renderSales?.();
+    renderWanting?.();
+    renderExpenses?.();
+    renderAnalytics?.();
+    updateSummaryCards?.();
+  </script>
+  </body>
 </html>
+  
+  
