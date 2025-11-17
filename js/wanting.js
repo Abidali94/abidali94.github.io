@@ -1,162 +1,138 @@
-/* ==========================================================
-   🛒 wanting.js — Wanting (Re-order) List Manager (v2)
-   Works with: core.js (autoAddWanting, addStockEntry), stock.js
-   ========================================================== */
+/* =======================================================
+   🛒 wanting.js — Wanting / Reorder List (Final v2.1)
+   Works with: core.js, stock.js
+   ======================================================= */
 
-/* window.wanting loaded from core.js */
+/* window.wanting already exists from core.js */
 
+/* -------------------------------------------------------
+   🔁 RENDER WANTING LIST
+------------------------------------------------------- */
 function renderWanting() {
-  const tbody = document.querySelector('#wantingTable tbody');
-  if (!tbody) return;
+  const tbody = document.querySelector("#wantingTable tbody");
+  const typeDrop = document.querySelector("#wantType");
 
-  if (!window.wanting || !window.wanting.length) {
-    tbody.innerHTML = `<tr><td colspan="5">No items in Wanting list</td></tr>`;
-    return;
-  }
+  if (!tbody || !typeDrop) return;
 
-  tbody.innerHTML = window.wanting
-    .map((w, i) => `
-      <tr data-i="${i}">
-        <td>${esc(w.date)}</td>
-        <td>${esc(w.type || '')}</td>
-        <td style="text-align:left">${esc(w.name)}</td>
-        <td>${esc(w.note || '')}</td>
-        <td>
-          <button class="want-to-stock small-btn" data-i="${i}">➕ Add to Stock</button>
-          <button class="want-edit small-btn" data-i="${i}">✏️ Edit</button>
-          <button class="want-remove small-btn" data-i="${i}">🗑️ Remove</button>
-        </td>
-      </tr>`).join('');
+  /* ---- Fill Type Dropdown ---- */
+  typeDrop.innerHTML = window.types
+    .map(t => `<option value="${t.name}">${t.name}</option>`)
+    .join("");
+
+  /* ---- Render Table ---- */
+  let html = "";
+  window.wanting.forEach((w, i) => {
+    html += `
+    <tr>
+      <td>${w.date}</td>
+      <td>${esc(w.type)}</td>
+      <td>${esc(w.name)}</td>
+      <td>${esc(w.note || "")}</td>
+      <td>
+        <button class="want-add-btn" data-i="${i}" title="Add to Stock">➕ Add</button>
+        <button class="want-del-btn" data-i="${i}" title="Delete">🗑️ Delete</button>
+      </td>
+    </tr>`;
+  });
+
+  if (!html)
+    html = `<tr><td colspan="5">No items in Wanting</td></tr>`;
+
+  tbody.innerHTML = html;
 }
 
-/* ---------------------------------------------------------
-   MANUAL ADD WANTING ITEM
---------------------------------------------------------- */
-function addWanting() {
-  const type = (qs('#wantType')?.value || '').trim();
-  const name = (qs('#wantName')?.value || '').trim();
-  const note = (qs('#wantNote')?.value || '').trim();
+/* -------------------------------------------------------
+   ➕ ADD NEW WANTING ITEM
+------------------------------------------------------- */
+function addWantingItem() {
+  const type = document.querySelector("#wantType")?.value;
+  const name = document.querySelector("#wantName")?.value.trim();
+  const note = document.querySelector("#wantNote")?.value.trim();
 
-  if (!name) return alert('Please enter product name');
+  if (!type || !name) return alert("Please enter type & product.");
 
-  const it = { id: uid('want'), date: todayDate(), type, name, note };
-  window.wanting = window.wanting || [];
-  window.wanting.push(it);
+  window.wanting.push({
+    id: uid("want"),
+    date: todayDate(),
+    type,
+    name,
+    note
+  });
+
   saveWanting();
   renderWanting();
 
-  if (qs('#wantName')) qs('#wantName').value = '';
-  if (qs('#wantNote')) qs('#wantNote').value = '';
-  updateTypeDropdowns?.();
+  document.querySelector("#wantName").value = "";
+  document.querySelector("#wantNote").value = "";
 }
 
-/* ---------------------------------------------------------
-   ADD WANT ITEM BACK TO STOCK (prompt qty + cost)
-   If product exists -> increase qty, else add new entry
---------------------------------------------------------- */
-function addWantingToStock(index) {
-  index = Number(index);
-  const w = window.wanting[index];
-  if (!w) return alert('Item not found');
+/* -------------------------------------------------------
+   🔥 ADD “WANTED ITEM” TO STOCK
+------------------------------------------------------- */
+function wantingToStock(i) {
+  const w = window.wanting[i];
+  if (!w) return;
 
-  const qty = Number(prompt(`Enter quantity to add to stock for "${w.name}":`, '1') || 0);
-  if (!qty || qty <= 0) return alert('Invalid quantity');
+  const qty = Number(prompt(`Enter quantity for "${w.name}"`));
+  if (!qty || qty <= 0) return alert("Invalid quantity.");
 
-  const cost = Number(prompt('Enter cost per unit (₹):', '0') || 0);
-  const date = todayDate();
-  const type = w.type || '';
+  const cost = Number(prompt("Enter Purchase Cost ₹ for each item:"));
+  if (!cost || cost <= 0) return alert("Invalid cost.");
 
-  // use core helper to add stock entry
-  addStockEntry({ date, type, name: w.name, qty, cost });
+  // Add to stock
+  addStockEntry({
+    date: todayDate(),
+    type: w.type,
+    name: w.name,
+    qty,
+    cost
+  });
 
-  // remove from wanting
-  window.wanting.splice(index, 1);
+  // Remove from wanting list
+  window.wanting.splice(i, 1);
   saveWanting();
-  saveStock?.();
 
   renderWanting();
   renderStock?.();
-  updateTypeDropdowns?.();
 }
 
-/* ---------------------------------------------------------
-   EDIT / REMOVE / CLEAR WANTING
---------------------------------------------------------- */
-function editWant(index) {
-  index = Number(index);
-  const cur = window.wanting[index];
-  if (!cur) return;
-
-  const newName = prompt('Product Name:', cur.name);
-  if (!newName) return;
-
-  const newType = prompt('Type:', cur.type || '') || '';
-  const newNote = prompt('Note:', cur.note || '') || '';
-
-  window.wanting[index] = { ...cur, date: todayDate(), name: newName.trim(), type: newType.trim(), note: newNote.trim() };
-  saveWanting();
-  renderWanting();
+/* -------------------------------------------------------
+   ❌ DELETE FROM WANTING
+------------------------------------------------------- */
+function deleteWantingItem(i) {
+  if (confirm("Remove this item?")) {
+    window.wanting.splice(i, 1);
+    saveWanting();
+    renderWanting();
+  }
 }
 
-function removeWant(index) {
-  index = Number(index);
-  if (!window.wanting[index]) return;
-  if (!confirm('Remove this item from Wanting?')) return;
-  window.wanting.splice(index, 1);
-  saveWanting();
-  renderWanting();
-}
+/* -------------------------------------------------------
+   🖱 EVENT HANDLER
+------------------------------------------------------- */
+document.addEventListener("click", e => {
+  if (e.target.id === "addWantBtn")
+    return addWantingItem();
 
-function clearWanting() {
-  if (!confirm('Clear entire Wanting list?')) return;
-  window.wanting = [];
-  saveWanting();
-  renderWanting();
-}
+  if (e.target.id === "clearWantBtn") {
+    if (confirm("Clear ALL wanting items?")) {
+      window.wanting = [];
+      saveWanting();
+      renderWanting();
+    }
+    return;
+  }
 
-/* ---------------------------------------------------------
-   PRINT WANTING
---------------------------------------------------------- */
-function printWanting() {
-  const rows = qs('#wantingTable tbody').innerHTML;
-  const html = `
-  <html><head><title>Wanting List</title>
-    <style>table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px}</style>
-  </head><body>
-    <h3>Wanting List — ${todayDate()}</h3>
-    <table><thead><tr><th>Date</th><th>Type</th><th>Product</th><th>Note</th></tr></thead>
-    <tbody>${rows}</tbody></table>
-  </body></html>`;
-  const w = window.open('', '_blank');
-  w.document.write(html);
-  w.document.close();
-  w.print();
-}
+  if (e.target.classList.contains("want-add-btn"))
+    return wantingToStock(e.target.dataset.i);
 
-/* ---------------------------------------------------------
-   EVENTS
---------------------------------------------------------- */
-document.addEventListener('click', e => {
-  const t = e.target;
-
-  if (t.id === 'addWantBtn') return addWanting();
-  if (t.id === 'clearWantBtn') return clearWanting();
-  if (t.id === 'printWantBtn') return printWanting();
-
-  if (t.classList.contains('want-remove')) return removeWant(t.dataset.i);
-  if (t.classList.contains('want-edit')) return editWant(t.dataset.i);
-  if (t.classList.contains('want-to-stock')) return addWantingToStock(t.dataset.i);
+  if (e.target.classList.contains("want-del-btn"))
+    return deleteWantingItem(e.target.dataset.i);
 });
 
-/* ---------------------------------------------------------
-   INITIAL LOAD
---------------------------------------------------------- */
-window.addEventListener('load', () => {
-  updateTypeDropdowns?.();
+/* -------------------------------------------------------
+   🚀 INITIAL LOAD
+------------------------------------------------------- */
+window.addEventListener("load", () => {
   renderWanting();
 });
-
-/* EXPORTS */
-window.renderWanting = renderWanting;
-window.addWanting = addWanting;
-window.addWantingToStock = addWantingToStock;
