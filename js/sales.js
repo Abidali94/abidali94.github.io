@@ -1,143 +1,99 @@
 /* ==========================================================
-   💰 sales.js — Sales + Profit Manager (v3.0 PRO FINAL)
-   Compatible with: core.js v3.2, stock.js v3.0
+   💰 sales.js — Sales Viewer + Profit Manager (FINAL v4.0)
+   Pure VIEW MODE — No manual product adding
+   Sales only come from:
+     ✔ Stock Quick Sale
+     ✔ Stock Quick Credit
 ========================================================== */
 
+/* window.sales already loaded from core.js */
+
 /* ----------------------------------------------------------
-   🔁 REFRESH TYPE + PRODUCT DROPDOWNS
+   SAVE SALES
+---------------------------------------------------------- */
+function saveSales() {
+  localStorage.setItem("sales-data", JSON.stringify(window.sales));
+  window.dispatchEvent(new Event("storage"));
+}
+
+/* ----------------------------------------------------------
+   REFRESH PRODUCT DROPDOWNS (VIEW FILTER ONLY)
 ---------------------------------------------------------- */
 function refreshSaleSelectors() {
-  const typeDD = qs("#saleType");
-  const prodDD = qs("#saleProduct");
+  const tdd = qs("#saleType");
+  const pdd = qs("#saleProduct");
 
-  if (!typeDD || !prodDD) return;
+  if (!tdd || !pdd) return;
 
-  // TYPE DROPDOWN
-  typeDD.innerHTML =
-    `<option value="">Select Type</option>` +
-    window.types.map(t => `<option value="${t.name}">${esc(t.name)}</option>`).join("");
+  /* TYPES */
+  tdd.innerHTML =
+    `<option value="all">All Types</option>` +
+    window.types
+      .map(t => `<option value="${esc(t.name)}">${esc(t.name)}</option>`)
+      .join("");
 
-  // PRODUCT DROPDOWN (TYPE|||PRODUCT)
-  const products = window.stock.map(s => `${s.type}|||${s.name}`);
-  const unique = [...new Set(products)];
+  /* PRODUCTS */
+  const unique = [...new Set(window.sales.map(s => s.product))];
 
-  prodDD.innerHTML =
-    `<option value="">Select Product</option>` +
-    unique.map(p => {
-      const [type, name] = p.split("|||");
-      return `<option value="${p}">${esc(type)} — ${esc(name)}</option>`;
-    }).join("");
+  pdd.innerHTML =
+    `<option value="all">All Products</option>` +
+    unique.map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join("");
 }
 
 /* ----------------------------------------------------------
-   ➕ ADD SALE
+   FILTER SALES
 ---------------------------------------------------------- */
-function addSale() {
-  const date = qs('#saleDate')?.value || todayDate();
-  const selected = qs('#saleProduct')?.value;
-  const qty = Number(qs('#saleQty')?.value || 0);
-  const price = Number(qs('#salePrice')?.value || 0);
-  const status = qs('#saleStatus')?.value || "Paid";
-
-  if (!selected) return alert("Please select a product");
-  if (qty <= 0) return alert("Invalid Qty");
-  if (price <= 0) return alert("Invalid Price");
-
-  const [type, name] = selected.split("|||");
-
-  // ✔ stock check
-  const p = findProduct(type, name);
-  const remain = p ? (p.qty - (p.sold || 0)) : 0;
-
-  if (qty > remain) {
-    if (!confirm(`Only ${remain} available. Continue?`)) return;
-  }
-
-  // ✔ Customer (only for credit)
-  let customer = "";
-  if (status === "Credit") {
-    customer = prompt("Enter customer name (optional):") || "Customer";
-  }
-
-  // ✔ cost & profit calculation
-  const cost = getProductCost(type, name);
-  const profit = Math.round((price - cost) * qty);
-
-  // ✔ update stock
-  if (p) {
-    p.sold = (p.sold || 0) + qty;
-    saveStock();
-  }
-
-  // ✔ add sale record
-  window.sales.push({
-    id: uid("sale"),
-    date,
-    type,
-    product: name,
-    qty,
-    price,
-    amount: price * qty,
-    profit,
-    status,
-    customer
-  });
-
-  saveSales();
+function filterSales() {
   renderSales();
-  renderStock();
-  updateSummaryCards?.();
-  renderAnalytics?.();
-
-  // reset fields
-  qs('#saleQty').value = "";
-  qs('#salePrice').value = "";
 }
 
 /* ----------------------------------------------------------
-   ✔ MARK CREDIT → PAID
+   MARK CREDIT → PAID
 ---------------------------------------------------------- */
 function markSalePaid(id) {
   const s = window.sales.find(x => x.id === id);
   if (!s) return;
 
-  if (s.status === "Paid") return alert("Already Paid!");
+  if (s.status === "Paid") return alert("Already Paid");
 
-  if (!confirm("Mark this sale as PAID?")) return;
+  if (!confirm("Mark this entry as PAID?")) return;
 
   s.status = "Paid";
+
   saveSales();
   renderSales();
+  updateSummaryCards?.();
+  renderAnalytics?.();
 }
 
 /* ----------------------------------------------------------
-   🗑 DELETE ONE SALE
+   DELETE A SALE (Optional)
 ---------------------------------------------------------- */
 function deleteSale(id) {
-  if (!confirm("Delete this sale?")) return;
+  if (!confirm("Delete this sale entry?")) return;
 
   window.sales = window.sales.filter(s => s.id !== id);
   saveSales();
   renderSales();
+  updateSummaryCards?.();
+  renderAnalytics?.();
 }
 
 /* ----------------------------------------------------------
-   🧹 CLEAR ALL SALES
+   CLEAR ALL SALES
 ---------------------------------------------------------- */
-function clearAllSales() {
-  if (!confirm("Delete ALL sales?")) return;
+qs('#clearSalesBtn')?.addEventListener('click', () => {
+  if (!confirm("Delete ALL sales permanently?")) return;
 
   window.sales = [];
   saveSales();
   renderSales();
   updateSummaryCards?.();
   renderAnalytics?.();
-}
-
-qs("#clearSalesBtn")?.addEventListener("click", clearAllSales);
+});
 
 /* ----------------------------------------------------------
-   📊 RENDER SALES TABLE
+   RENDER SALES TABLE (Filters Fixed)
 ---------------------------------------------------------- */
 function renderSales() {
   const tbody = qs("#salesTable tbody");
@@ -146,14 +102,22 @@ function renderSales() {
 
   if (!tbody) return;
 
+  const typeFilter = qs("#saleType")?.value || "all";
+  const prodFilter = qs("#saleProduct")?.value || "all";
+
   let total = 0;
   let profit = 0;
 
-  tbody.innerHTML = window.sales.map(s => {
-    total += s.amount;
-    profit += s.profit;
+  let rows = "";
 
-    return `
+  window.sales
+    .filter(s => typeFilter === "all" || s.type === typeFilter)
+    .filter(s => prodFilter === "all" || s.product === prodFilter)
+    .forEach(s => {
+      total += Number(s.amount);
+      profit += Number(s.profit);
+
+      rows += `
       <tr>
         <td>${s.date}</td>
         <td>${esc(s.type)}</td>
@@ -161,85 +125,28 @@ function renderSales() {
         <td>${s.qty}</td>
         <td>${s.price}</td>
         <td>${s.amount}</td>
-        <td class="profit-cell">${s.profit}</td>
-        <td>${esc(s.customer || "")}</td>
+        <td>${s.profit}</td>
+        <td>${s.status === "Credit" ? "💳 Credit" : "💰 Paid"}</td>
         <td>
           ${
             s.status === "Credit"
-              ? `<button onclick="markSalePaid('${s.id}')" class="small-btn">💳 Pay</button>`
-              : `<span class="ok">💰 Paid</span>`
+              ? `<button class="small-btn" onclick="markSalePaid('${s.id}')">Mark Paid</button>`
+              : ``
           }
         </td>
       </tr>`;
-  }).join("");
+    });
 
+  if (!rows)
+    rows = `<tr><td colspan="9">No sales found</td></tr>`;
+
+  tbody.innerHTML = rows;
   totalEl.textContent = total;
   profitEl.textContent = profit;
-
-  applyProfitVisibility();
 }
 
 /* ----------------------------------------------------------
-   🔒 PROFIT LOCK
----------------------------------------------------------- */
-let profitLocked = false;
-
-function applyProfitVisibility() {
-  const cells = document.querySelectorAll(".profit-cell");
-  const th = document.querySelector("#salesTable thead th:nth-child(7)");
-
-  if (profitLocked) {
-    cells.forEach(c => c.style.display = "none");
-    if (th) th.style.display = "none";
-    qs('#profitTotal').style.display = "none";
-  } else {
-    cells.forEach(c => c.style.display = "");
-    if (th) th.style.display = "";
-    qs('#profitTotal').style.display = "";
-  }
-}
-
-function toggleProfit() {
-  if (!profitLocked) {
-    profitLocked = true;
-    applyProfitVisibility();
-    return alert("Profit hidden.");
-  }
-
-  const pw = prompt("Enter admin password:");
-  if (!pw || !validateAdminPassword(pw))
-    return alert("Wrong password!");
-
-  profitLocked = false;
-  applyProfitVisibility();
-  alert("Profit unlocked.");
-}
-
-/* ----------------------------------------------------------
-   🖨 PRINT SALES
----------------------------------------------------------- */
-function printSales() {
-  const rows = qs("#salesTable tbody").innerHTML;
-  const head = qs("#salesTable thead").innerHTML;
-
-  const w = window.open("", "_blank");
-  w.document.write(`
-    <html><head><title>Sales Report</title>
-    <style>
-      table{width:100%;border-collapse:collapse;}
-      td,th{border:1px solid #bbb;padding:6px;text-align:center;}
-    </style>
-    </head><body>
-    <h2>Sales Report</h2>
-    <table><thead>${head}</thead><tbody>${rows}</tbody></table>
-    </body></html>
-  `);
-  w.document.close();
-  w.print();
-}
-
-/* ----------------------------------------------------------
-   🚀 INITIAL LOAD
+   INITIAL LOAD
 ---------------------------------------------------------- */
 window.addEventListener("load", () => {
   refreshSaleSelectors();
