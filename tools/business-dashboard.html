@@ -206,45 +206,59 @@
   </section>
   <!-- ===== SALES ===== -->
   <section id="sales" class="section">
-    <h3>💰 Sales & Profit</h3>
+  <h3>💰 Sales & Profit</h3>
 
-    <div class="row-inline" style="margin:10px 0">
-      <label>Date:</label><input id="saleDate" type="date">
-      <label>Type</label><select id="saleType"></select>
-      <label>Product</label><select id="saleProduct"></select>
-      <input id="saleQty" type="number" placeholder="Qty" style="width:70px">
-      <input id="salePrice" type="number" placeholder="₹" style="width:90px">
+  <div class="row-inline" style="margin:10px 0">
 
-      <select id="saleStatus">
-        <option value="Paid">Paid</option>
-        <option value="Credit">Credit</option>
-      </select>
-      <select id="salesFilterType">
-  <option value="all">All Types</option>
-</select>
+    <!-- DATE FILTER -->
+    <label>Date:</label>
+    <input id="saleDate" type="date">
 
-      <!-- ⭐ NEW BUTTON: CLEAR ALL SALES -->
-      <button id="clearSalesBtn" class="danger-btn" style="background:#c62828;color:#fff;margin-left:10px">
-        🗑️ Clear All
-      </button>
-    </div>
+    <!-- TYPE FILTER -->
+    <label>Type:</label>
+    <select id="saleType"></select>
 
-    <table id="salesTable">
-      <thead>
-        <tr>
-          <th>Date</th><th>Type</th><th>Product</th><th>Qty</th>
-          <th>Price</th><th>Total</th><th>Profit</th><th>Status</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-      <tfoot><tr>
+    <!-- FILTER BUTTON -->
+    <button id="filterSalesBtn" class="small-btn">Filter</button>
+
+    <!-- CLEAR ALL SALES -->
+    <button id="clearSalesBtn" class="small-btn" style="background:#c62828;color:#fff;margin-left:10px">
+      🗑️ Clear All
+    </button>
+  </div>
+
+  <table id="salesTable">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Product</th>
+        <th>Qty</th>
+        <th>Price</th>
+        <th>Total</th>
+        <th>Profit</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+
+    <tbody></tbody>
+
+    <tfoot>
+      <tr>
         <td colspan="5" style="text-align:right">Total:</td>
         <td id="salesTotal">0</td>
         <td id="profitTotal">0</td>
         <td></td>
-      </tr></tfoot>
-    </table>
-  </section>
+      </tr>
+    </tfoot>
+  </table>
+</section>
+
+      
+
+    
+      
+  
 
   <!-- ===== WANTING ===== -->
   <section id="wanting" class="section">
