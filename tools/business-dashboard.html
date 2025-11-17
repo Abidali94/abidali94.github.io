@@ -258,45 +258,54 @@
       <tbody></tbody>
     </table>
   </section>
+<!-- ===== OVERVIEW ===== -->
+<section id="dashboard" class="section">
+  <h3>📊 Business Overview</h3>
 
-  <!-- ===== OVERVIEW ===== -->
-  <section id="dashboard" class="section">
-    <h3>📊 Business Overview</h3>
+  <div id="summaryCards" class="flex-row" style="margin-top:10px">
 
-    <div class="flex-row">
-      <div id="overview-left">
-        <div id="summaryCards">
+    <div class="card">
+      <div style="font-size:26px">💰</div>
+      <b id="todaySales" style="font-size:20px;color:var(--orange)">₹0</b><br>
+      <small>Today's Sales</small>
+    </div>
 
-          <div class="card"><div>💰</div>
-            <b id="todaySales">₹0</b><br><small>Today's Sales</small></div>
+    <div class="card">
+      <div style="font-size:26px">💳</div>
+      <b id="todayCredit" style="font-size:20px;color:var(--orange)">₹0</b><br>
+      <small>Today's Credit</small>
+    </div>
 
-          <div class="card"><div>💳</div>
-            <b id="todayCredit">₹0</b><br><small>Today's Credit</small></div>
+    <div class="card">
+      <div style="font-size:26px">🧾</div>
+      <b id="todayExpenses" style="font-size:20px;color:var(--orange)">₹0</b><br>
+      <small>Today's Expenses</small>
+    </div>
 
-          <div class="card"><div>📦</div>
-            <b id="stockRemain">0%</</b><br><small>Stock Remaining</small></div>
+    <div class="card">
+      <div style="font-size:26px">📈</div>
+      <b id="todayGross" style="font-size:20px;color:var(--orange)">₹0</b><br>
+      <small>Today's Gross Profit</small>
+    </div>
 
-          <div class="card"><div>📈</div>
-            <b id="todayProfit">₹0</b><br><small>Today's Profit</small></div>
+    <div class="card">
+      <div style="font-size:26px">💹</div>
+      <b id="todayNet" style="font-size:20px;color:var(--orange)">₹0</b><br>
+      <small>Today's NET Profit</small>
+    </div>
 
-        </div>
+    <div class="card">
+      <div style="font-size:26px">📦</div>
+      <b id="stockRemainValue" style="font-size:20px;color:var(--orange)">0%</b><br>
+      <small>Stock Remaining</small>
+
+      <div style="margin-top:6px;height:6px;background:#ddd;border-radius:4px">
+        <div id="stockRemainBar" style="height:6px;width:0%;background:var(--orange);border-radius:4px"></div>
       </div>
     </div>
-  </section>
 
-  <!-- ===== ANALYTICS ===== -->
-  <section id="analytics" class="section">
-    <h3>📊 Smart Sales Dashboard</h3>
-    <div style="display:flex;flex-wrap:wrap;gap:20px">
-      <div style="flex:1;min-width:320px">
-        <canvas id="salesBar" height="220"></canvas>
-      </div>
-      <div style="flex:1;min-width:240px">
-        <canvas id="salesPie" height="220"></canvas>
-      </div>
-    </div>
-    <p style="text-align:center;opacity:.7;font-size:13px">Auto updates every 60s</p>
-  </section>
+  </div>
+</section>
   
 <!-- ===== EXPENSES ===== -->
 <section id="expenses" class="section">
