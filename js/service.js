@@ -1,12 +1,12 @@
 /* =======================================================
-   🛠 service.js — Service / Repair Manager (v4.0 FINAL)
-   ✔ Completed = asks investment + remaining payment
-   ✔ Total Paid = advance + remaining
-   ✔ Profit = totalPaid – investment
-   ✔ Pending table shows Advance clearly
-   ✔ Failed/Returned asks advance returned
-   ✔ Pie Chart: Pending | Completed | Failed/Returned
-   ✔ Clear All Supported
+   🛠 service.js — Service / Repair Manager (v5.0 FINAL)
+   ✔ Advance auto in Completed
+   ✔ Completed = invest + remaining → totalPaid
+   ✔ Failed/Returned = ask advance returned
+   ✔ Pending shows advance
+   ✔ History shows advance returned / total paid
+   ✔ Pie chart clean
+   ✔ Clear All supported
    ======================================================= */
 
 (function(){
@@ -27,9 +27,6 @@
     window.dispatchEvent(new Event("storage"));
   }
 
-  /* -----------------------------------------
-       AUTO JOB ID (01, 02, 03 ...)
-  ----------------------------------------- */
   function nextJobId() {
     if (!window.services.length) return "01";
     const max = Math.max(...window.services.map(s => Number(s.jobNum || 0)));
@@ -69,7 +66,8 @@
       invest: 0,
       paid: 0,
       profit: 0,
-      status: "Pending"
+      status: "Pending",
+      returnedAdvance: 0 // NEW
     };
 
     window.services.push(job);
@@ -97,7 +95,7 @@
     const pend = window.services.filter(s => s.status === "Pending");
     const comp = window.services.filter(s => s.status !== "Pending");
 
-    // Pending table
+    // Pending
     tb.innerHTML =
       pend.map(s => `
       <tr>
@@ -116,7 +114,7 @@
       </tr>`).join("") ||
       `<tr><td colspan="9">No pending jobs</td></tr>`;
 
-    // History table
+    // History
     hist.innerHTML =
       comp.map(s => `
         <tr>
@@ -128,9 +126,12 @@
           <td>₹${s.invest}</td>
           <td>₹${s.paid}</td>
           <td>₹${s.profit}</td>
-          <td>${s.status} (Advance Returned: ₹${s.status==="Failed/Returned"?s.advance:0})</td>
+          <td>
+            ${s.status}
+            ${s.status === "Failed/Returned" ? `(Advance Returned: ₹${s.returnedAdvance})` : ""}
+          </td>
         </tr>`).join("") ||
-      `<tr><td colspan="9">No completed/failed jobs</td></tr>`;
+      `<tr><td colspan="9">No history</td></tr>`;
 
     qs("#svcPendingCount").textContent = pend.length;
     qs("#svcCompletedCount").textContent = comp.length;
@@ -141,16 +142,15 @@
   }
 
   /* -----------------------------------------
-        PIE CHART
+         PIE CHART
   ----------------------------------------- */
   function renderPie() {
     const c = qs("#svcPie");
     if (!c) return;
 
-    const list = window.services;
-    const P = list.filter(s=>s.status==="Pending").length;
-    const C = list.filter(s=>s.status==="Completed").length;
-    const F = list.filter(s=>s.status==="Failed/Returned").length;
+    const P = window.services.filter(s=>s.status==="Pending").length;
+    const C = window.services.filter(s=>s.status==="Completed").length;
+    const F = window.services.filter(s=>s.status==="Failed/Returned").length;
 
     if (svcPieChart) svcPieChart.destroy();
 
@@ -168,7 +168,7 @@
   }
 
   /* -----------------------------------------
-       ACTION MENU
+         OPEN / ACTION MENU
   ----------------------------------------- */
   function openJob(id) {
     const s = window.services.find(x => x.id === id);
@@ -180,7 +180,7 @@ Customer: ${s.customer}
 Phone: ${s.phone}
 Item: ${s.itemType} - ${s.model}
 Problem: ${s.problem}
-Advance: ₹${s.advance}
+Advance Paid: ₹${s.advance}
 Received: ${toDisplay(s.date_in)}
 
 Choose action:
@@ -195,14 +195,16 @@ Choose action:
   }
 
   /* -----------------------------------------
-       COMPLETED (Advance + Remaining)
+       COMPLETED — advance auto show
   ----------------------------------------- */
   function markCompleted(id) {
     const s = window.services.find(x => x.id === id);
     if (!s) return;
 
+    alert(`Advance already taken: ₹${s.advance}`);
+
     const invest = Number(prompt("Investment (cost) ₹:", s.invest || 0) || 0);
-    const remaining = Number(prompt("Remaining amount to collect (except advance) ₹:", 0) || 0);
+    const remaining = Number(prompt("Remaining amount to collect ₹:", 0) || 0);
 
     const totalPaid = s.advance + remaining;
 
@@ -211,21 +213,22 @@ Choose action:
     s.profit = totalPaid - invest;
     s.status = "Completed";
     s.date_out = today();
+    s.returnedAdvance = 0;
 
     save();
     renderTables();
   }
 
   /* -----------------------------------------
-       FAILED / RETURNED
+       FAILED / RETURNED — ask returned adv.
   ----------------------------------------- */
   function markFailed(id) {
     const s = window.services.find(x => x.id === id);
     if (!s) return;
 
-    const returnedAdv = Number(prompt("Advance returned to customer ₹:", s.advance || 0) || 0);
+    const returnedAdv = Number(prompt(`Advance returned to customer ₹:`, s.advance || 0) || 0);
 
-    s.advance = returnedAdv;
+    s.returnedAdvance = returnedAdv;
     s.invest = 0;
     s.paid = 0;
     s.profit = 0;
@@ -265,5 +268,4 @@ Choose action:
   });
 
   window.addEventListener("load", renderTables);
-
 })();
