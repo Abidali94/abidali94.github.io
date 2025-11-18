@@ -1,11 +1,11 @@
 /* ===========================================================
-   🧾 expenses.js — Expense Manager (FINAL v6.0)
+   🧾 expenses.js — Expense Manager (FINAL v6.1 FIXED)
    FIXED: dd-mm-yyyy display + correct internal date saving
-   Works with: core.js (toDisplay/toInternal/todayDate), analytics.js
+   No duplicate global variables (exToDisp, exToInt)
 =========================================================== */
 
-const toDisp = window.toDisplay;
-const toInt  = window.toInternal;
+const exToDisp = window.toDisplay;
+const exToInt  = window.toInternal;
 
 /* ----------------------------------------------------------
    SAVE WRAPPER
@@ -21,8 +21,6 @@ function _saveExpensesLocal() {
 
 /* ----------------------------------------------------------
    ADD NEW EXPENSE
-   - Date saved as yyyy-mm-dd (internal)
-   - Display uses dd-mm-yyyy
 ---------------------------------------------------------- */
 function addNewExpense() {
   const dateEl = qs("#expDate");
@@ -31,10 +29,10 @@ function addNewExpense() {
   const noteEl = qs("#expNote");
 
   let date = dateEl?.value || todayDate();
-  
-  // convert dd-mm-yyyy → yyyy-mm-dd if user manually typed
+
+  // convert dd-mm-yyyy → yyyy-mm-dd
   if (date.includes("-") && date.split("-")[0].length === 2) {
-    date = toInt(date);
+    date = exToInt(date);
   }
 
   const category = (categoryEl?.value || "").trim();
@@ -48,7 +46,7 @@ function addNewExpense() {
 
   window.expenses.push({
     id: uid("exp"),
-    date,  // internal yyyy-mm-dd
+    date,           // internal yyyy-mm-dd
     category,
     amount,
     note
@@ -57,7 +55,6 @@ function addNewExpense() {
   _saveExpensesLocal();
   renderExpenses();
 
-  // reset inputs (keep date)
   categoryEl.value = "";
   amountEl.value = "";
   noteEl.value = "";
@@ -68,13 +65,14 @@ function addNewExpense() {
 ---------------------------------------------------------- */
 function deleteExpense(id) {
   if (!confirm("Delete this expense?")) return;
+
   window.expenses = (window.expenses || []).filter(e => e.id !== id);
   _saveExpensesLocal();
   renderExpenses();
 }
 
 /* ----------------------------------------------------------
-   RENDER EXPENSES TABLE (Display dd-mm-yyyy)
+   RENDER EXPENSES TABLE (display dd-mm-yyyy)
 ---------------------------------------------------------- */
 function renderExpenses() {
   const tbody = document.querySelector("#expensesTable tbody");
@@ -94,23 +92,26 @@ function renderExpenses() {
 
   let total = 0;
 
-  tbody.innerHTML = list.map(e => {
-    total += Number(e.amount || 0);
-    return `
-      <tr>
-        <td>${toDisp(e.date)}</td>
-        <td>${esc(e.category)}</td>
-        <td>₹${Number(e.amount || 0)}</td>
-        <td>${esc(e.note || "")}</td>
-        <td>
-          <button onclick="deleteExpense('${e.id}')"
-                  class="small-btn"
-                  style="background:#d32f2f;color:#fff">
-            ❌ Delete
-          </button>
-        </td>
-      </tr>`;
-  }).join("");
+  tbody.innerHTML = list
+    .map(e => {
+      total += Number(e.amount || 0);
+      return `
+        <tr>
+          <td>${exToDisp(e.date)}</td>
+          <td>${esc(e.category)}</td>
+          <td>₹${Number(e.amount || 0)}</td>
+          <td>${esc(e.note || "")}</td>
+          <td>
+            <button onclick="deleteExpense('${e.id}')" 
+                    class="small-btn" 
+                    style="background:#d32f2f;color:#fff">
+              ❌ Delete
+            </button>
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
 
   totalEl.textContent = "₹" + total;
 
@@ -129,7 +130,6 @@ document.addEventListener("click", (e) => {
    INITIAL LOAD
 ---------------------------------------------------------- */
 window.addEventListener("load", () => {
-  // force array type
   window.expenses = Array.isArray(window.expenses)
     ? window.expenses
     : (safeParse(localStorage.getItem("expenses-data")) || []);
