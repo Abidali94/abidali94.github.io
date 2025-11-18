@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>📦 KharchaSaathi — Business Dashboard (v1.3)</title>
+  <title>📦 KharchaSaathi — Business Dashboard (v2.0)</title>
   <meta name="theme-color" content="#ff7a00" />
   <link rel="icon" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
@@ -92,6 +92,9 @@
     .row-inline input[type="date"]{
       padding:6px;border-radius:6px;border:1px solid #ddd
     }
+
+    /* small helper */
+    .muted { color:#666; font-size:13px; }
   </style>
 </head>
 
@@ -132,8 +135,6 @@
     <ul id="typeList" style="margin-top:10px;padding-left:18px"></ul>
   </section>
 
-
-
   <!-- ===== STOCK ===== -->
   <section id="stock" class="section">
     <h3>📦 Current Stock</h3>
@@ -146,6 +147,7 @@
     </div>
 
     <div class="row-inline" style="margin-top:12px">
+      <!-- note: use type=date for inputs - internal storage is yyyy-mm-dd -->
       <input id="pdate" type="date">
       <select id="ptype"></select>
       <input id="pname" type="text" placeholder="Product">
@@ -169,10 +171,7 @@
       <tbody></tbody>
     </table>
   </section>
-
-
-
-  <!-- ===== SALES (NEW CLEAN FINAL) ===== -->
+  <!-- ===== SALES (CLEAN) ===== -->
   <section id="sales" class="section">
     <h3>💰 Sales & Profit</h3>
 
@@ -221,6 +220,7 @@
       </tfoot>
     </table>
   </section>
+
   <!-- ===== WANTING ===== -->
   <section id="wanting" class="section">
     <h3>🛒 Wanting List</h3>
@@ -247,9 +247,6 @@
       <tbody></tbody>
     </table>
   </section>
-
-
-
 
   <!-- ===== OVERVIEW ===== -->
   <section id="dashboard" class="section">
@@ -302,9 +299,6 @@
     </div>
   </section>
 
-
-
-
   <!-- ===== ANALYTICS (SMART DASHBOARD) ===== -->
   <section id="analytics" class="section">
     <h3>📈 Smart Dashboard</h3>
@@ -339,7 +333,6 @@
 
     </div>
 
-
     <!-- Bar Chart -->
     <div style="max-width:900px;margin:auto">
       <canvas id="salesBar" height="150"></canvas>
@@ -351,7 +344,6 @@
     <div style="max-width:600px;margin:auto">
       <canvas id="salesPie" height="150"></canvas>
     </div>
-
   </section>
   <!-- ===== EXPENSES ===== -->
   <section id="expenses" class="section">
@@ -387,12 +379,10 @@
     </table>
   </section>
 
-
-
   <!-- HELP -->
   <div class="footer-btns" style="margin-top:18px">
     <a href="#" id="helpLink" class="small-btn">📘 Help & Guide</a>
-    <div class="version-info">v1.3 — Login + Logout + Email</div>
+    <div class="version-info">v2.0 — Fixed filters & dates</div>
   </div>
 
   <div id="helpModal" class="help-modal" style="display:none">
@@ -401,7 +391,7 @@
       <ul style="line-height:1.6">
         <li>Types — Manage categories</li>
         <li>Stock — Add/Update inventory</li>
-        <li>Sales — Track daily sales & profit</li>
+        <li>Sales — View by date & type</li>
         <li>Wanting — Reorder required items</li>
         <li>Overview — Today’s summary</li>
         <li>Analytics — Smart charts</li>
@@ -410,12 +400,9 @@
     </div>
   </div>
 
-
-
-
   <!-- ===== JS LOGIC ===== -->
-
   <script>
+    // small helpers (qs/qsa) + date display helpers
     const qs = s => document.querySelector(s);
     const qsa = s => Array.from(document.querySelectorAll(s));
 
@@ -429,47 +416,71 @@
       toggleHelp();
     });
 
-    // Theme Load
+    // Date format helpers (display: dd-mm-yyyy ; internal: yyyy-mm-dd)
+    function toDisplay(d) {
+      if (!d) return "";
+      if (d.includes("-")) {
+        const [y,m,dd] = d.split("-");
+        return `${dd}-${m}-${y}`;
+      }
+      return d;
+    }
+    function toInternal(d) {
+      if (!d) return "";
+      if (d.includes("-")) {
+        const parts = d.split("-");
+        // if already dd-mm-yyyy then convert
+        if (parts[0].length === 2) {
+          const [dd,m,y] = parts;
+          return `${y}-${m}-${dd}`;
+        }
+        return d; // assume already yyyy-mm-dd
+      }
+      return d;
+    }
+
+    // Theme
     if(localStorage.getItem('ks-theme')==='dark'){
       document.body.classList.add('dark');
     }
-
     qs('#themeBtn').addEventListener('click', ()=>{
       const d = document.body.classList.toggle('dark');
       localStorage.setItem('ks-theme', d?'dark':'light');
     });
-  </script>
 
-
-
-
-  <!-- ===== TABS SWITCHER ===== -->
-  <script>
+    // Tabs switcher — refresh correct tabs
     (function () {
       const tabs = qsa('.tab'),
             sections = qsa('.section');
 
       function activate(name) {
+        tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+        sections.forEach(s => s.classList.toggle('active', s.id === name));
 
-        tabs.forEach(t =>
-          t.classList.toggle('active', t.dataset.tab === name)
-        );
-
-        sections.forEach(s =>
-          s.classList.toggle('active', s.id === name)
-        );
-
-        // Auto refresh correct tab:
-        if (name === 'types') renderTypes?.();
-        if (name === 'stock') renderStock?.();
-        if (name === 'sales') { 
-          refreshSaleTypeSelector?.(); 
-          renderSales?.(); 
+        if (name === 'types') {
+          if (typeof renderTypes === "function") renderTypes();
         }
-        if (name === 'wanting') renderWanting?.();
-        if (name === 'dashboard') updateSummaryCards?.();
-        if (name === 'analytics') renderAnalytics?.();
-        if (name === 'expenses') renderExpenses?.();
+        if (name === 'stock') {
+          updateTypeDropdowns?.();
+          renderStock?.();
+        }
+        if (name === 'sales') {
+          // refresh selector (types) and render
+          if (typeof refreshSaleTypeSelector === "function") refreshSaleTypeSelector();
+          if (typeof renderSales === "function") renderSales();
+        }
+        if (name === 'wanting') {
+          renderWanting?.();
+        }
+        if (name === 'dashboard') {
+          updateSummaryCards?.();
+        }
+        if (name === 'analytics') {
+          renderAnalytics?.();
+        }
+        if (name === 'expenses') {
+          renderExpenses?.();
+        }
       }
 
       tabs.forEach(t =>
@@ -478,76 +489,63 @@
 
       window.activateTab = activate;
     })();
-  </script>
 
-
-
-  <!-- LOGIN UTILS -->
-  <script src="/js/login-utils.js"></script>
-
-  <script>
-    if (!isLoggedIn()) {
+    // LOGIN CHECK + UI email
+    // login-utils.js should expose isLoggedIn, getUserEmail, logoutUser
+    if (typeof isLoggedIn === "function" && !isLoggedIn()) {
       window.location.href = "/login.html";
+    } else {
+      if (qs("#emailTag") && typeof getUserEmail === "function")
+        qs("#emailTag").textContent = "Logged in: " + getUserEmail();
     }
 
-    qs("#emailTag").textContent = "Logged in: " + getUserEmail();
-
-    qs("#logoutBtn").addEventListener("click", () => {
-      logoutUser();
+    qs("#logoutBtn")?.addEventListener("click", ()=>{
+      if (typeof logoutUser === "function") logoutUser();
       window.location.href = "/login.html";
     });
-  </script>
 
+    // When filterType changes in stock, ensure sales type also updated (keeps in sync)
+    qs("#filterType")?.addEventListener("change", () => {
+      // if sales selector exists, refresh it (sales.js will read types)
+      if (typeof refreshSaleTypeSelector === "function") refreshSaleTypeSelector();
+      renderStock?.();
+    });
 
+    // Attach immediate sales filter listeners if sales.js provided attachImmediateSalesFilters
+    // Also add local fallback to call renderSales on change
+    (function attachSalesInputs() {
+      // If sales.js exposes attachImmediateSalesFilters, use it
+      if (typeof attachImmediateSalesFilters === "function") {
+        try { attachImmediateSalesFilters(); } catch (e) { /*ignore*/ }
+      } else {
+        qs("#saleType")?.addEventListener("change", () => renderSales?.());
+        qs("#saleDate")?.addEventListener("change", () => renderSales?.());
+        qs("#filterSalesBtn")?.addEventListener("click", () => renderSales?.());
+      }
+    })();
 
-  <!-- CHART JS -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
-
-  <!-- FIREBASE -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
-
-
-  <!-- MODULES -->
-  <script src="/js/firebase.js"></script>
-  <script src="/js/core.js"></script>
-  <script src="/js/types.js"></script>
-  <script src="/js/stock.js"></script>
-  <script src="/js/sales.js"></script>
-  <script src="/js/wanting.js"></script>
-  <script src="/js/analytics.js"></script>
-  <script src="/js/security.js"></script>
-  <script src="/js/expenses.js"></script>
-
-
-
-
-  <!-- SUMMARY CARDS -->
-  <script>
+    // Update summary cards prints dd-mm-yyyy only for display (we show numbers but if you show dates use toDisplay)
     function updateSummaryCards() {
-      const today = todayDate();
+      const today = todayDate(); // yyyy-mm-dd from core
+      let todaySales = 0, todayCredit = 0, todayProfit = 0;
 
-      let todaySales = 0,
-          todayCredit = 0,
-          todayProfit = 0;
-
-      window.sales.forEach(s => {
-       if (String(s.date).slice(0,10) === today)  {
-          todaySales += s.amount;
-          if (s.status === "Credit") todayCredit += s.amount;
-          todayProfit += s.profit;
+      (window.sales || []).forEach(s => {
+        if (String(s.date).slice(0,10) === today)  {
+          todaySales += Number(s.amount || 0);
+          if (s.status === "Credit") todayCredit += Number(s.amount || 0);
+          todayProfit += Number(s.profit || 0);
         }
       });
 
       let todayExpenses = 0;
-      window.expenses.forEach(e => {
-        if (e.date === today) todayExpenses += Number(e.amount || 0);
+      (window.expenses || []).forEach(e => {
+        if (String(e.date).slice(0,10) === today) todayExpenses += Number(e.amount || 0);
       });
 
       const todayNet = todayProfit - todayExpenses;
 
       let total = 0, remain = 0;
-      window.stock.forEach(s => {
+      (window.stock || []).forEach(s => {
         total += Number(s.qty || 0) + Number(s.sold || 0);
         remain += Number(s.qty || 0);
       });
@@ -561,24 +559,48 @@
       qs("#todayNet").textContent = "₹" + todayNet;
       qs("#stockRemainValue").textContent = pct + "%";
       qs("#stockRemainBar").style.width = pct + "%";
+
+      // analytics small cards
+      qs("#sumToday") && (qs("#sumToday").textContent = "₹" + todaySales);
+      qs("#sumWeek") && (qs("#sumWeek").textContent = "₹" + (typeof getAnalyticsData === "function" ? getAnalyticsData().weekSales : 0));
+      qs("#sumMonth") && (qs("#sumMonth").textContent = "₹" + (typeof getAnalyticsData === "function" ? getAnalyticsData().monthSales : 0));
+      qs("#sumGross") && (qs("#sumGross").textContent = "₹" + todayProfit);
+      qs("#sumNet") && (qs("#sumNet").textContent = "₹" + todayNet);
     }
+
+    // SAFE initial render after modules loaded
+    function safeInitialRender() {
+      try { renderTypes?.(); } catch {}
+      try { updateTypeDropdowns?.(); } catch {}
+      try { renderStock?.(); } catch {}
+      try { refreshSaleTypeSelector?.(); } catch {}
+      try { renderSales?.(); } catch {}
+      try { renderWanting?.(); } catch {}
+      try { renderExpenses?.(); } catch {}
+      try { renderAnalytics?.(); } catch {}
+      try { updateSummaryCards?.(); } catch {}
+    }
+
+    // Wait a tick so external scripts have chance to register
+    window.addEventListener("load", () => {
+      setTimeout(safeInitialRender, 50);
+    });
   </script>
 
+  <!-- EXTERNAL LIBS + APP SCRIPTS (keep these at bottom) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
 
+  <script src="/js/firebase.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/types.js"></script>
+  <script src="/js/stock.js"></script>
+  <script src="/js/sales.js"></script>
+  <script src="/js/wanting.js"></script>
+  <script src="/js/analytics.js"></script>
+  <script src="/js/security.js"></script>
+  <script src="/js/expenses.js"></script>
 
-
-  <!-- FIRST LOAD -->
-  <script>
-    renderTypes?.();
-    renderStock?.();
-    refreshSaleTypeSelector?.();
-    renderSales?.();
-    renderWanting?.();
-    renderExpenses?.();
-    renderAnalytics?.();
-    updateSummaryCards?.();
-  </script>
-  </body>
+</body>
 </html>
-  
-  
