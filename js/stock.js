@@ -1,14 +1,17 @@
 /* =======================================================
-   📦 stock.js — Inventory Manager (FINAL v4.0)
-   Fully Fixed for: Filter, Limit, Buttons, History,
-   Smart Dashboard Sync, Core.js v4.0
-   ======================================================= */
+   📦 stock.js — Inventory Manager (FINAL v6.0)
+   FULL SUPPORT: dd-mm-yyyy UI, yyyy-mm-dd internal
+======================================================= */
+
+/* Convert for safety */
+const toDisp = window.toDisplay;
+const toInt  = window.toInternal;
 
 /* -------------------------------------------------------
-   ➕ ADD STOCK
+   ➕ ADD STOCK (dd-mm-yyyy → internal yyyy-mm-dd)
 ------------------------------------------------------- */
 function addStock() {
-  const date = qs("#pdate")?.value || todayDate();
+  let date = qs("#pdate")?.value || todayDate(); // user may enter dd-mm-yyyy
   const type = qs("#ptype")?.value;
   const name = qs("#pname")?.value.trim();
   const qty  = Number(qs("#pqty")?.value || 0);
@@ -16,6 +19,11 @@ function addStock() {
 
   if (!type || !name || qty <= 0 || cost <= 0)
     return alert("Please fill all fields.");
+
+  // Convert date before saving
+  if (date.includes("-") && date.split("-")[0].length === 2) {
+    date = toInt(date);  // dd-mm-yyyy → yyyy-mm-dd
+  }
 
   addStockEntry({ date, type, name, qty, cost });
 
@@ -28,7 +36,8 @@ function addStock() {
 }
 
 /* -------------------------------------------------------
-   📊 RENDER STOCK TABLE (Filter + Limit FIXED)
+   📊 RENDER STOCK TABLE
+   SHOW DATES IN dd-mm-yyyy FORMAT
 ------------------------------------------------------- */
 function renderStock() {
   const filter = qs("#filterType")?.value || "all";
@@ -44,17 +53,17 @@ function renderStock() {
       const sold   = Number(p.sold || 0);
       const remain = Number(p.qty) - sold;
 
-      const limit = Number(
-        p.limit ?? getGlobalLimit()
-      );
+      const limit = Number(p.limit ?? getGlobalLimit());
 
       let status = "OK", cls = "ok";
       if (remain <= 0) { status = "OUT"; cls = "out"; }
       else if (remain <= limit) { status = "LOW"; cls = "low"; }
 
+      const dispDate = toDisp(p.date); // show dd-mm-yyyy
+
       html += `
       <tr>
-        <td>${p.date}</td>
+        <td>${dispDate}</td>
         <td>${esc(p.type)}</td>
         <td>${esc(p.name)}</td>
         <td>${p.qty}</td>
@@ -77,7 +86,7 @@ function renderStock() {
 }
 
 /* -------------------------------------------------------
-   📜 SHOW HISTORY
+   📜 SHOW HISTORY (dates formatted)
 ------------------------------------------------------- */
 function showHistory(i) {
   const p = window.stock[i];
@@ -87,14 +96,14 @@ function showHistory(i) {
   let msg = `Purchase History of ${p.name}:\n\n`;
 
   p.history.forEach(h => {
-    msg += `${h.date} — Qty ${h.qty} @ ₹${h.cost}\n`;
+    msg += `${toDisp(h.date)} — Qty ${h.qty} @ ₹${h.cost}\n`;
   });
 
   alert(msg);
 }
 
 /* -------------------------------------------------------
-   💰 QUICK SALE / CREDIT
+   💰 QUICK SALE / CREDIT (save date as yyyy-mm-dd)
 ------------------------------------------------------- */
 function stockQuickSale(i, mode) {
   const p = window.stock[i];
@@ -109,14 +118,16 @@ function stockQuickSale(i, mode) {
   const price = Number(prompt("Enter Selling Price ₹:"));
   if (!price || price <= 0) return;
 
-  const date = todayDate();
+  // Get today in internal format
+  let date = todayDate(); // yyyy-mm-dd
+
   const cost = getProductCost(p.type, p.name);
   const profit = (price - cost) * qty;
 
   // update stock
   p.sold = (p.sold || 0) + qty;
 
-  // save sale entry
+  // save sale entry (always save internal yyyy-mm-dd)
   window.sales.push({
     id: uid("sale"),
     date,
@@ -142,7 +153,7 @@ function stockQuickSale(i, mode) {
 }
 
 /* -------------------------------------------------------
-   🖱 EVENTS
+   EVENTS
 ------------------------------------------------------- */
 document.addEventListener("click", e => {
 
@@ -177,6 +188,7 @@ document.addEventListener("click", e => {
   if (e.target.classList.contains("credit-btn"))
     return stockQuickSale(Number(e.target.dataset.i), "Credit");
 });
+
 qs("#filterType")?.addEventListener("change", () => {
   renderStock();
 });
