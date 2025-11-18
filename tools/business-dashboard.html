@@ -470,17 +470,20 @@
           if (typeof renderSales === "function") renderSales();
         }
         if (name === 'wanting') {
-          renderWanting?.();
-        }
-        if (name === 'dashboard') {
-          updateSummaryCards?.();
-        }
-        if (name === 'analytics') {
-          renderAnalytics?.();
-        }
-        if (name === 'expenses') {
-          renderExpenses?.();
-        }
+  if (typeof renderWanting === "function") renderWanting();
+}
+
+if (name === 'dashboard') {
+  if (typeof updateSummaryCards === "function") updateSummaryCards();
+}
+
+if (name === 'analytics') {
+  if (typeof renderAnalytics === "function") renderAnalytics();
+}
+
+if (name === 'expenses') {
+  if (typeof renderExpenses === "function") renderExpenses();
+}
       }
 
       tabs.forEach(t =>
