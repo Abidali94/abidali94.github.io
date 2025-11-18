@@ -603,50 +603,37 @@ window.addEventListener("load", () => {
       }
     })();
 
-    // Update summary cards prints dd-mm-yyyy only for display (we show numbers but if you show dates use toDisplay)
-    function updateSummaryCards() {
-      const today = todayDate(); // yyyy-mm-dd from core
-      let todaySales = 0, todayCredit = 0, todayProfit = 0;
+function updateSummaryCards() {
 
-      (window.sales || []).forEach(s => {
-        if (String(s.date).slice(0,10) === today)  {
-          todaySales += Number(s.amount || 0);
-          if (s.status === "Credit") todayCredit += Number(s.amount || 0);
-          todayProfit += Number(s.profit || 0);
-        }
-      });
+  if (typeof getAnalyticsData !== "function") return;
 
-      let todayExpenses = 0;
-      (window.expenses || []).forEach(e => {
-        if (String(e.date).slice(0,10) === today) todayExpenses += Number(e.amount || 0);
-      });
+  const data = getAnalyticsData();
 
-      const todayNet = todayProfit - todayExpenses;
+  // Today’s summary
+  qs("#todaySales").textContent = "₹" + data.todaySales;
+  qs("#todayCredit").textContent = "₹" + data.creditSales;
+  qs("#todayExpenses").textContent = "₹" + data.todayExpenses;
+  qs("#todayGross").textContent = "₹" + data.grossProfit;
+  qs("#todayNet").textContent = "₹" + data.netProfit;
 
-      let total = 0, remain = 0;
-      (window.stock || []).forEach(s => {
-        total += Number(s.qty || 0) + Number(s.sold || 0);
-        remain += Number(s.qty || 0);
-      });
+  // Stock percentage
+  let total = 0, remain = 0;
+  (window.stock || []).forEach(s => {
+    total += Number(s.qty || 0) + Number(s.sold || 0);
+    remain += Number(s.qty || 0);
+  });
 
-      const pct = total ? Math.round((remain / total) * 100) : 0;
+  const pct = total ? Math.round((remain / total) * 100) : 0;
+  qs("#stockRemainValue").textContent = pct + "%";
+  qs("#stockRemainBar").style.width = pct + "%";
 
-      qs("#todaySales").textContent = "₹" + todaySales;
-      qs("#todayCredit").textContent = "₹" + todayCredit;
-      qs("#todayExpenses").textContent = "₹" + todayExpenses;
-      qs("#todayGross").textContent = "₹" + todayProfit;
-      qs("#todayNet").textContent = "₹" + todayNet;
-      qs("#stockRemainValue").textContent = pct + "%";
-      qs("#stockRemainBar").style.width = pct + "%";
-
-      // analytics small cards
-      qs("#sumToday") && (qs("#sumToday").textContent = "₹" + todaySales);
-      qs("#sumWeek") && (qs("#sumWeek").textContent = "₹" + (typeof getAnalyticsData === "function" ? getAnalyticsData().weekSales : 0));
-      qs("#sumMonth") && (qs("#sumMonth").textContent = "₹" + (typeof getAnalyticsData === "function" ? getAnalyticsData().monthSales : 0));
-      qs("#sumGross") && (qs("#sumGross").textContent = "₹" + todayProfit);
-      qs("#sumNet") && (qs("#sumNet").textContent = "₹" + todayNet);
-    }
-
+  // Analytics small cards
+  qs("#sumToday")  && (qs("#sumToday").textContent  = "₹" + data.todaySales);
+  qs("#sumWeek")   && (qs("#sumWeek").textContent   = "₹" + data.weekSales);
+  qs("#sumMonth")  && (qs("#sumMonth").textContent  = "₹" + data.monthSales);
+  qs("#sumGross")  && (qs("#sumGross").textContent  = "₹" + data.grossProfit);
+  qs("#sumNet")    && (qs("#sumNet").textContent    = "₹" + data.netProfit);
+}
     // SAFE initial render after modules loaded
     function safeInitialRender() {
       try { renderTypes?.(); } catch {}
