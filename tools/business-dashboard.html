@@ -495,17 +495,30 @@ if (name === 'expenses') {
 
     // LOGIN CHECK + UI email
     // login-utils.js should expose isLoggedIn, getUserEmail, logoutUser
-    if (typeof isLoggedIn === "function" && !isLoggedIn()) {
-      window.location.href = "/login.html";
-    } else {
-      if (qs("#emailTag") && typeof getUserEmail === "function")
-        qs("#emailTag").textContent = "Logged in: " + getUserEmail();
-    }
+    <script>
+window.addEventListener("load", () => {
 
-    qs("#logoutBtn")?.addEventListener("click", ()=>{
-      if (typeof logoutUser === "function") logoutUser();
-      window.location.href = "/login.html";
-    });
+  // login check
+  if (typeof isLoggedIn === "function" && !isLoggedIn()) {
+    window.location.href = "/login.html";
+    return;
+  }
+
+  // email set
+  const tag = qs("#emailTag");
+  if (tag && typeof getUserEmail === "function") {
+    const mail = getUserEmail();
+    tag.textContent = "Logged in: " + (mail || "Unknown User");
+  }
+
+  // logout
+  qs("#logoutBtn")?.addEventListener("click", ()=>{
+    if (typeof logoutUser === "function") logoutUser();
+    window.location.href = "/login.html";
+  });
+
+});
+</script>
 
     // When filterType changes in stock, ensure sales type also updated (keeps in sync)
     qs("#filterType")?.addEventListener("change", () => {
