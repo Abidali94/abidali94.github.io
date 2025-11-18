@@ -1,17 +1,14 @@
 /* ==========================================================
-   💰 sales.js — Sales Viewer + Profit Manager (FINAL v7.0)
-   Added: Credit → PAID button inside table
+   💰 sales.js — Sales Viewer + Profit Manager (FINAL v7.1)
+   Button label changed → "CREDIT" (not Pay Now)
 ========================================================== */
 
-/* SAVE SALES */
 function saveSales() {
   localStorage.setItem("sales-data", JSON.stringify(window.sales));
   window.dispatchEvent(new Event("storage"));
 }
 
-/* ----------------------------------------------------------
-   TYPE FILTER DROPDOWN
----------------------------------------------------------- */
+/* TYPE FILTER */
 function refreshSaleTypeSelector() {
   const tdd = qs("#saleType");
   if (!tdd) return;
@@ -23,17 +20,13 @@ function refreshSaleTypeSelector() {
       .join("");
 }
 
-/* ----------------------------------------------------------
-   LIVE FILTER
----------------------------------------------------------- */
+/* LIVE FILTER */
 function attachImmediateSalesFilters() {
   qs("#saleType")?.addEventListener("change", renderSales);
-  qs("#saleDate")?.addEventListener("change", () => renderSales());
+  qs("#saleDate")?.addEventListener("change", renderSales);
 }
 
-/* ----------------------------------------------------------
-   MARK CREDIT → PAID
----------------------------------------------------------- */
+/* MARK CREDIT → PAID */
 function markSalePaid(id) {
   const s = window.sales.find(x => x.id === id);
   if (!s) return;
@@ -49,9 +42,7 @@ function markSalePaid(id) {
   renderAnalytics?.();
 }
 
-/* ----------------------------------------------------------
-   CLEAR SALES
----------------------------------------------------------- */
+/* CLEAR ALL SALES */
 qs("#clearSalesBtn")?.addEventListener("click", () => {
   if (!confirm("Delete ALL sales permanently?")) return;
 
@@ -63,7 +54,7 @@ qs("#clearSalesBtn")?.addEventListener("click", () => {
 });
 
 /* ----------------------------------------------------------
-   RENDER SALES TABLE (with PAY button)
+   RENDER SALES TABLE — CREDIT BUTTON FIXED
 ---------------------------------------------------------- */
 function renderSales() {
   const tbody = qs("#salesTable tbody");
@@ -88,10 +79,12 @@ function renderSales() {
       total += Number(s.amount || 0);
       profit += Number(s.profit || 0);
 
+      /* BUTTON TEXT = "CREDIT" */
       const statusHtml =
         s.status === "Credit"
-          ? `<button class="small-btn" style="background:#2e7d32;color:#fff"
-               onclick="markSalePaid('${s.id}')">✔ Pay Now</button>`
+          ? `<button class="small-btn" 
+               style="background:#ff9800;color:#fff"
+               onclick="markSalePaid('${s.id}')">CREDIT</button>`
           : `💰 Paid`;
 
       rows += `
@@ -116,9 +109,7 @@ function renderSales() {
   profitEl.textContent = profit;
 }
 
-/* ----------------------------------------------------------
-   INITIAL
----------------------------------------------------------- */
+/* INITIAL */
 window.addEventListener("load", () => {
   refreshSaleTypeSelector();
   attachImmediateSalesFilters();
