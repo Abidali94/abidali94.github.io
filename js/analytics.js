@@ -1,30 +1,40 @@
 /* ===========================================================
-   📊 analytics.js — Smart Dashboard (FINAL v4.1)
-   Sync fixed for today/week/month + overview
-   =========================================================== */
+   📊 analytics.js — Smart Dashboard (FINAL v6.0)
+   FULL dd-mm-yyyy SUPPORT
+   Fully Synced with core.js normalization
+=========================================================== */
 
 let salesBarChart = null;
 let salesPieChart = null;
 
 /* ----------------------------------------------------------
-   HELPERS
+   DATE HELPERS
 ---------------------------------------------------------- */
-function formatDate(d) {
-  return new Date(d).toISOString().split("T")[0];
+
+/* Convert internal yyyy-mm-dd to number for comparison */
+function toNum(d) {
+  return d ? Number(d.replace(/-/g, "")) : 0;
 }
 
+function formatDate(d) {
+  return new Date(d).toISOString().split("T")[0]; // always yyyy-mm-dd
+}
+
+/* Start of Week */
 function getStartOfWeek() {
   const t = new Date();
-  const day = t.getDay(); // 0 = Sunday
+  const day = t.getDay(); // Sunday = 0
   t.setDate(t.getDate() - day);
-  return formatDate(t);
+  return formatDate(t); // yyyy-mm-dd
 }
 
+/* Start of Month */
 function getStartOfMonth() {
   const d = new Date();
   return formatDate(new Date(d.getFullYear(), d.getMonth(), 1));
 }
 
+/* Expenses by date */
 function getExpensesByDate(date) {
   return (window.expenses || [])
     .filter(e => e.date === date)
@@ -37,7 +47,7 @@ function getExpensesByDate(date) {
 function getAnalyticsData() {
   const sales = window.sales || [];
 
-  const today = todayDate();
+  const today = todayDate();       // yyyy-mm-dd
   const weekStart = getStartOfWeek();
   const monthStart = getStartOfMonth();
 
@@ -48,16 +58,22 @@ function getAnalyticsData() {
   let creditSales = 0;
   let grossProfit = 0;
 
-  sales.forEach(s => {
-    if (!s.date) return;  // Skip invalid
+  const todayN = toNum(today);
+  const weekN = toNum(weekStart);
+  const monthN = toNum(monthStart);
 
-    const d = String(s.date).slice(0, 10);
+  sales.forEach(s => {
+    if (!s.date) return;
+
+    const d = s.date;          // INTERNAL ALWAYS yyyy-mm-dd
+    const dNum = toNum(d);
+
     const amt = Number(s.amount || 0);
     const prof = Number(s.profit || 0);
 
     if (d === today) todaySales += amt;
-    if (d >= weekStart) weekSales += amt;
-    if (d >= monthStart) monthSales += amt;
+    if (dNum >= weekN) weekSales += amt;
+    if (dNum >= monthN) monthSales += amt;
 
     if (s.status === "Credit") creditSales += amt;
     else paidSales += amt;
@@ -87,10 +103,7 @@ function renderAnalytics() {
   const barCanvas = qs("#salesBar");
   const pieCanvas = qs("#salesPie");
 
-  if (!barCanvas || !pieCanvas) {
-    console.warn("Analytics canvas not found (salesBar / salesPie)");
-    return;
-  }
+  if (!barCanvas || !pieCanvas) return;
 
   const data = getAnalyticsData();
 
@@ -142,6 +155,7 @@ function renderAnalytics() {
     }
   });
 
+  /* Update Overview Summary Cards */
   updateSummaryCards?.();
 }
 
