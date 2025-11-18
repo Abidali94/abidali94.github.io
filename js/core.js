@@ -1,7 +1,10 @@
 /* ===========================================================
-   📌 core.js — Master Engine (v4.0 FINAL)
-   Fully Fixed: Stock Filter, Limits, Sales Selectors,
-   Smart Dashboard Sync, Storage Clean
+   📌 core.js — Master Engine (v5.0 FINAL)
+   Added:
+   ✔ dd-mm-yyyy support everywhere
+   ✔ auto normalization for old saved data
+   ✔ toDisplay() + toInternal()
+   ✔ Smart Dashboard compatibility
    =========================================================== */
 
 /* ---------- LOCAL STORAGE KEYS ---------- */
@@ -22,12 +25,70 @@ function toArray(v) {
   return Array.isArray(v) ? v : [];
 }
 
+/* ---------- DATE HELPERS (NEW) ---------- */
+// Convert yyyy-mm-dd → dd-mm-yyyy (FOR DISPLAY)
+function toDisplay(d) {
+  if (!d) return "";
+  if (d.includes("/") || d.includes(".")) return d;
+  const parts = d.split("-");
+  if (parts.length !== 3) return d;
+  return `${parts[2]}-${parts[1]}-${parts[0]}`;
+}
+
+// Convert dd-mm-yyyy → yyyy-mm-dd (FOR SAVING)
+function toInternal(d) {
+  if (!d) return "";
+  const parts = d.split("-");
+  if (parts.length !== 3) return d;
+  return `${parts[2]}-${parts[1]}-${parts[0]}`;
+}
+
+// Accept both formats
+function toInternalIfNeeded(d) {
+  if (!d) return "";
+  const p = d.split("-");
+  // already yyyy-mm-dd
+  if (p[0].length === 4) return d;
+  // convert dd-mm-yyyy
+  return toInternal(d);
+}
+
 /* ---------- LOAD GLOBAL ARRAYS ---------- */
 window.types    = toArray(safeParse(localStorage.getItem(KEY_TYPES)));
 window.stock    = toArray(safeParse(localStorage.getItem(KEY_STOCK)));
 window.sales    = toArray(safeParse(localStorage.getItem(KEY_SALES)));
 window.wanting  = toArray(safeParse(localStorage.getItem(KEY_WANTING)));
 window.expenses = toArray(safeParse(localStorage.getItem(KEY_EXPENSES)));
+
+/* ---------- NORMALIZE ALL EXISTING DATA (NEW IMPORTANT FIX) ---------- */
+function normalizeAllDates() {
+
+  if (window.stock)
+    window.stock = window.stock.map(s => ({
+      ...s,
+      date: toInternalIfNeeded(s.date)
+    }));
+
+  if (window.sales)
+    window.sales = window.sales.map(s => ({
+      ...s,
+      date: toInternalIfNeeded(s.date)
+    }));
+
+  if (window.expenses)
+    window.expenses = window.expenses.map(e => ({
+      ...e,
+      date: toInternalIfNeeded(e.date)
+    }));
+
+  if (window.wanting)
+    window.wanting = window.wanting.map(w => ({
+      ...w,
+      date: toInternalIfNeeded(w.date)
+    }));
+}
+
+try { normalizeAllDates(); } catch(e){}
 
 /* ---------- LOGIN ---------- */
 function loginUser(email) {
@@ -57,14 +118,17 @@ window.saveSales = saveSales;
 window.saveWanting = saveWanting;
 window.saveExpenses = saveExpenses;
 
-/* ---------- DATE + UID ---------- */
+/* ---------- TODAY DATE ---------- */
 function todayDate() {
-  return new Date().toISOString().split("T")[0];
+  const d = new Date().toISOString().split("T")[0];
+  return d; // stored as yyyy-mm-dd internally
 }
+window.todayDate = todayDate;
+
+/* ---------- UID ---------- */
 function uid(p="id") {
   return p + "_" + Math.random().toString(36).slice(2, 9);
 }
-window.todayDate = todayDate;
 window.uid = uid;
 
 /* ---------- ESC ---------- */
@@ -116,8 +180,11 @@ function addType(name) {
 }
 window.addType = addType;
 
-/* ---------- ADD / UPDATE STOCK ---------- */
+/* ---------- ADD STOCK ---------- */
 function addStockEntry({ date, type, name, qty, cost }) {
+
+  date = toInternalIfNeeded(date);
+
   qty  = Number(qty);
   cost = Number(cost);
 
@@ -174,7 +241,7 @@ window.autoAddWanting = autoAddWanting;
 function addExpense({ date, category, amount, note }) {
   window.expenses.push({
     id: uid("exp"),
-    date: date || todayDate(),
+    date: toInternalIfNeeded(date || todayDate()),
     category,
     amount: Number(amount || 0),
     note: note || ""
