@@ -1,11 +1,12 @@
 /* ===========================================================
-   📌 core.js — Master Engine (v6.0 ULTRA CLEAN FINAL)
-   ✔ Global date normalization (stock, sales, expenses, wanting, services)
-   ✔ dd-mm-yyyy <-> yyyy-mm-dd full support
+   📌 core.js — Master Engine (v6.1 SUPER FINAL)
+   ✔ Global date normalization (all modules)
+   ✔ dd-mm-yyyy <-> yyyy-mm-dd support
    ✔ Safe load + safe parse
    ✔ Stable toDisplay() + toInternal()
-   ✔ Service module compatible
+   ✔ Service module included
    ✔ Smart Dashboard compatible
+   ✔ Universal NET PROFIT BAR added
 =========================================================== */
 
 /* ---------- LOCAL STORAGE KEYS ---------- */
@@ -14,14 +15,13 @@ const KEY_STOCK      = "stock-data";
 const KEY_SALES      = "sales-data";
 const KEY_WANTING    = "wanting-data";
 const KEY_EXPENSES   = "expenses-data";
-const KEY_SERVICES   = "service-data";      // NEW — service included
+const KEY_SERVICES   = "service-data";
 const KEY_LIMIT      = "default-limit";
 const KEY_USER_EMAIL = "ks-user-email";
 
 /* ---------- SAFE PARSE ---------- */
 function safeParse(raw) {
-  try { return JSON.parse(raw); }
-  catch { return []; }
+  try { return JSON.parse(raw); } catch { return []; }
 }
 function toArray(v) {
   return Array.isArray(v) ? v : [];
@@ -31,16 +31,13 @@ function toArray(v) {
    🔥 UNIVERSAL DATE CONVERTERS
 =========================================================== */
 
-/* Convert yyyy-mm-dd → dd-mm-yyyy (FOR DISPLAY ONLY) */
 function toDisplay(d) {
   if (!d) return "";
-  if (d.includes("/") || d.includes(".")) return d;
   const p = d.split("-");
   if (p.length !== 3) return d;
   return `${p[2]}-${p[1]}-${p[0]}`;
 }
 
-/* Convert dd-mm-yyyy → yyyy-mm-dd (FOR STORAGE ONLY) */
 function toInternal(d) {
   if (!d) return "";
   const p = d.split("-");
@@ -48,55 +45,41 @@ function toInternal(d) {
   return `${p[2]}-${p[1]}-${p[0]}`;
 }
 
-/* Detect format & convert if needed */
 function toInternalIfNeeded(d) {
   if (!d) return "";
   const p = d.split("-");
   if (p[0].length === 4) return d;     // already yyyy-mm-dd
-  if (p[0].length === 2) return toInternal(d); // dd-mm-yyyy → convert
+  if (p[0].length === 2) return toInternal(d);
   return d;
 }
 
 /* ===========================================================
-   🔥 LOAD GLOBAL ARRAYS
+   🔥 LOAD ARRAYS FROM STORAGE
 =========================================================== */
 window.types     = toArray(safeParse(localStorage.getItem(KEY_TYPES)));
 window.stock     = toArray(safeParse(localStorage.getItem(KEY_STOCK)));
 window.sales     = toArray(safeParse(localStorage.getItem(KEY_SALES)));
 window.wanting   = toArray(safeParse(localStorage.getItem(KEY_WANTING)));
 window.expenses  = toArray(safeParse(localStorage.getItem(KEY_EXPENSES)));
-window.services  = toArray(safeParse(localStorage.getItem(KEY_SERVICES))); // NEW
+window.services  = toArray(safeParse(localStorage.getItem(KEY_SERVICES)));
 
 /* ===========================================================
-   🔥 AUTO-NORMALIZE ALL DATES (SUPER IMPORTANT)
+   🔥 NORMALIZE ALL EXISTING DATES
 =========================================================== */
 function normalizeAllDates() {
 
   if (window.stock)
-    window.stock = window.stock.map(s => ({
-      ...s,
-      date: toInternalIfNeeded(s.date)
-    }));
+    window.stock = window.stock.map(s => ({ ...s, date: toInternalIfNeeded(s.date) }));
 
   if (window.sales)
-    window.sales = window.sales.map(s => ({
-      ...s,
-      date: toInternalIfNeeded(s.date)
-    }));
+    window.sales = window.sales.map(s => ({ ...s, date: toInternalIfNeeded(s.date) }));
 
   if (window.expenses)
-    window.expenses = window.expenses.map(e => ({
-      ...e,
-      date: toInternalIfNeeded(e.date)
-    }));
+    window.expenses = window.expenses.map(e => ({ ...e, date: toInternalIfNeeded(e.date) }));
 
   if (window.wanting)
-    window.wanting = window.wanting.map(w => ({
-      ...w,
-      date: toInternalIfNeeded(w.date)
-    }));
+    window.wanting = window.wanting.map(w => ({ ...w, date: toInternalIfNeeded(w.date) }));
 
-  /* NEW — service/repair module date normalization */
   if (window.services)
     window.services = window.services.map(j => ({
       ...j,
@@ -105,7 +88,7 @@ function normalizeAllDates() {
     }));
 }
 
-try { normalizeAllDates(); } catch(e){ console.warn("Normalize failed", e); }
+try { normalizeAllDates(); } catch(e){}
 
 /* ===========================================================
    🔥 LOGIN SYSTEM
@@ -132,7 +115,7 @@ function saveStock()    { localStorage.setItem(KEY_STOCK, JSON.stringify(window.
 function saveSales()    { localStorage.setItem(KEY_SALES, JSON.stringify(window.sales)); }
 function saveWanting()  { localStorage.setItem(KEY_WANTING, JSON.stringify(window.wanting)); }
 function saveExpenses() { localStorage.setItem(KEY_EXPENSES, JSON.stringify(window.expenses)); }
-function saveServices() { localStorage.setItem(KEY_SERVICES, JSON.stringify(window.services)); } // NEW
+function saveServices() { localStorage.setItem(KEY_SERVICES, JSON.stringify(window.services)); }
 
 window.saveTypes = saveTypes;
 window.saveStock = saveStock;
@@ -142,7 +125,7 @@ window.saveExpenses = saveExpenses;
 window.saveServices = saveServices;
 
 /* ===========================================================
-   🔥 BASIC UTILITIES (ESC, UID, TODAY)
+   🔥 BASIC UTILITIES
 =========================================================== */
 function todayDate() {
   return new Date().toISOString().split("T")[0];
@@ -150,7 +133,7 @@ function todayDate() {
 window.todayDate = todayDate;
 
 function uid(p="id") {
-  return p + "_" + Math.random().toString(36).slice(2, 9);
+  return p + "_" + Math.random().toString(36).slice(2,9);
 }
 window.uid = uid;
 
@@ -196,8 +179,7 @@ function addType(name) {
   name = name.trim();
   if (!name) return;
 
-  if (window.types.find(t => t.name.toLowerCase() === name.toLowerCase()))
-    return;
+  if (window.types.find(t => t.name.toLowerCase() === name.toLowerCase())) return;
 
   window.types.push({ id: uid("type"), name });
   saveTypes();
@@ -205,7 +187,7 @@ function addType(name) {
 window.addType = addType;
 
 /* ===========================================================
-   🔥 ADD STOCK
+   🔥 ADD STOCK ENTRY
 =========================================================== */
 function addStockEntry({ date, type, name, qty, cost }) {
 
@@ -240,7 +222,9 @@ function addStockEntry({ date, type, name, qty, cost }) {
 }
 window.addStockEntry = addStockEntry;
 
-/* ---------- LIMIT ---------- */
+/* ===========================================================
+   🔥 LIMIT
+=========================================================== */
 function setGlobalLimit(v) { localStorage.setItem(KEY_LIMIT, v); }
 function getGlobalLimit()  { return Number(localStorage.getItem(KEY_LIMIT) || 0); }
 
@@ -280,7 +264,40 @@ function addExpense({ date, category, amount, note }) {
 window.addExpense = addExpense;
 
 /* ===========================================================
-   🔥 STORAGE SYNC — all modules auto refresh
+   🔥 NET PROFIT CALCULATOR (ADDED)
+=========================================================== */
+window.getTotalNetProfit = function() {
+  let salesProfit = 0, serviceProfit = 0, expenses = 0;
+
+  (window.sales || []).forEach(s => salesProfit += Number(s.profit || 0));
+  (window.services || []).forEach(s => serviceProfit += Number(s.profit || 0));
+  (window.expenses || []).forEach(e => expenses += Number(e.amount || 0));
+
+  return (salesProfit + serviceProfit) - expenses;
+};
+
+/* ===========================================================
+   🔥 UNIVERSAL TAB SUMMARY BAR (ADDED)
+=========================================================== */
+window.updateTabSummaryBar = function() {
+  const bar = document.getElementById("tabSummaryBar");
+  if (!bar) return;
+
+  const net = window.getTotalNetProfit();
+
+  if (net >= 0) {
+    bar.style.background = "#003300";
+    bar.style.color = "#fff";
+    bar.textContent = `Profit: +₹${net}`;
+  } else {
+    bar.style.background = "#330000";
+    bar.style.color = "#fff";
+    bar.textContent = `Loss: -₹${Math.abs(net)}`;
+  }
+};
+
+/* ===========================================================
+   🔥 STORAGE SYNC (auto refresh all tabs)
 =========================================================== */
 window.addEventListener("storage", () => {
 
@@ -299,4 +316,5 @@ window.addEventListener("storage", () => {
   renderServiceTables?.();
   renderAnalytics?.();
   updateSummaryCards?.();
+  updateTabSummaryBar?.();
 });
