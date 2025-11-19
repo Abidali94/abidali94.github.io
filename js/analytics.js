@@ -1,11 +1,11 @@
 /* ===========================================================
-   📊 analytics.js — Smart Dashboard (FINAL v8.1)
-   • Today/Week/Month sales
-   • totalProfit (sales profit EXCLUDING credit-sales) + service profit
-   • todayExpenses computed correctly
-   • Pie: Total Profit | Expenses | Credit Sales
-   • Works with core.js date normalization (internal yyyy-mm-dd)
-   =========================================================== */
+   📊 analytics.js — Smart Dashboard (FINAL v9.0)
+   ✔ Today/Week/Month sales
+   ✔ Paid Sales Profit + Service Profit (credit excluded)
+   ✔ Today expenses fixed
+   ✔ Pie: Total Profit | Expenses | Credit Sales
+   ✔ Compatible with core.js universal date system
+=========================================================== */
 
 let salesBarChart = null;
 let salesPieChart = null;
@@ -14,12 +14,6 @@ let salesPieChart = null;
 
 function toNum(d) {
   return d ? Number(String(d).replace(/-/g, "")) : 0;
-}
-
-function formatDate(d) {
-  if (!d) return "";
-  // Expecting internal yyyy-mm-dd; return same (used for numeric compare)
-  return d;
 }
 
 function getStartOfWeek() {
@@ -31,149 +25,135 @@ function getStartOfWeek() {
 
 function getStartOfMonth() {
   const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split("T")[0];
+  return new Date(d.getFullYear(), d.getMonth(), 1)
+    .toISOString()
+    .split("T")[0];
 }
 
-/* return total expenses for a specific internal-date (yyyy-mm-dd) */
 function getExpensesByDate(date) {
   return (window.expenses || [])
-    .filter(e => e && e.date === date)
-    .reduce((s, e) => s + Number(e.amount || 0), 0);
+    .filter(e => e.date === date)
+    .reduce((sum, e) => sum + Number(e.amount || 0), 0);
 }
 
 /* ----------------------------------------------------------
-   COLLECT ANALYTICS (SALES + SERVICE + EXPENSES)
-   - NOTE: sales with status === 'Credit' ARE NOT counted in profit.
-     Their amounts are shown under creditSales and will count only
-     after you update that sale's status (e.g. to Paid).
+   MAIN ANALYTICS DATA
 ---------------------------------------------------------- */
 function getAnalyticsData() {
   const sales = window.sales || [];
   const services = window.services || [];
   const expenses = window.expenses || [];
 
-  const today = (typeof todayDate === "function") ? todayDate() : (new Date().toISOString().split("T")[0]);
+  const today = todayDate();
   const weekStart = getStartOfWeek();
   const monthStart = getStartOfMonth();
 
   const weekN = toNum(weekStart);
   const monthN = toNum(monthStart);
 
-  let todaySales = 0;
-  let weekSales = 0;
-  let monthSales = 0;
+  let todaySales = 0,
+    weekSales = 0,
+    monthSales = 0;
 
-  let totalProfitSales = 0;   // sales profit ONLY from non-credit (paid) sales
-  let totalProfitService = 0; // repair/service profit
+  let totalProfitSales = 0;     // PAID SALES ONLY
+  let totalProfitService = 0;   // REPAIR PROFIT
   let totalExpenses = 0;
-  let creditSales = 0;        // amount of credit-sales (not yet counted in profit)
-  let paidSalesAmount = 0;    // amount of paid sales (optional use)
+  let creditSales = 0;
+  let paidSalesAmount = 0;
 
-  /* ----- SALES DATA ----- */
-  (sales || []).forEach(s => {
+  /* ----- SALES ----- */
+  sales.forEach(s => {
     if (!s || !s.date) return;
+
     const d = s.date;
-    const dNum = toNum(d);
     const amt = Number(s.amount || 0);
     const prof = Number(s.profit || 0);
+    const dNum = toNum(d);
 
-    // Sales amounts for bar (include credit & paid)
+    // Sales amounts for chart
     if (d === today) todaySales += amt;
     if (dNum >= weekN) weekSales += amt;
     if (dNum >= monthN) monthSales += amt;
 
-    // Separate credit sales from paid sales profit
+    // Credit sales → separate
     if (String(s.status || "").toLowerCase() === "credit") {
       creditSales += amt;
-      // do NOT add s.profit to totalProfitSales
-    } else {
-      // treat everything else as paid (or Cash/Online) contributing to profit
-      totalProfitSales += prof;
-      paidSalesAmount += amt;
+      return; // do NOT add to profit
     }
+
+    // Paid sales → add profit
+    totalProfitSales += prof;
+    paidSalesAmount += amt;
   });
 
   /* ----- SERVICE PROFITS ----- */
-  (services || []).forEach(j => {
+  services.forEach(j => {
     totalProfitService += Number(j.profit || 0);
   });
 
-  /* ----- EXPENSES (TOTAL) ----- */
-  totalExpenses = (expenses || []).reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  /* ----- TOTAL EXPENSES ----- */
+  totalExpenses = expenses.reduce((t, e) => t + Number(e.amount || 0), 0);
 
-  const grossProfit = totalProfitSales + totalProfitService; // exclude credit-sales profit
+  const grossProfit = totalProfitSales + totalProfitService; // exclude credit
   const netProfit = grossProfit - totalExpenses;
 
-  // Today-specific expenses (for overview card)
   const todayExpenses = getExpensesByDate(today);
 
   return {
-    // sales amounts for charts/overview
     todaySales,
     weekSales,
     monthSales,
 
-    // profit figures
     totalProfitSales,
     totalProfitService,
-    grossProfit,      // total profit from paid sales + service
+    grossProfit,
     totalExpenses,
     todayExpenses,
     netProfit,
 
-    // credit / paid breakdown
     creditSales,
     paidSalesAmount
   };
 }
 
 /* ----------------------------------------------------------
-   RENDER DASHBOARD
+   RENDER SMART DASHBOARD
 ---------------------------------------------------------- */
 function renderAnalytics() {
   const barCanvas = qs("#salesBar");
   const pieCanvas = qs("#salesPie");
-
-  // If canvas not present, still update summary cards via getAnalyticsData
   const data = getAnalyticsData();
 
-  // Update top-level summary cards if present
-  // (some pages may call updateSummaryCards separately)
-  try {
-    const sumTodayEl = qs("#sumToday");
-    if (sumTodayEl) sumTodayEl.textContent = "₹" + (data.todaySales || 0);
-    const sumWeekEl = qs("#sumWeek");
-    if (sumWeekEl) sumWeekEl.textContent = "₹" + (data.weekSales || 0);
-    const sumMonthEl = qs("#sumMonth");
-    if (sumMonthEl) sumMonthEl.textContent = "₹" + (data.monthSales || 0);
-    const sumGrossEl = qs("#sumGross");
-    if (sumGrossEl) sumGrossEl.textContent = "₹" + (data.grossProfit || 0);
-    const sumNetEl = qs("#sumNet");
-    if (sumNetEl) sumNetEl.textContent = "₹" + (data.netProfit || 0);
-  } catch (e) {
-    // ignore
-  }
+  /* ----- UPDATE TOP SUMMARY CARDS (Smart Dashboard) ----- */
+  qs("#sumToday")  && (qs("#sumToday").textContent  = "₹" + data.todaySales);
+  qs("#sumWeek")   && (qs("#sumWeek").textContent   = "₹" + data.weekSales);
+  qs("#sumMonth")  && (qs("#sumMonth").textContent  = "₹" + data.monthSales);
+  qs("#sumGross")  && (qs("#sumGross").textContent  = "₹" + data.grossProfit);
+  qs("#sumNet")    && (qs("#sumNet").textContent    = "₹" + data.netProfit);
+
+  updateSummaryCards?.();
+  updateTabSummaryBar?.();
 
   if (!barCanvas || !pieCanvas) return;
 
-  if (salesBarChart) try { salesBarChart.destroy(); } catch(e){}
-  if (salesPieChart) try { salesPieChart.destroy(); } catch(e){}
+  if (salesBarChart) salesBarChart.destroy();
+  if (salesPieChart) salesPieChart.destroy();
 
-  /* ---------- BAR CHART (SALES AMOUNTS) ---------- */
+  /* ---------- BAR CHART (SALES) ---------- */
   salesBarChart = new Chart(barCanvas, {
     type: "bar",
     data: {
       labels: ["Today", "This Week", "This Month"],
       datasets: [{
         label: "Sales ₹",
-        data: [data.todaySales || 0, data.weekSales || 0, data.monthSales || 0],
+        data: [data.todaySales, data.weekSales, data.monthSales],
         backgroundColor: ["#ff9800", "#fb8c00", "#f57c00"],
         borderRadius: 8
       }]
     },
     options: {
       responsive: true,
-      scales: { y: { beginAtZero: true } },
+      scales: { y: { beginAtZero: true }},
       plugins: {
         title: { display: true, text: "Sales Overview" },
         legend: { display: false }
@@ -181,16 +161,16 @@ function renderAnalytics() {
     }
   });
 
-  /* ---------- PIE CHART (Profit | Expenses | Credit Sales) ---------- */
+  /* ---------- PIE CHART (Profit | Expenses | Credit) ---------- */
   salesPieChart = new Chart(pieCanvas, {
     type: "pie",
     data: {
       labels: ["Total Profit", "Expenses", "Credit Sales"],
       datasets: [{
         data: [
-          Number(data.grossProfit || 0),
-          Number(data.totalExpenses || 0),
-          Number(data.creditSales || 0)
+          data.grossProfit,
+          data.totalExpenses,
+          data.creditSales
         ],
         backgroundColor: ["#4caf50", "#e53935", "#2196f3"]
       }]
@@ -201,15 +181,11 @@ function renderAnalytics() {
         legend: { position: "bottom" },
         title: {
           display: true,
-          text: `Net Profit: ₹${data.netProfit}  (Profit excludes credit sales until paid)`
+          text: `Net Profit: ₹${data.netProfit}  (Credit excluded until paid)`
         }
       }
     }
   });
-
-  // let other modules update (overview, tab bar, etc.)
-  updateSummaryCards?.();
-  updateTabSummaryBar?.();
 }
 
 /* ----------------------------------------------------------
@@ -227,6 +203,5 @@ window.addEventListener("load", () => {
   try { renderAnalytics(); } catch {}
 });
 
-/* expose */
 window.renderAnalytics = renderAnalytics;
 window.getAnalyticsData = getAnalyticsData;
