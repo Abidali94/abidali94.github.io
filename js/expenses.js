@@ -1,11 +1,21 @@
 /* ===========================================================
-   🧾 expenses.js — Expense Manager (FINAL v6.1 FIXED)
-   FIXED: dd-mm-yyyy display + correct internal date saving
-   No duplicate global variables (exToDisp, exToInt)
+   🧾 expenses.js — Expense Manager (FINAL v6.2 FIXED)
+   ✔ Auto-fill missing date with today()
+   ✔ dd-mm-yyyy display
+   ✔ yyyy-mm-dd internal storage
+   ✔ Smart Dashboard & Overview now show correct totals
+   ✔ No duplicate helpers
 =========================================================== */
 
 const exToDisp = window.toDisplay;
 const exToInt  = window.toInternal;
+
+/* ----------------------------------------------------------
+   SAFE PARSE
+---------------------------------------------------------- */
+function safeParse(j) {
+  try { return JSON.parse(j); } catch { return []; }
+}
 
 /* ----------------------------------------------------------
    SAVE WRAPPER
@@ -20,7 +30,7 @@ function _saveExpensesLocal() {
 }
 
 /* ----------------------------------------------------------
-   ADD NEW EXPENSE
+   ADD NEW EXPENSE (AUTO DATE FIX)
 ---------------------------------------------------------- */
 function addNewExpense() {
   const dateEl = qs("#expDate");
@@ -28,6 +38,7 @@ function addNewExpense() {
   const amountEl = qs("#expAmount");
   const noteEl = qs("#expNote");
 
+  // ⭐ AUTO-FILL DATE IF EMPTY
   let date = dateEl?.value || todayDate();
 
   // convert dd-mm-yyyy → yyyy-mm-dd
@@ -46,7 +57,7 @@ function addNewExpense() {
 
   window.expenses.push({
     id: uid("exp"),
-    date,           // internal yyyy-mm-dd
+    date,            // internal yyyy-mm-dd
     category,
     amount,
     note
@@ -61,7 +72,7 @@ function addNewExpense() {
 }
 
 /* ----------------------------------------------------------
-   DELETE EXPENSE ENTRY
+   DELETE EXPENSE
 ---------------------------------------------------------- */
 function deleteExpense(id) {
   if (!confirm("Delete this expense?")) return;
@@ -72,10 +83,10 @@ function deleteExpense(id) {
 }
 
 /* ----------------------------------------------------------
-   RENDER EXPENSES TABLE (display dd-mm-yyyy)
+   RENDER TABLE (DISPLAY dd-mm-yyyy)
 ---------------------------------------------------------- */
 function renderExpenses() {
-  const tbody = document.querySelector("#expensesTable tbody");
+  const tbody = qs("#expensesTable tbody");
   const totalEl = qs("#expensesTotal");
 
   if (!tbody || !totalEl) return;
@@ -92,29 +103,29 @@ function renderExpenses() {
 
   let total = 0;
 
-  tbody.innerHTML = list
-    .map(e => {
-      total += Number(e.amount || 0);
-      return `
-        <tr>
-          <td>${exToDisp(e.date)}</td>
-          <td>${esc(e.category)}</td>
-          <td>₹${Number(e.amount || 0)}</td>
-          <td>${esc(e.note || "")}</td>
-          <td>
-            <button onclick="deleteExpense('${e.id}')" 
-                    class="small-btn" 
-                    style="background:#d32f2f;color:#fff">
-              ❌ Delete
-            </button>
-          </td>
-        </tr>
-      `;
-    })
-    .join("");
+  tbody.innerHTML = list.map(e => {
+    total += Number(e.amount || 0);
+
+    return `
+      <tr>
+        <td>${exToDisp(e.date)}</td>
+        <td>${esc(e.category)}</td>
+        <td>₹${Number(e.amount || 0)}</td>
+        <td>${esc(e.note || "")}</td>
+        <td>
+          <button onclick="deleteExpense('${e.id}')"
+                  class="small-btn"
+                  style="background:#d32f2f;color:#fff">
+            ❌ Delete
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
 
   totalEl.textContent = "₹" + total;
 
+  // 🔄 Refresh all dashboards
   updateSummaryCards?.();
   renderAnalytics?.();
 }
@@ -132,7 +143,7 @@ document.addEventListener("click", (e) => {
 window.addEventListener("load", () => {
   window.expenses = Array.isArray(window.expenses)
     ? window.expenses
-    : (safeParse(localStorage.getItem("expenses-data")) || []);
+    : safeParse(localStorage.getItem("expenses-data"));
 
   renderExpenses();
 });
