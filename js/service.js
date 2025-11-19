@@ -1,8 +1,9 @@
 /* =======================================================
-   🛠 service.js — Service / Repair Manager (v8.2 FINAL)
+   🛠 service.js — Service / Repair Manager (v8.3 FINAL)
    ✔ Date input fixed
    ✔ Display = dd-mm-yyyy (core.js handles it)
    ✔ Internal = yyyy-mm-dd
+   ✔ Pie chart colors updated
    ✔ Fully compatible with core.js & analytics.js
 ======================================================= */
 
@@ -165,7 +166,7 @@
   }
 
   /* =====================================================
-       PIE CHART
+       PIE CHART (COLORS UPDATED)
      ===================================================== */
   function renderPie() {
     const c = qs("#svcPie");
@@ -181,9 +182,19 @@
       type:"pie",
       data:{
         labels:["Pending","Completed","Failed/Returned"],
-        datasets:[{data:[P,C,F]}]
+        datasets:[{
+          data:[P,C,F],
+          backgroundColor:[
+            "#ffeb3b", // Pending Yellow
+            "#4caf50", // Completed Green
+            "#e53935" // Failed Red
+          ]
+        }]
       },
-      options:{responsive:true,plugins:{legend:{position:"bottom"}}}
+      options:{
+        responsive:true,
+        plugins:{ legend:{position:"bottom"} }
+      }
     });
   }
 
