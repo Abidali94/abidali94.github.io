@@ -456,24 +456,74 @@
 
   <!-- HELP -->
   <div class="footer-btns" style="margin-top:18px">
-    <a href="#" id="helpLink" class="small-btn">📘 Help & Guide</a>
-    <div class="version-info">v2.0 — Fixed filters & dates</div>
-  </div>
+  <a href="#" id="helpLink" class="small-btn">📘 Help & Guide</a>
+  <div class="version-info">v2.0 — Fixed filters & dates</div>
+</div>
 
   <div id="helpModal" class="help-modal" style="display:none">
-    <div class="help-content">
-      <h2>📘 Quick Help</h2>
-      <ul style="line-height:1.6">
-        <li>Types — Manage categories</li>
-        <li>Stock — Add/Update inventory</li>
-        <li>Sales — View by date & type</li>
-        <li>Wanting — Reorder required items</li>
-        <li>Overview — Today’s summary</li>
-        <li>Analytics — Smart charts</li>
-      </ul>
-      <button class="small-btn" onclick="toggleHelp()">Close</button>
-    </div>
+  <div class="help-content">
+    <h2>📘 Quick Help & User Guide</h2>
+
+    <ul style="line-height:1.6;font-size:15px">
+
+      <li>
+        <b>🗂 Types</b> — Create and manage product categories.  
+        These categories appear in Stock, Sales, and Wanting tabs.
+      </li>
+
+      <li>
+        <b>📦 Stock</b> — Add items to inventory with date, type, product name, quantity, and cost.  
+        The system automatically updates stock when you record a sale.
+      </li>
+
+      <li>
+        <b>📈 Sales</b> — Record item sales with full profit calculation.  
+        Includes support for both <b>Paid</b> and <b>Credit</b> sales.  
+        Credit sales will NOT be added to profit until they are marked as “Paid”.
+      </li>
+
+      <li>
+        <b>🛒 Wanting</b> — Maintain a list of items you need to buy or restock.  
+        Low-stock items may be auto-added.
+      </li>
+
+      <li>
+        <b>🛠 Service</b> — Manage repair jobs (Pending / Completed / Failed).  
+        Tracks advance amount, final payment, investment cost, and profit.
+      </li>
+
+      <li>
+        <b>💸 Expenses</b> — Add daily expenses such as rent, salary, electricity, purchase bills, etc.  
+        These reduce total net profit.
+      </li>
+
+      <li>
+        <b>📊 Overview</b> — Shows today’s Sales, Credit, Expenses, Gross Profit, Net Profit, and Stock percentage.
+      </li>
+
+      <li>
+        <b>📈 Smart Dashboard</b> — Weekly & Monthly analytics, bar charts, and a profit-expenses-credit pie chart.
+      </li>
+
+      <li>
+        <b>🔐 Login System</b> — Saves your account locally and protects your business data.
+      </li>
+
+      <li>
+        <b>💾 Offline Mode</b> — Everything works fully offline.  
+        All data is stored safely in your device’s local storage.
+      </li>
+
+      <li>
+        <b>💹 Profit Bar</b> — The dark bar above tabs shows total net profit (Sales + Service – Expenses).  
+        Credit sales are excluded until they are paid.
+      </li>
+
+    </ul>
+
+    <button class="small-btn" onclick="toggleHelp()">Close</button>
   </div>
+</div>
 
   <!-- ===== JS LOGIC ===== -->
   <script>
