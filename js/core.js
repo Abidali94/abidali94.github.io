@@ -3,7 +3,7 @@
    ✔ FIXED: Proper dd-mm-yyyy <-> yyyy-mm-dd conversion
    ✔ FIXED: Service dates store correctly
    ✔ FIXED: No undefined in Overview / Analytics
-   ✔ Universal Net Profit Bar
+   ✔ Universal Net Profit Bar (excludes Credit sales until paid)
    ✔ 100% bug-free storage sync
 =========================================================== */
 
@@ -297,13 +297,24 @@ function addExpense({ date, category, amount, note }) {
 window.addExpense = addExpense;
 
 /* ===========================================================
-   🔥 NET PROFIT CALCULATOR
+   🔥 NET PROFIT CALCULATOR (EXCLUDES CREDIT SALES)
+   - Only sales with status !== 'Credit' are counted into profit.
+   - When a Credit sale is marked Paid, it will be included (sales.js markSalePaid).
 =========================================================== */
 window.getTotalNetProfit = function() {
   let salesProfit = 0, serviceProfit = 0, expenses = 0;
 
-  (window.sales || []).forEach(s => salesProfit += Number(s.profit || 0));
+  // Sales profit — exclude credit sales until they're marked Paid.
+  (window.sales || []).forEach(s => {
+    if (String(s.status || "").toLowerCase() !== "credit") {
+      salesProfit += Number(s.profit || 0);
+    }
+  });
+
+  // Service profit
   (window.services || []).forEach(s => serviceProfit += Number(s.profit || 0));
+
+  // Expenses total
   (window.expenses || []).forEach(e => expenses += Number(e.amount || 0));
 
   return (salesProfit + serviceProfit) - expenses;
