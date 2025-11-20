@@ -1,11 +1,9 @@
-/* =======================================================
-   🛠 service.js — Service / Repair Manager (v8.3 FINAL)
-   ✔ Date input fixed
-   ✔ Display = dd-mm-yyyy (core.js handles it)
-   ✔ Internal = yyyy-mm-dd
-   ✔ Pie chart colors updated
-   ✔ Fully compatible with core.js & analytics.js
-======================================================= */
+/* ===========================================================
+   🛠 service.js — Service / Repair Manager (v8.3)
+   • Cloud-compatible saving via core.saveServices when available
+   • Pie chart colors: Completed=green, Failed/Returned=red, Pending=yellow
+   • No UI structure change — only save/sync logic improved
+=========================================================== */
 
 (function () {
 
@@ -19,17 +17,35 @@
 
   let svcPieChart = null;
 
-  /* -------- LOAD DATA -------- */
+  /* -------- LOAD DATA (local fallback) -------- */
   window.services = JSON.parse(localStorage.getItem(KEY) || "[]");
 
+  function persistServices() {
+    try {
+      // Prefer core's saveServices if present (handles cloud)
+      if (typeof window.saveServices === "function" && window.saveServices !== persistServices) {
+        return window.saveServices();
+      }
+    } catch (e) {
+      // continue to fallback
+    }
+
+    // fallback: localStorage
+    try {
+      localStorage.setItem(KEY, JSON.stringify(window.services || []));
+      window.dispatchEvent(new Event("storage"));
+    } catch (e) {
+      console.error("Fallback saveServices failed:", e);
+    }
+  }
+
   function save() {
-    localStorage.setItem(KEY, JSON.stringify(window.services));
-    window.dispatchEvent(new Event("storage"));
+    persistServices();
   }
 
   /* -------- JOB ID -------- */
   function nextJobId() {
-    if (!window.services.length) return "01";
+    if (!window.services || !window.services.length) return "01";
     const max = Math.max(...window.services.map(s => Number(s.jobNum || 0)));
     return String(max + 1).padStart(2, "0");
   }
@@ -41,7 +57,7 @@
 
     let receivedRaw = qs("#svcReceivedDate")?.value || today();
 
-    // FIX: Convert only if dd-mm-yyyy manually entered
+    // Convert dd-mm-yyyy → yyyy-mm-dd only if user manually entered dd-mm-yyyy
     let received =
       receivedRaw.split("-")[0].length === 2
         ? toInternal(receivedRaw)
@@ -81,6 +97,7 @@
       status: "Pending"
     };
 
+    window.services = window.services || [];
     window.services.push(job);
     save();
     renderTables();
@@ -104,9 +121,9 @@
 
     if (!tb || !hist) return;
 
-    const pending   = window.services.filter(s => s.status === "Pending");
-    const completed = window.services.filter(s => s.status === "Completed");
-    const failed    = window.services.filter(s => s.status === "Failed/Returned");
+    const pending   = (window.services || []).filter(s => s.status === "Pending");
+    const completed = (window.services || []).filter(s => s.status === "Completed");
+    const failed    = (window.services || []).filter(s => s.status === "Failed/Returned");
 
     /* Pending Jobs */
     tb.innerHTML = pending.map(s => `
@@ -160,21 +177,22 @@
     qs("#svcPendingCount").textContent = pending.length;
     qs("#svcCompletedCount").textContent = completed.length;
     qs("#svcTotalProfit").textContent =
-      "₹" + window.services.reduce((s,j)=>s+Number(j.profit||0),0);
+      "₹" + (window.services || []).reduce((s,j)=>s+Number(j.profit||0),0);
 
     renderPie();
   }
 
   /* =====================================================
-       PIE CHART (COLORS UPDATED)
+       PIE CHART
+       Colors: Pending (yellow), Completed (green), Failed (red)
      ===================================================== */
   function renderPie() {
     const c = qs("#svcPie");
     if (!c) return;
 
-    const P = window.services.filter(s=>s.status==="Pending").length;
-    const C = window.services.filter(s=>s.status==="Completed").length;
-    const F = window.services.filter(s=>s.status==="Failed/Returned").length;
+    const P = (window.services || []).filter(s=>s.status==="Pending").length;
+    const C = (window.services || []).filter(s=>s.status==="Completed").length;
+    const F = (window.services || []).filter(s=>s.status==="Failed/Returned").length;
 
     if (svcPieChart) svcPieChart.destroy();
 
@@ -184,17 +202,10 @@
         labels:["Pending","Completed","Failed/Returned"],
         datasets:[{
           data:[P,C,F],
-          backgroundColor:[
-            "#ffeb3b", // Pending Yellow
-            "#4caf50", // Completed Green
-            "#e53935" // Failed Red
-          ]
+          backgroundColor: ["#FFEB3B", "#4CAF50", "#E53935"] // yellow, green, red
         }]
       },
-      options:{
-        responsive:true,
-        plugins:{ legend:{position:"bottom"} }
-      }
+      options:{responsive:true,plugins:{legend:{position:"bottom"}}}
     });
   }
 
@@ -202,7 +213,7 @@
        OPEN JOB
      ===================================================== */
   function openJob(id) {
-    const s = window.services.find(x=>x.id===id);
+    const s = (window.services || []).find(x=>x.id===id);
     if (!s) return;
 
     const ch = prompt(
@@ -224,7 +235,7 @@ Advance: ₹${s.advance}
        COMPLETED
      ===================================================== */
   function markCompleted(id) {
-    const s = window.services.find(x=>x.id===id);
+    const s = (window.services || []).find(x=>x.id===id);
     if (!s) return;
 
     const invest = Number(prompt("Enter investment ₹:", s.invest||0) || 0);
@@ -259,7 +270,7 @@ Profit: ₹${profit}`
        FAILED / RETURNED
      ===================================================== */
   function markFailed(id) {
-    const s = window.services.find(x=>x.id===id);
+    const s = (window.services || []).find(x=>x.id===id);
     if (!s) return;
 
     const returned = Number(prompt("Advance returned ₹:", s.advance||0) || 0);
@@ -283,7 +294,7 @@ Profit: ₹${profit}`
      ===================================================== */
   function deleteJob(id) {
     if (!confirm("Delete this job?")) return;
-    window.services = window.services.filter(s=>s.id!==id);
+    window.services = (window.services || []).filter(s=>s.id!==id);
     save();
     renderTables();
   }
@@ -308,5 +319,6 @@ Profit: ₹${profit}`
   window.addEventListener("load", renderTables);
 
   window.renderServiceTables = renderTables;
+  window.persistServices = persistServices;
 
 })();
