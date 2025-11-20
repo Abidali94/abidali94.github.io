@@ -88,16 +88,18 @@
     </div>
   </div>
 
-  <!-- FIREBASE -->
+  <!-- FIREBASE (MUST BE IN THIS ORDER) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
 
+  <!-- your firebase.js -->
   <script src="/js/firebase.js"></script>
 
   <script>
     const qs = s => document.querySelector(s);
 
+    // Password Show/Hide
     qs("#togglePw").addEventListener("click", () => {
       const pw = qs("#password");
       pw.type = pw.type === "password" ? "text" : "password";
@@ -113,8 +115,12 @@
       }
 
       try {
+        // Use modern fsSignIn
         await window.fsSignIn(email, pw);
-        window.location.href = "/business.html";
+
+        // Redirect to dashboard
+        window.location.href = "/tools/business-dashboard.html";
+
       } catch (e) {
         qs("#msg").textContent = "Login failed: " + e.message;
         console.error(e);
