@@ -123,27 +123,27 @@ document.getElementById("signupBtn").addEventListener("click", async ()=>{
     return;
   }
 
-  // FIREBASE SIGNUP
   try{
     const user = await firebase.auth().createUserWithEmailAndPassword(email, pass);
 
     alert("Account created successfully!");
 
-    // Save login locally
     localStorage.setItem("ks-user-email", email);
 
     window.location.href = "/tools/business-dashboard.html";
   }catch(err){
     alert("Signup failed: " + err.message);
   }
-
 });
 </script>
+
+<!-- Firebase Core -->
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
 
 <!-- Firebase Auth -->
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
 
-<!-- Firebase config + init -->
+<!-- Your firebase.js -->
 <script src="/js/firebase.js"></script>
 
 </body>
