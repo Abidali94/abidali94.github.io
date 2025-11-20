@@ -22,7 +22,7 @@
     width:320px;
     border-radius:14px;
     box-shadow:0 6px 30px rgba(0,0,0,0.15);
-    border:2px solid #ddd; /* better border */
+    border:2px solid #ddd;
   }
 
   h2{
@@ -80,7 +80,6 @@
     color:#ff7a00;
     text-decoration:none;
   }
-
 </style>
 </head>
 
@@ -110,7 +109,7 @@
     pw.type = pw.type === "password" ? "text" : "password";
   });
 
-  // Sign Up
+  // Sign Up using fsSignUp()
   document.getElementById("signupBtn").addEventListener("click", async ()=>{
 
     const email = document.getElementById("email").value.trim();
@@ -128,13 +127,14 @@
 
     try{
       const userCred = await window.fsSignUp(email, pass);
+
       alert("Account created successfully!");
 
+      // Save user email
       localStorage.setItem("ks-user-email", email);
 
-      // -------- Correct Redirect --------
+      // Redirect to dashboard
       window.location.href = "/tools/business-dashboard.html";
-      // ----------------------------------
 
     }catch(err){
       alert("Signup failed: " + err.message);
@@ -147,6 +147,9 @@
 
 <!-- Firebase Auth -->
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
+
+<!-- Firestore (IMPORTANT!!) -->
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
 
 <!-- Your firebase.js -->
 <script src="/js/firebase.js"></script>
