@@ -1,7 +1,10 @@
 /* ===========================================================
-   firebase.js — FINAL STABLE VERSION (For Email Login System)
-   Works with Firebase v9 compat + Firestore + Auto Cloud Sync
-   =========================================================== */
+   firebase.js — FINAL CLOUD SYNC (ARRAY SAFE VERSION)
+   ✔ Works with Firebase v9 compat
+   ✔ Email Login + Cloud Sync
+   ✔ Arrays auto-wrapped (No Firestore errors)
+   ✔ Debounced Cloud Save
+=========================================================== */
 
 console.log("%c🔥 firebase.js loaded", "color:#ff9800;font-weight:bold;");
 
@@ -45,7 +48,7 @@ function getCloudUser() {
 
 
 // --------------------------------------------------
-// CLOUD SAVE (Immediately Saves Full Module Data)
+// CLOUD SAVE (Array → Object Wrapper)
 // --------------------------------------------------
 window.cloudSave = async function (collectionName, data) {
   if (!db) return console.error("❌ Firestore unavailable");
@@ -53,9 +56,16 @@ window.cloudSave = async function (collectionName, data) {
   try {
     const userId = getCloudUser();
 
+    // Firestore cannot store arrays directly at root
+    // So we wrap inside { items: [...] }
+    const payload =
+      Array.isArray(data)
+        ? { items: data, updatedAt: Date.now() }
+        : data;
+
     await db.collection(collectionName)
             .doc(userId)
-            .set(data, { merge: true });
+            .set(payload, { merge: true });
 
     console.log(`☁️ Cloud Save OK → [${collectionName}] for ${userId}`);
   } 
@@ -67,8 +77,8 @@ window.cloudSave = async function (collectionName, data) {
 
 
 // --------------------------------------------------
-// CLOUD LOAD
-//---------------------------------------------------
+// CLOUD LOAD (Return Clean Array)
+// --------------------------------------------------
 window.cloudLoad = async function (collectionName) {
   if (!db) return console.error("❌ Firestore unavailable");
 
@@ -85,7 +95,14 @@ window.cloudLoad = async function (collectionName) {
     }
 
     console.log(`☁️ Cloud Load OK → [${collectionName}] for ${userId}`);
-    return snap.data();
+
+    const data = snap.data();
+
+    // If wrapped → return array inside items
+    if (Array.isArray(data.items)) return data.items;
+
+    // Otherwise return object
+    return data;
   } 
   catch (e) {
     console.error("❌ Cloud Load Error:", e);
@@ -96,8 +113,7 @@ window.cloudLoad = async function (collectionName) {
 
 
 // --------------------------------------------------
-// ✅ DEBOUNCED CLOUD SAVE (Your Request)
-// Prevents multiple fast writes → Saves after 500ms
+// DEBOUNCED CLOUD SAVE (prevents multiple writes)
 // --------------------------------------------------
 let _cloudSaveTimer = null;
 
@@ -105,15 +121,14 @@ window.cloudSaveDebounced = function (collection, data) {
   clearTimeout(_cloudSaveTimer);
 
   _cloudSaveTimer = setTimeout(() => {
-    if (typeof window.cloudSave === "function") {
-      window.cloudSave(collection, data);
-    }
-  }, 500); // saves only once after 0.5 sec
+    window.cloudSave(collection, data);
+  }, 500); 
 };
 
 
 
 // --------------------------------------------------
-// READY LOG
+// READY
 // --------------------------------------------------
-console.log("%c⚙️ firebase.js ready (Email Login + Cloud Sync Active)", "color:#03a9f4;font-weight:bold;");
+console.log("%c⚙️ firebase.js ready (Cloud Sync Active)", 
+            "color:#03a9f4;font-weight:bold;");
