@@ -1,109 +1,50 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KharchaSaathi — Login</title>
-
-<style>
-  body{
-    margin:0;
-    font-family:Poppins,Arial,sans-serif;
-    height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:linear-gradient(135deg,#ff7a00,#1a1a1a);
-    color:#fff;
-  }
-
-  .box{
-    background:rgba(0,0,0,0.25);
-    padding:32px;
-    width:90%;
-    max-width:380px;
-    border-radius:18px;
-    text-align:center;
-    box-shadow:0 8px 25px rgba(0,0,0,0.25);
-    backdrop-filter:blur(8px);
-  }
-
-  .logo{
-    width:110px;
-    height:110px;
-    border-radius:14px;
-    object-fit:contain;
-    margin-bottom:18px;
-  }
-
-  h2{
-    margin:0 0 12px;
-    font-size:26px;
-    font-weight:700;
-  }
-
-  p{
-    margin:0 0 20px;
-    font-size:14px;
-    opacity:0.9;
-  }
-
-  input{
-    width:100%;
-    padding:12px;
-    border-radius:10px;
-    border:none;
-    font-size:15px;
-  }
-
-  button{
-    width:100%;
-    margin-top:15px;
-    background:#ff7a00;
-    border:none;
-    padding:12px;
-    font-size:16px;
-    font-weight:600;
-    color:#fff;
-    border-radius:10px;
-    cursor:pointer;
-  }
-  
-  button:hover{
-    background:#e96a00;
-  }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login — KharchaSaathi</title>
+  <style>
+    body{font-family:Arial;padding:20px;background:#f7f7f7}
+    .card{max-width:420px;margin:40px auto;background:#fff;padding:20px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,0.06)}
+    input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #ddd}
+    button{padding:10px 14px;border:none;background:#ff7a00;color:#fff;border-radius:6px;cursor:pointer}
+    .muted{font-size:13px;color:#666;margin-top:8px}
+    a{color:#ff7a00;text-decoration:none}
+  </style>
 </head>
-
 <body>
+  <div class="card">
+    <h3>Sign in to KharchaSaathi</h3>
+    <input id="email" type="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Password" />
+    <button id="signInBtn">Sign In</button>
+    <div class="muted">
+      <a href="/signup.html">Create account</a> • <a href="/reset-password.html">Forgot password?</a>
+    </div>
+    <div id="msg" class="muted"></div>
+  </div>
 
-<div class="box">
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
+  <script src="/js/firebase.js"></script>
 
-  <img src="icons/icon-192.png" class="logo">
-
-  <h2>Welcome to KharchaSaathi</h2>
-  <p>Your Smart Business Companion</p>
-
-  <input id="email" type="email" placeholder="Enter your email" />
-
-  <button onclick="login()">Continue</button>
-
-</div>
-
-<script>
-function login(){
-  let email = document.getElementById("email").value.trim();
-
-  if(!email || !email.includes("@")){
-    alert("Please enter a valid email!");
-    return;
-  }
-
-  localStorage.setItem("ks-user-email", email);
-
-  location.href = "tools/business-dashboard.html";
-}
-</script>
-
+  <script>
+    const qs = s => document.querySelector(s);
+    qs('#signInBtn').addEventListener('click', async () => {
+      const email = qs('#email').value.trim();
+      const pw = qs('#password').value;
+      if (!email || !pw) { qs('#msg').textContent = "Fill email & password"; return; }
+      try {
+        await window.fsSignIn(email, pw);
+        qs('#msg').textContent = "Signed in. Redirecting...";
+        // go to dashboard
+        setTimeout(()=> location.href = "/business-dashboard.html", 600);
+      } catch (e) {
+        qs('#msg').textContent = "Sign in failed: " + (e.message || e);
+        console.error(e);
+      }
+    });
+  </script>
 </body>
 </html>
