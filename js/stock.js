@@ -1,8 +1,9 @@
 /* =======================================================
-   📦 stock.js — Inventory Manager (FINAL v7.0)
-   - Fixed: product name & cost consistency
-   - Fixed: remain calculation
-   - Fixed: quick sale structure matches sales.js
+   📦 stock.js — Inventory Manager (FINAL v7.1 FIXED)
+   - History function restored
+   - product name & cost consistency
+   - remain calculation fixed
+   - quick sale structure matches sales.js
 ======================================================= */
 
 const toDisp = window.toDisplay;
@@ -82,6 +83,25 @@ function renderStock() {
 }
 
 /* -------------------------------------------------------
+   📜 HISTORY VIEW  (RESTORED)
+------------------------------------------------------- */
+function showHistory(i) {
+  const p = window.stock[i];
+  if (!p?.history?.length)
+    return alert("No history found.");
+
+  let msg = `Purchase History of ${p.name}:\n\n`;
+
+  p.history.forEach(h => {
+    msg += `${toDisp(h.date)} — Qty ${h.qty} @ ₹${h.cost}\n`;
+  });
+
+  alert(msg);
+}
+
+window.showHistory = showHistory;
+
+/* -------------------------------------------------------
    QUICK SALE / CREDIT
 ------------------------------------------------------- */
 function stockQuickSale(i, mode) {
@@ -99,7 +119,7 @@ function stockQuickSale(i, mode) {
   const price = Number(prompt("Enter Selling Price ₹:"));
   if (!price || price <= 0) return;
 
-  const cost = Number(p.cost || 0);     // FIXED
+  const cost = Number(p.cost || 0);
   const total = qty * price;
   const profit = total - (qty * cost);
 
@@ -109,11 +129,11 @@ function stockQuickSale(i, mode) {
     id: uid("sale"),
     date: todayDate(),
     type: p.type,
-    product: p.name,      // FIXED
+    name: p.name,          // FIXED
     qty,
     price,
-    amount: total,        // FIXED
     total,
+    amount: total,
     cost,
     profit,
     status: mode
