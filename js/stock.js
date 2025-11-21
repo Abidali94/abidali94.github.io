@@ -1,14 +1,15 @@
 /* =======================================================
-   📦 stock.js — Inventory Manager (FINAL v6.1)
-   - FULL SUPPORT: dd-mm-yyyy UI, yyyy-mm-dd internal
-   - FIXED: Sales entry now stores cost (REQ for investment)
+   📦 stock.js — Inventory Manager (FINAL v7.0)
+   - Fixed: product name & cost consistency
+   - Fixed: remain calculation
+   - Fixed: quick sale structure matches sales.js
 ======================================================= */
 
 const toDisp = window.toDisplay;
 const toInt  = window.toInternal;
 
 /* -------------------------------------------------------
-   ➕ ADD STOCK ENTRY
+   ADD STOCK ENTRY
 ------------------------------------------------------- */
 function addStock() {
   let date = qs("#pdate")?.value || todayDate();
@@ -20,10 +21,8 @@ function addStock() {
   if (!type || !name || qty <= 0 || cost <= 0)
     return alert("Please fill all fields.");
 
-  // convert UI dd-mm-yyyy → internal yyyy-mm-dd
-  if (date.includes("-") && date.split("-")[0].length === 2) {
+  if (date.includes("-") && date.split("-")[0].length === 2)
     date = toInt(date);
-  }
 
   addStockEntry({ date, type, name, qty, cost });
 
@@ -36,7 +35,7 @@ function addStock() {
 }
 
 /* -------------------------------------------------------
-   📊 RENDER STOCK TABLE
+   RENDER STOCK LIST
 ------------------------------------------------------- */
 function renderStock() {
   const filter = qs("#filterType")?.value || "all";
@@ -45,73 +44,53 @@ function renderStock() {
 
   let html = "";
 
-  window.stock
+  (window.stock || [])
     .filter(item => filter === "all" || item.type === filter)
     .forEach((p, i) => {
 
       const sold   = Number(p.sold || 0);
       const remain = Number(p.qty) - sold;
-      const limit = Number(p.limit ?? getGlobalLimit());
+      const limit  = Number(p.limit ?? getGlobalLimit());
 
-      let status = "OK", cls = "ok";
-      if (remain <= 0) { status = "OUT"; cls = "out"; }
-      else if (remain <= limit) { status = "LOW"; cls = "low"; }
+      let cls = "ok";
+      if (remain <= 0) cls = "out";
+      else if (remain <= limit) cls = "low";
 
-      // fallback inline color
-      let rowStyle = "";
-      if (cls === "low") rowStyle = 'style="background:#fff8ec"';
-      if (cls === "out") rowStyle = 'style="background:#ffecec;color:#a00;font-weight:600"';
-
-      const dispDate = toDisp(p.date);
+      let style = "";
+      if (cls === "low") style = 'style="background:#fff8ec"';
+      if (cls === "out") style = 'style="background:#ffecec;color:#a00;font-weight:600"';
 
       html += `
-      <tr class="${cls}" ${rowStyle}>
-        <td>${dispDate}</td>
-        <td>${esc(p.type)}</td>
-        <td>${esc(p.name)}</td>
-        <td>${p.qty}</td>
-        <td>${sold}</td>
-        <td>${remain}</td>
-        <td class="status-cell">${status}</td>
-        <td>${limit}</td>
-        <td>
-          <button class="history-btn" data-i="${i}">📜 History</button>
-          <button class="sale-btn" data-i="${i}">💰 Sale</button>
-          <button class="credit-btn" data-i="${i}">💳 Credit</button>
-        </td>
-      </tr>`;
+        <tr class="${cls}" ${style}>
+          <td>${toDisp(p.date)}</td>
+          <td>${esc(p.type)}</td>
+          <td>${esc(p.name)}</td>
+          <td>${p.qty}</td>
+          <td>${sold}</td>
+          <td>${remain}</td>
+          <td>${cls.toUpperCase()}</td>
+          <td>${limit}</td>
+          <td>
+            <button class="history-btn" data-i="${i}">📜 History</button>
+            <button class="sale-btn" data-i="${i}">💰 Sale</button>
+            <button class="credit-btn" data-i="${i}">💳 Credit</button>
+          </td>
+        </tr>`;
     });
 
-  if (!html) html = `<tr><td colspan="9">No Stock Found</td></tr>`;
-  tbody.innerHTML = html;
+  tbody.innerHTML = html || `<tr><td colspan="9">No Stock Found</td></tr>`;
 }
 
 /* -------------------------------------------------------
-   📜 HISTORY VIEW
-------------------------------------------------------- */
-function showHistory(i) {
-  const p = window.stock[i];
-  if (!p?.history?.length)
-    return alert("No history found.");
-
-  let msg = `Purchase History of ${p.name}:\n\n`;
-
-  p.history.forEach(h => {
-    msg += `${toDisp(h.date)} — Qty ${h.qty} @ ₹${h.cost}\n`;
-  });
-
-  alert(msg);
-}
-
-/* -------------------------------------------------------
-   💰 QUICK SALE / CREDIT
-   FIXED → cost is now stored in sales entry ✔
+   QUICK SALE / CREDIT
 ------------------------------------------------------- */
 function stockQuickSale(i, mode) {
   const p = window.stock[i];
   if (!p) return;
 
-  const remain = Number(p.qty) - Number(p.sold || 0);
+  const sold   = Number(p.sold || 0);
+  const remain = Number(p.qty) - sold;
+
   if (remain <= 0) return alert("No stock left!");
 
   const qty = Number(prompt(`Enter Qty (Available: ${remain})`));
@@ -120,23 +99,23 @@ function stockQuickSale(i, mode) {
   const price = Number(prompt("Enter Selling Price ₹:"));
   if (!price || price <= 0) return;
 
-  let date = todayDate(); // yyyy-mm-dd
-  const cost = getProductCost(p.type, p.name);
-  const profit = (price - cost) * qty;
+  const cost = Number(p.cost || 0);     // FIXED
+  const total = qty * price;
+  const profit = total - (qty * cost);
 
-  p.sold = (p.sold || 0) + qty;
+  p.sold = sold + qty;
 
-  // FINAL: Sales entry with cost FIXED ✔
   window.sales.push({
     id: uid("sale"),
-    date,
+    date: todayDate(),
     type: p.type,
-    product: p.name,
+    product: p.name,      // FIXED
     qty,
     price,
-    amount: qty * price,
-    profit: Math.round(profit),
-    cost: cost,        // REQUIRED FOR INVESTMENT SYSTEM ✔
+    amount: total,        // FIXED
+    total,
+    cost,
+    profit,
     status: mode
   });
 
@@ -153,7 +132,7 @@ function stockQuickSale(i, mode) {
 }
 
 /* -------------------------------------------------------
-   EVENT HANDLERS
+   BUTTON HANDLERS
 ------------------------------------------------------- */
 document.addEventListener("click", e => {
 
@@ -164,7 +143,6 @@ document.addEventListener("click", e => {
     const v = Number(qs("#globalLimit")?.value);
     if (v >= 0) {
       setGlobalLimit(v);
-      alert("Global limit updated.");
       renderStock();
     }
     return;
