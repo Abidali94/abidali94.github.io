@@ -1,27 +1,21 @@
 /* ==========================================================
-   💰 sales.js — Sales Viewer + Profit Manager (FINAL v8.1)
-   • Compatible with core.saveSales (cloud-enabled) if present
-   • Falls back to localStorage when core is absent
-   • Credit sale profit excluded until marked Paid
+   💰 sales.js — Sales Viewer + Profit Manager (FINAL v9.0)
+   • Added: Stock Investment Collector
+   • Added: Profit Collector
+   • 100% Safe with your existing core.js/cloud sync
 ========================================================== */
 
 /* ----- helpers / compatibility ----- */
 const _SALES_KEY = "sales-data";
 
-/* Persist sales: if core/window.saveSales exists, prefer that (it does cloud sync).
-   Otherwise fallback to localStorage and dispatch storage event. */
+/* Persist sales */
 function persistSales() {
   try {
-    // If core provided a saveSales function (cloud-enabled), call it
     if (typeof window.saveSales === "function" && window.saveSales !== persistSales) {
-      // core.saveSales will handle local + cloud saving
       return window.saveSales();
     }
-  } catch (e) {
-    // ignore and fallback
-  }
+  } catch (e) {}
 
-  // fallback: write to localStorage
   try {
     localStorage.setItem(_SALES_KEY, JSON.stringify(window.sales || []));
     window.dispatchEvent(new Event("storage"));
@@ -49,7 +43,7 @@ function attachImmediateSalesFilters() {
 }
 
 /* ----------------------------------------------------------
-   MARK CREDIT → PAID  (Main logic)
+   CREDIT → PAID
 ---------------------------------------------------------- */
 function markSalePaid(id) {
   const s = (window.sales || []).find(x => x.id === id);
@@ -62,10 +56,8 @@ function markSalePaid(id) {
 
   if (!confirm("Mark this CREDIT sale as PAID?")) return;
 
-  // Only change status to Paid — do not alter amount/profit/qty fields
   s.status = "Paid";
 
-  // Persist & re-render (uses core save if present)
   persistSales();
   renderSales();
   updateSummaryCards?.();
@@ -86,7 +78,34 @@ qs("#clearSalesBtn")?.addEventListener("click", () => {
 });
 
 /* ----------------------------------------------------------
-   RENDER SALES TABLE (Credit profit excluded)
+   🟢 NEW — STOCK INVESTMENT COLLECTOR (Sale-based)
+   (Only sold qty × cost — NOT stock addition cost)
+---------------------------------------------------------- */
+window.getCollectedStockInvestment = function () {
+  let inv = 0;
+  (window.sales || []).forEach(s => {
+    if (String(s.status).toLowerCase() !== "credit") {
+      inv += Number(s.cost || 0) * Number(s.qty || 0);
+    }
+  });
+  return inv;
+};
+
+/* ----------------------------------------------------------
+   🟢 NEW — SALES PROFIT COLLECTOR (Paid only)
+---------------------------------------------------------- */
+window.getCollectedSalesProfit = function () {
+  let p = 0;
+  (window.sales || []).forEach(s => {
+    if (String(s.status).toLowerCase() !== "credit") {
+      p += Number(s.profit || 0);
+    }
+  });
+  return p;
+};
+
+/* ----------------------------------------------------------
+   RENDER SALES TABLE
 ---------------------------------------------------------- */
 function renderSales() {
   const tbody = qs("#salesTable tbody");
@@ -111,7 +130,7 @@ function renderSales() {
 
       total += Number(s.amount || 0);
 
-      // CREDIT sales do not contribute to profit until marked Paid
+      // Credit does NOT count for profit
       if (String(s.status || "").toLowerCase() !== "credit") {
         profit += Number(s.profit || 0);
       }
@@ -147,7 +166,6 @@ function renderSales() {
 
 /* ----------------------------------------------------------
    INITIAL LOAD
-   - ensure selector + listeners + initial render
 ---------------------------------------------------------- */
 window.addEventListener("load", () => {
   refreshSaleTypeSelector();
@@ -155,7 +173,7 @@ window.addEventListener("load", () => {
   renderSales();
 });
 
-/* expose for other modules */
+/* expose */
 window.refreshSaleTypeSelector = refreshSaleTypeSelector;
 window.renderSales = renderSales;
 window.markSalePaid = markSalePaid;
