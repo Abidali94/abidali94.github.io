@@ -845,12 +845,12 @@ window.addEventListener("load", () => {
   });
 
   qs("#collectSvcInvBtn")?.addEventListener("click", () => {
-    window.collected.svcInv += window.getServiceInvestment();
+    window.collected.svcInv += window.getServiceInvestmentCollected();
     alert("Service Investment Collected!");
   });
 
   qs("#collectSvcProfitBtn")?.addEventListener("click", () => {
-    window.collected.svcProfit += window.getServiceProfit();
+    window.collected.svcProfit += window.getServiceProfitCollected();
     alert("Service Profit Collected!");
   });
 </script>
