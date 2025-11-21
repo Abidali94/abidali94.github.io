@@ -1,223 +1,164 @@
-/* ==========================================================
-   🛠 service.js — Service / Repair Manager (FINAL v6.0)
-   ✔ Correct Profit & Investment tracking
-   ✔ Pending + Completed tables
-   ✔ Sync with Profit Tab & Analytics
-   ✔ Cloud + Local save supported
-========================================================= */
+/* ===========================================================
+   services.js — FINAL v8.0
+   ✔ Auto profit & investment update
+   ✔ Completed status → auto sync
+   ✔ dd-mm-yyyy support
+   ✔ Full integration with Overview + Smart Dashboard + Profit Tab
+=========================================================== */
 
-const _SERVICE_KEY = "service-data";
+/* -------------------------
+   ADD SERVICE ENTRY
+-------------------------- */
+function addService() {
+  let date_in  = qs("#svcIn")?.value || todayDate();
+  let date_out = qs("#svcOut")?.value || "";
+  const name   = qs("#svcName")?.value.trim();
+  const invest = Number(qs("#svcInvest")?.value || 0);
+  const profit = Number(qs("#svcProfit")?.value || 0);
+  const status = qs("#svcStatus")?.value || "Pending";
 
-/* ---------- SAVE HANDLER (uses core.js if available) ---------- */
-function persistServices() {
-  try {
-    if (typeof window.saveServices === "function") {
-      return window.saveServices();   // cloud save
-    }
-  } catch (e) {}
+  if (!name) return alert("Enter service name!");
 
-  localStorage.setItem(_SERVICE_KEY, JSON.stringify(window.services || []));
-  window.dispatchEvent(new Event("storage"));
-}
+  // date convert (dd-mm-yyyy → yyyy-mm-dd)
+  if (date_in.includes("-") && date_in.split("-")[0].length === 2)
+    date_in = toInternal(date_in);
 
-/* ==========================================================
-   ADD NEW SERVICE JOB
-========================================================= */
-window.addServiceJob = function () {
-  const date_in = qs("#svcReceivedDate").value || todayDate();
-  const customer = qs("#svcCustomer").value.trim();
-  const phone = qs("#svcPhone").value.trim();
-  const item = qs("#svcItemType").value;
-  const model = qs("#svcModel").value.trim();
-  const problem = qs("#svcProblem").value.trim();
-  const advance = Number(qs("#svcAdvance").value || 0);
+  if (date_out && date_out.includes("-") && date_out.split("-")[0].length === 2)
+    date_out = toInternal(date_out);
 
-  if (!customer || !problem) {
-    alert("Customer name & problem required!");
-    return;
-  }
+  window.services = window.services || [];
 
-  const job = {
-    id: uid("job"),
+  const entry = {
+    id: uid("svc"),
     date_in,
-    customer,
-    phone,
-    item,
-    model,
-    problem,
-    advance,
-    invest: 0,
-    paid: 0,
-    profit: 0,
-    status: "Pending",
-    date_out: ""
+    date_out: date_out || "",
+    name,
+    invest,
+    profit,
+    status
   };
 
-  window.services.push(job);
-  persistServices();
-  renderServiceTables();
-};
+  window.services.push(entry);
+  saveServices();
 
-/* ==========================================================
-   MARK JOB COMPLETED
-========================================================= */
-window.completeServiceJob = function (id) {
-  const s = window.services.find(x => x.id === id);
-  if (!s) return;
+  // Auto profit & investment sync
+  if (status === "Completed") {
+    window.addServiceInvestment?.(invest);
+    window.addServiceProfit?.(profit);
+  }
 
-  const invest = Number(prompt("Enter investment amount:", s.invest || 0)) || 0;
-  const paid = Number(prompt("Final amount received:", s.paid || 0)) || 0;
-
-  s.invest = invest;
-  s.paid = paid;
-
-  // PROFIT = PAID - INVEST - ADVANCE already received?
-  const advance = Number(s.advance || 0);
-  const grossReceive = advance + paid;
-  s.profit = grossReceive - invest;
-
-  s.status = "Completed";
-  s.date_out = todayDate();
-
-  persistServices();
   renderServiceTables();
   renderAnalytics?.();
-  renderProfitTab?.();
-};
+  updateSummaryCards?.();
+  updateTabSummaryBar?.();
 
-/* ==========================================================
-   DELETE JOB
-========================================================= */
-window.deleteServiceJob = function (id) {
-  if (!confirm("Delete this job?")) return;
-
-  window.services = window.services.filter(x => x.id !== id);
-  persistServices();
-  renderServiceTables();
-};
-
-/* ==========================================================
-   CLEAR ALL JOBS
-========================================================= */
-qs("#clearServiceBtn")?.addEventListener("click", () => {
-  if (!confirm("Delete ALL service jobs?")) return;
-
-  window.services = [];
-  persistServices();
-  renderServiceTables();
-});
-
-/* ==========================================================
-   RENDER TABLES (Pending + Completed)
-========================================================= */
-window.renderServiceTables = function () {
-  const pendingBody = qs("#svcTable tbody");
-  const historyBody = qs("#svcHistoryTable tbody");
-
-  pendingBody.innerHTML = "";
-  historyBody.innerHTML = "";
-
-  let pending = 0,
-    completed = 0,
-    svcProfit = 0;
-
-  (window.services || []).forEach(s => {
-    if (s.status === "Pending") {
-      pending++;
-
-      pendingBody.innerHTML += `
-        <tr>
-          <td>${s.id}</td>
-          <td>${toDisplay(s.date_in)}</td>
-          <td>${esc(s.customer)}</td>
-          <td>${esc(s.phone)}</td>
-          <td>${esc(s.item)}</td>
-          <td>${esc(s.model)}</td>
-          <td>${esc(s.problem)}</td>
-          <td>Pending</td>
-          <td>
-            <button class="small-btn" onclick="completeServiceJob('${s.id}')">Complete</button>
-            <button class="small-btn" style="background:#d32f2f" onclick="deleteServiceJob('${s.id}')">Delete</button>
-          </td>
-        </tr>
-      `;
-    } else {
-      completed++;
-      svcProfit += Number(s.profit || 0);
-
-      historyBody.innerHTML += `
-        <tr>
-          <td>${s.id}</td>
-          <td>${toDisplay(s.date_in)}</td>
-          <td>${toDisplay(s.date_out)}</td>
-          <td>${esc(s.customer)}</td>
-          <td>${esc(s.item)}</td>
-          <td>₹${s.invest}</td>
-          <td>₹${s.paid}</td>
-          <td>₹${s.profit}</td>
-          <td>${s.status}</td>
-        </tr>
-      `;
-    }
-  });
-
-  qs("#svcPendingCount").textContent = pending;
-  qs("#svcCompletedCount").textContent = completed;
-  qs("#svcTotalProfit").textContent = "₹" + svcProfit;
-
-  renderServicePie();
-};
-
-/* ==========================================================
-   PIE CHART (Pending vs Completed)
-========================================================= */
-let svcPieChart = null;
-
-function renderServicePie() {
-  const ctx = qs("#svcPie");
-  if (!ctx) return;
-
-  const pending = window.services.filter(s => s.status === "Pending").length;
-  const completed = window.services.filter(s => s.status === "Completed").length;
-
-  if (svcPieChart) svcPieChart.destroy();
-
-  svcPieChart = new Chart(ctx, {
-    type: "pie",
-    data: {
-      labels: ["Pending", "Completed"],
-      datasets: [{
-        data: [pending, completed],
-        backgroundColor: ["#ff9800", "#4caf50"]
-      }]
-    },
-    options: { responsive: true }
-  });
+  qs("#svcName").value = "";
+  qs("#svcInvest").value = "";
+  qs("#svcProfit").value = "";
+  qs("#svcStatus").value = "Pending";
+  qs("#svcOut").value = "";
 }
 
-/* ==========================================================
-   SERVICE INVESTMENT + PROFIT EXPORTERS (used by PROFIT TAB)
-========================================================= */
+/* -------------------------
+   RENDER TABLE
+-------------------------- */
+function renderServiceTables() {
+  const tbody = qs("#servicesTable tbody");
+  if (!tbody) return;
 
-window.getServiceInvestment = function () {
-  let t = 0;
-  (window.services || []).forEach(s => {
-    if (s.status === "Completed") t += Number(s.invest || 0);
-  });
-  return t;
-};
+  const fstat = qs("#svcFilterStatus")?.value || "all";
+  const fdate = qs("#svcFilterDate")?.value || "";
 
-window.getServiceProfit = function () {
-  let t = 0;
-  (window.services || []).forEach(s => {
-    if (s.status === "Completed") t += Number(s.profit || 0);
-  });
-  return t;
-};
+  let list = window.services || [];
 
-/* ==========================================================
-   INITIAL RENDER
-========================================================= */
+  if (fstat !== "all") list = list.filter(s => s.status === fstat);
+  if (fdate) list = list.filter(s => s.date_in === fdate);
+
+  let investTotal = 0;
+  let profitTotal = 0;
+
+  tbody.innerHTML = list
+    .map(s => {
+      if (s.status === "Completed") {
+        investTotal += Number(s.invest || 0);
+        profitTotal += Number(s.profit || 0);
+      }
+
+      return `
+      <tr>
+        <td>${toDisplay(s.date_in)}</td>
+        <td>${s.date_out ? toDisplay(s.date_out) : "-"}</td>
+        <td>${s.name}</td>
+        <td>₹${s.invest}</td>
+        <td>₹${s.profit}</td>
+        <td>${s.status}</td>
+        <td>
+          <button class="svc-complete" data-id="${s.id}">✔ Complete</button>
+          <button class="svc-delete" data-id="${s.id}">🗑 Delete</button>
+        </td>
+      </tr>
+      `;
+    })
+    .join("");
+
+  qs("#svcInvTotal").textContent = investTotal;
+  qs("#svcProfitTotal").textContent = profitTotal;
+}
+
+/* -------------------------
+   BUTTON EVENTS
+-------------------------- */
+document.addEventListener("click", e => {
+
+  /* Mark as Completed */
+  if (e.target.classList.contains("svc-complete")) {
+    const id = e.target.dataset.id;
+    let s = (window.services || []).find(x => x.id === id);
+    if (!s) return;
+
+    if (s.status === "Completed")
+      return alert("Already completed!");
+
+    s.status = "Completed";
+    s.date_out = todayDate();
+
+    // Sync investment + profit
+    window.addServiceInvestment?.(s.invest);
+    window.addServiceProfit?.(s.profit);
+
+    saveServices();
+    renderServiceTables();
+    renderAnalytics?.();
+    updateSummaryCards?.();
+    updateTabSummaryBar?.();
+  }
+
+  /* Delete Service */
+  if (e.target.classList.contains("svc-delete")) {
+    const id = e.target.dataset.id;
+    if (!confirm("Delete this service?")) return;
+
+    window.services = (window.services || []).filter(s => s.id !== id);
+    saveServices();
+
+    renderServiceTables();
+    renderAnalytics?.();
+    updateSummaryCards?.();
+    updateTabSummaryBar?.();
+  }
+});
+
+/* -------------------------
+   FILTER EVENTS
+-------------------------- */
+qs("#svcFilterStatus")?.addEventListener("change", renderServiceTables);
+qs("#svcFilterDate")?.addEventListener("change", renderServiceTables);
+
+/* -------------------------
+   INIT
+-------------------------- */
 window.addEventListener("load", () => {
   renderServiceTables();
 });
+
+window.renderServiceTables = renderServiceTables;
