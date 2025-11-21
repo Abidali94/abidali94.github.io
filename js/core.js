@@ -1,5 +1,5 @@
 /* ===========================================================
-   📌 core.js — Master Engine (v7.1) Cloud-enabled (Option A)
+   📌 core.js — Master Engine (v7.2) Cloud-enabled (Option A)
    ✔ Per-module Firestore collections (types, stock, sales, wanting, expenses, services)
    ✔ Debounced cloud saves (uses window.cloudSaveDebounced)
    ✔ Initial cloud load on app start (if logged in)
@@ -226,7 +226,7 @@ window.esc = esc;
    🔥 STOCK HELPERS
 =========================================================== */
 function findProduct(type, name) {
-  return window.stock.find(
+  return (window.stock || []).find(
     p => p.type === type && p.name.toLowerCase() === name.toLowerCase()
   );
 }
@@ -350,8 +350,24 @@ window.addExpense = addExpense;
 
 /* ===========================================================
    🔥 NET PROFIT CALCULATOR (EXCLUDES CREDIT SALES)
+   👉 ఇప్పుడు pending profit ఆధారంగా పని చేస్తుంది
+      (getPendingSalesProfit / getPendingServiceProfit ఉంటే)
 =========================================================== */
 window.getTotalNetProfit = function() {
+
+  // If Profit Tab helpers exist → use PENDING (uncollected) profit
+  if (typeof window.getPendingSalesProfit === "function" &&
+      typeof window.getPendingServiceProfit === "function") {
+
+    const pendingSales   = Number(window.getPendingSalesProfit() || 0);
+    const pendingService = Number(window.getPendingServiceProfit() || 0);
+    const expenses = (window.expenses || [])
+      .reduce((s, e) => s + Number(e.amount || 0), 0);
+
+    return (pendingSales + pendingService) - expenses;
+  }
+
+  // Fallback → old behaviour (TOTAL profit)
   let salesProfit = 0, serviceProfit = 0, expenses = 0;
 
   (window.sales || []).forEach(s => {
@@ -360,8 +376,13 @@ window.getTotalNetProfit = function() {
     }
   });
 
-  (window.services || []).forEach(s => serviceProfit += Number(s.profit || 0));
-  (window.expenses || []).forEach(e => expenses += Number(e.amount || 0));
+  (window.services || []).forEach(s => {
+    serviceProfit += Number(s.profit || 0);
+  });
+
+  (window.expenses || []).forEach(e => {
+    expenses += Number(e.amount || 0);
+  });
 
   return (salesProfit + serviceProfit) - expenses;
 };
@@ -418,9 +439,6 @@ async function cloudPullAllIfAvailable() {
         localStorage.setItem(key, JSON.stringify(remote));
         console.log(`Cloud -> Local sync: ${col} (${remote.length} items)`);
       } else if (remote && typeof remote === "object") {
-        // some implementations may store under `.data` or object; try to smart-merge
-        // If remote contains an array under the same key name, use it.
-        // Otherwise try each known property.
         let used = false;
         if (Array.isArray(remote.items)) {
           window[keyToVarName(key)] = remote.items;
@@ -506,13 +524,13 @@ window.addEventListener("load", () => {
     cloudPullAllIfAvailable();
   }, 200);
 });
+
 /* ===========================================================
-   🔵 NEW: UNIVERSAL INVESTMENT + PROFIT COLLECTORS
+   🔵 UNIVERSAL INVESTMENT + PROFIT COLLECTORS (TOTALS)
+   (Used by Clean Profit Tab helpers in HTML)
 =========================================================== */
 
-/* ----------------------------------------
-   1) STOCK INVESTMENT (total purchase cost)
------------------------------------------ */
+/* 1) STOCK INVESTMENT (total purchase cost) */
 window.getStockInvestmentCollected = function () {
   let total = 0;
 
@@ -529,15 +547,12 @@ window.getStockInvestmentCollected = function () {
   return total;
 };
 
-/* ----------------------------------------
-   2) SALES INVESTMENT (sold qty × cost)
-   (this excludes unsold stock)
------------------------------------------ */
+/* 2) SALES INVESTMENT (sold qty × cost) */
 window.getSalesInvestmentCollected = function () {
   let total = 0;
 
   (window.sales || []).forEach(s => {
-    const costPerItem = Number(s.cost || 0);   // from stock.js
+    const costPerItem = Number(s.cost || 0);
     const qty = Number(s.qty || 0);
     total += qty * costPerItem;
   });
@@ -545,9 +560,7 @@ window.getSalesInvestmentCollected = function () {
   return total;
 };
 
-/* ----------------------------------------
-   3) SALES PROFIT COLLECTED
------------------------------------------ */
+/* 3) SALES PROFIT (Paid only) */
 window.getSalesProfitCollected = function () {
   let total = 0;
 
@@ -560,9 +573,7 @@ window.getSalesProfitCollected = function () {
   return total;
 };
 
-/* ----------------------------------------
-   4) SERVICE INVESTMENT (completed only)
------------------------------------------ */
+/* 4) SERVICE INVESTMENT (Completed only) */
 window.getServiceInvestmentCollected = function () {
   let total = 0;
 
@@ -575,9 +586,7 @@ window.getServiceInvestmentCollected = function () {
   return total;
 };
 
-/* ----------------------------------------
-   5) SERVICE PROFIT (completed only)
------------------------------------------ */
+/* 5) SERVICE PROFIT (Completed only) */
 window.getServiceProfitCollected = function () {
   let total = 0;
 
