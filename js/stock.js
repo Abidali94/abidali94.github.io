@@ -1,18 +1,17 @@
 /* =======================================================
-   📦 stock.js — Inventory Manager (FINAL v6.0)
-   FULL SUPPORT: dd-mm-yyyy UI, yyyy-mm-dd internal
-   (with row coloring fallback for LOW/OUT)
+   📦 stock.js — Inventory Manager (FINAL v6.1)
+   - FULL SUPPORT: dd-mm-yyyy UI, yyyy-mm-dd internal
+   - FIXED: Sales entry now stores cost (REQ for investment)
 ======================================================= */
 
-/* Convert for safety */
 const toDisp = window.toDisplay;
 const toInt  = window.toInternal;
 
 /* -------------------------------------------------------
-   ➕ ADD STOCK (dd-mm-yyyy → internal yyyy-mm-dd)
+   ➕ ADD STOCK ENTRY
 ------------------------------------------------------- */
 function addStock() {
-  let date = qs("#pdate")?.value || todayDate(); // user may enter dd-mm-yyyy
+  let date = qs("#pdate")?.value || todayDate();
   const type = qs("#ptype")?.value;
   const name = qs("#pname")?.value.trim();
   const qty  = Number(qs("#pqty")?.value || 0);
@@ -21,9 +20,9 @@ function addStock() {
   if (!type || !name || qty <= 0 || cost <= 0)
     return alert("Please fill all fields.");
 
-  // Convert date before saving
+  // convert UI dd-mm-yyyy → internal yyyy-mm-dd
   if (date.includes("-") && date.split("-")[0].length === 2) {
-    date = toInt(date);  // dd-mm-yyyy → yyyy-mm-dd
+    date = toInt(date);
   }
 
   addStockEntry({ date, type, name, qty, cost });
@@ -38,8 +37,6 @@ function addStock() {
 
 /* -------------------------------------------------------
    📊 RENDER STOCK TABLE
-   SHOW DATES IN dd-mm-yyyy FORMAT
-   Adds row class + inline fallback colors for LOW/OUT
 ------------------------------------------------------- */
 function renderStock() {
   const filter = qs("#filterType")?.value || "all";
@@ -54,19 +51,18 @@ function renderStock() {
 
       const sold   = Number(p.sold || 0);
       const remain = Number(p.qty) - sold;
-
       const limit = Number(p.limit ?? getGlobalLimit());
 
       let status = "OK", cls = "ok";
       if (remain <= 0) { status = "OUT"; cls = "out"; }
       else if (remain <= limit) { status = "LOW"; cls = "low"; }
 
-      // Inline fallback styles (in case CSS missing)
+      // fallback inline color
       let rowStyle = "";
       if (cls === "low") rowStyle = 'style="background:#fff8ec"';
       if (cls === "out") rowStyle = 'style="background:#ffecec;color:#a00;font-weight:600"';
 
-      const dispDate = toDisp(p.date); // show dd-mm-yyyy
+      const dispDate = toDisp(p.date);
 
       html += `
       <tr class="${cls}" ${rowStyle}>
@@ -86,14 +82,12 @@ function renderStock() {
       </tr>`;
     });
 
-  if (!html)
-    html = `<tr><td colspan="9">No Stock Found</td></tr>`;
-
+  if (!html) html = `<tr><td colspan="9">No Stock Found</td></tr>`;
   tbody.innerHTML = html;
 }
 
 /* -------------------------------------------------------
-   📜 SHOW HISTORY (dates formatted)
+   📜 HISTORY VIEW
 ------------------------------------------------------- */
 function showHistory(i) {
   const p = window.stock[i];
@@ -110,7 +104,8 @@ function showHistory(i) {
 }
 
 /* -------------------------------------------------------
-   💰 QUICK SALE / CREDIT (save date as yyyy-mm-dd)
+   💰 QUICK SALE / CREDIT
+   FIXED → cost is now stored in sales entry ✔
 ------------------------------------------------------- */
 function stockQuickSale(i, mode) {
   const p = window.stock[i];
@@ -125,16 +120,13 @@ function stockQuickSale(i, mode) {
   const price = Number(prompt("Enter Selling Price ₹:"));
   if (!price || price <= 0) return;
 
-  // Get today in internal format
   let date = todayDate(); // yyyy-mm-dd
-
   const cost = getProductCost(p.type, p.name);
   const profit = (price - cost) * qty;
 
-  // update stock
   p.sold = (p.sold || 0) + qty;
 
-  // save sale entry (always save internal yyyy-mm-dd)
+  // FINAL: Sales entry with cost FIXED ✔
   window.sales.push({
     id: uid("sale"),
     date,
@@ -144,6 +136,7 @@ function stockQuickSale(i, mode) {
     price,
     amount: qty * price,
     profit: Math.round(profit),
+    cost: cost,        // REQUIRED FOR INVESTMENT SYSTEM ✔
     status: mode
   });
 
@@ -160,7 +153,7 @@ function stockQuickSale(i, mode) {
 }
 
 /* -------------------------------------------------------
-   EVENTS
+   EVENT HANDLERS
 ------------------------------------------------------- */
 document.addEventListener("click", e => {
 
@@ -196,12 +189,10 @@ document.addEventListener("click", e => {
     return stockQuickSale(Number(e.target.dataset.i), "Credit");
 });
 
-qs("#filterType")?.addEventListener("change", () => {
-  renderStock();
-});
+qs("#filterType")?.addEventListener("change", renderStock);
 
 /* -------------------------------------------------------
-   🚀 INITIAL
+   INITIAL LOAD
 ------------------------------------------------------- */
 window.addEventListener("load", () => {
   updateTypeDropdowns?.();
