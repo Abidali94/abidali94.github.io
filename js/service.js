@@ -1,28 +1,20 @@
 /* ===========================================================
-   🛠 service.js — Service / Repair Manager (v11.0 — STABLE)
-   ✔ OLD UI kept exactly same
-   ✔ New core.js + analytics.js fully supported
-   ✔ Pending / Completed / Failed correct flow
-   ✔ Profit sync, Overview sync, Smart Dashboard sync
+ 🛠 service.js — Repair Manager (v11.2 FINAL - NO QS HERE)
 =========================================================== */
 
-const qs = s => document.querySelector(s);
-
-/* ===========================================================
-   ADD JOB
-=========================================================== */
+/* ADD JOB */
 function addServiceJob() {
-  const date_in  = qs("#svcReceivedDate")?.value || todayDate();
-  const customer = qs("#svcCustomer")?.value.trim();
-  const phone    = qs("#svcPhone")?.value.trim();
-  const item     = qs("#svcItemType")?.value;
-  const model    = qs("#svcModel")?.value.trim();
-  const problem  = qs("#svcProblem")?.value.trim();
-  const advance  = Number(qs("#svcAdvance")?.value || 0);
 
-  if (!customer || !phone || !item || !problem) {
-    return alert("Please fill all required fields!");
-  }
+  const date_in   = qs("#svcReceivedDate")?.value || todayDate();
+  const customer  = qs("#svcCustomer")?.value.trim();
+  const phone     = qs("#svcPhone")?.value.trim();
+  const item      = qs("#svcItemType")?.value;
+  const model     = qs("#svcModel")?.value.trim();
+  const problem   = qs("#svcProblem")?.value.trim();
+  const advance   = Number(qs("#svcAdvance")?.value || 0);
+
+  if (!customer || !phone || !item || !problem)
+    return alert("Please fill all required job details!");
 
   window.services = window.services || [];
 
@@ -39,18 +31,17 @@ function addServiceJob() {
     invest: 0,
     paid: 0,
     profit: 0,
-    returned: 0,
     status: "Pending"
   });
 
   saveServices();
   renderServiceTables();
-  syncAll();
+  renderAnalytics?.();
+  updateSummaryCards?.();
+  updateTabSummaryBar?.();
 }
 
-/* ===========================================================
-   COMPLETE JOB
-=========================================================== */
+/* COMPLETE */
 function completeServiceJob(id) {
   const job = (window.services || []).find(j => j.id === id);
   if (!job) return;
@@ -64,64 +55,42 @@ function completeServiceJob(id) {
   job.invest = invest;
   job.paid = paid;
 
-  // Profit calculation
   job.profit = paid - (invest + Number(job.advance || 0));
-
   job.date_out = todayDate();
   job.status = "Completed";
 
   saveServices();
   renderServiceTables();
-  syncAll();
+  renderAnalytics?.();
+  updateSummaryCards?.();
+  updateTabSummaryBar?.();
 }
 
-/* ===========================================================
-   MARK FAILED JOB
-=========================================================== */
-function failServiceJob(id) {
-  const job = (window.services || []).find(j => j.id === id);
-  if (!job) return;
-
-  const returned = Number(prompt("Returned Advance ₹:", job.returned || job.advance || 0));
-  if (isNaN(returned)) return;
-
-  job.returned = returned;
-  job.profit = -(returned);  // negative profit
-  job.date_out = todayDate();
-  job.status = "Failed";
-
-  saveServices();
-  renderServiceTables();
-  syncAll();
-}
-
-/* ===========================================================
-   DELETE JOB
-=========================================================== */
+/* DELETE */
 function deleteServiceJob(id) {
   if (!confirm("Delete this job?")) return;
 
   window.services = (window.services || []).filter(j => j.id !== id);
   saveServices();
+
   renderServiceTables();
-  syncAll();
+  renderAnalytics?.();
+  updateSummaryCards?.();
+  updateTabSummaryBar?.();
 }
 
-/* ===========================================================
-   CLEAR ALL JOBS
-=========================================================== */
+/* CLEAR ALL */
 qs("#clearServiceBtn")?.addEventListener("click", () => {
   if (!confirm("Clear ALL service jobs?")) return;
-
   window.services = [];
   saveServices();
   renderServiceTables();
-  syncAll();
+  renderAnalytics?.();
+  updateSummaryCards?.();
+  updateTabSummaryBar?.();
 });
 
-/* ===========================================================
-   RENDER TABLES — OLD UI (NO CHANGE)
-=========================================================== */
+/* RENDER TABLES */
 function renderServiceTables() {
   const pendBody = qs("#svcTable tbody");
   const histBody = qs("#svcHistoryTable tbody");
@@ -129,9 +98,7 @@ function renderServiceTables() {
 
   const list = window.services || [];
 
-  /* ---------- Pending UI ---------- */
-  const pending = list.filter(j => j.status === "Pending");
-
+  const pending = list.filter(x => x.status !== "Completed");
   pendBody.innerHTML = pending.map(j => `
     <tr>
       <td>${j.id}</td>
@@ -143,25 +110,16 @@ function renderServiceTables() {
       <td>${j.problem}</td>
       <td>${j.status}</td>
       <td>
-        <button class="small-btn"
-                onclick="completeServiceJob('${j.id}')"
-                style="background:#2e7d32;color:#fff">✔ Complete</button>
-
-        <button class="small-btn"
-                onclick="failServiceJob('${j.id}')"
-                style="background:#ff9800;color:#000">⚠ Fail</button>
-
-        <button class="small-btn"
-                onclick="deleteServiceJob('${j.id}')"
-                style="background:#c62828;color:#fff">🗑</button>
+        <button class="small-btn" onclick="completeServiceJob('${j.id}')"
+         style="background:#2e7d32;color:#fff">✔ Complete</button>
+        <button class="small-btn" onclick="deleteServiceJob('${j.id}')"
+         style="background:#b71c1c;color:#fff">🗑</button>
       </td>
     </tr>
   `).join("");
 
-  /* ---------- Completed + Failed (History) ---------- */
-  const history = list.filter(j => j.status !== "Pending");
-
-  histBody.innerHTML = history.map(j => `
+  const completed = list.filter(x => x.status === "Completed");
+  histBody.innerHTML = completed.map(j => `
     <tr>
       <td>${j.id}</td>
       <td>${toDisplay(j.date_in)}</td>
@@ -171,32 +129,22 @@ function renderServiceTables() {
       <td>₹${j.invest}</td>
       <td>₹${j.paid}</td>
       <td>₹${j.profit}</td>
-      <td style="font-weight:bold;color:${
-        j.status === "Completed" ? "#2e7d32" : "#ff9800"
-      }">${j.status}</td>
+      <td>${j.status}</td>
     </tr>
   `).join("");
 
-  /* ---------- Dashboard counters ---------- */
-  qs("#svcPendingCount").textContent   = pending.length;
-  qs("#svcCompletedCount").textContent = history.filter(j => j.status === "Completed").length;
+  qs("#svcPendingCount").textContent = pending.length;
+  qs("#svcCompletedCount").textContent = completed.length;
 
-  const totalProfit = history.reduce((s, j) => s + Number(j.profit || 0), 0);
+  const totalProfit = completed.reduce((s, j) => s + Number(j.profit || 0), 0);
   qs("#svcTotalProfit").textContent = "₹" + totalProfit;
 
-  renderServicePie(
-    pending.length,
-    history.filter(j => j.status === "Completed").length,
-    history.filter(j => j.status === "Failed").length
-  );
+  renderServicePie(pending.length, completed.length);
 }
 
-/* ===========================================================
-   PIE CHART (Pending / Completed / Failed)
-=========================================================== */
+/* PIE CHART */
 let svcPie = null;
-
-function renderServicePie(pending, completed, failed) {
+function renderServicePie(pending, completed) {
   const ctx = qs("#svcPie");
   if (!ctx) return;
 
@@ -205,31 +153,20 @@ function renderServicePie(pending, completed, failed) {
   svcPie = new Chart(ctx, {
     type: "pie",
     data: {
-      labels: ["Pending", "Completed", "Failed"],
+      labels: ["Pending", "Completed"],
       datasets: [{
-        data: [pending, completed, failed],
-        backgroundColor: ["#ff9800", "#4caf50", "#e53935"]
+        data: [pending, completed],
+        backgroundColor: ["#ff9800", "#4caf50"]
       }]
     },
     options: { responsive: true }
   });
 }
 
-/* ===========================================================
-   SHARED SYNC (Overview + Analytics + Profit Bar)
-=========================================================== */
-function syncAll() {
-  renderAnalytics?.();
-  updateSummaryCards?.();
-  updateTabSummaryBar?.();
-}
-
-/* ===========================================================
-   REGISTER
-=========================================================== */
+/* REGISTER */
 qs("#addServiceBtn")?.addEventListener("click", addServiceJob);
+
+/* EXPORT */
 window.renderServiceTables = renderServiceTables;
 
-window.addEventListener("load", () => {
-  renderServiceTables();
-});
+window.addEventListener("load", renderServiceTables);
