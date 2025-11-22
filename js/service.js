@@ -1,164 +1,165 @@
 /* ===========================================================
-   services.js — FINAL v8.0
-   ✔ Auto profit & investment update
-   ✔ Completed status → auto sync
-   ✔ dd-mm-yyyy support
-   ✔ Full integration with Overview + Smart Dashboard + Profit Tab
+   🛠 service.js — Service / Repair Manager (FINAL v9.0)
+   Fully compatible with your HTML structure
 =========================================================== */
 
-/* -------------------------
-   ADD SERVICE ENTRY
--------------------------- */
-function addService() {
-  let date_in  = qs("#svcIn")?.value || todayDate();
-  let date_out = qs("#svcOut")?.value || "";
-  const name   = qs("#svcName")?.value.trim();
-  const invest = Number(qs("#svcInvest")?.value || 0);
-  const profit = Number(qs("#svcProfit")?.value || 0);
-  const status = qs("#svcStatus")?.value || "Pending";
+const qs = s => document.querySelector(s);
 
-  if (!name) return alert("Enter service name!");
+/* ---------------------------------------------
+   ADD SERVICE JOB
+---------------------------------------------- */
+function addServiceJob() {
+  const date_in   = qs("#svcReceivedDate")?.value || todayDate();
+  const customer  = qs("#svcCustomer")?.value.trim();
+  const phone     = qs("#svcPhone")?.value.trim();
+  const item      = qs("#svcItemType")?.value;
+  const model     = qs("#svcModel")?.value.trim();
+  const problem   = qs("#svcProblem")?.value.trim();
+  const advance   = Number(qs("#svcAdvance")?.value || 0);
 
-  // date convert (dd-mm-yyyy → yyyy-mm-dd)
-  if (date_in.includes("-") && date_in.split("-")[0].length === 2)
-    date_in = toInternal(date_in);
-
-  if (date_out && date_out.includes("-") && date_out.split("-")[0].length === 2)
-    date_out = toInternal(date_out);
-
-  window.services = window.services || [];
-
-  const entry = {
-    id: uid("svc"),
-    date_in,
-    date_out: date_out || "",
-    name,
-    invest,
-    profit,
-    status
-  };
-
-  window.services.push(entry);
-  saveServices();
-
-  // Auto profit & investment sync
-  if (status === "Completed") {
-    window.addServiceInvestment?.(invest);
-    window.addServiceProfit?.(profit);
+  if (!customer || !phone || !item || !model || !problem) {
+    alert("Please fill all fields.");
+    return;
   }
 
+  window.services = window.services || [];
+  window.services.push({
+    id: uid("svc"),
+    date_in,
+    customer,
+    phone,
+    item,
+    model,
+    problem,
+    advance,
+    status: "Pending",
+    date_out: "",
+    invest: 0,
+    paid: 0,
+    profit: 0
+  });
+
+  saveServices();
   renderServiceTables();
   renderAnalytics?.();
   updateSummaryCards?.();
   updateTabSummaryBar?.();
 
-  qs("#svcName").value = "";
-  qs("#svcInvest").value = "";
-  qs("#svcProfit").value = "";
-  qs("#svcStatus").value = "Pending";
-  qs("#svcOut").value = "";
+  qs("#svcCustomer").value = "";
+  qs("#svcPhone").value = "";
+  qs("#svcModel").value = "";
+  qs("#svcProblem").value = "";
+  qs("#svcAdvance").value = "";
 }
 
-/* -------------------------
-   RENDER TABLE
--------------------------- */
+window.addServiceJob = addServiceJob;
+
+/* ---------------------------------------------
+   MARK AS COMPLETED
+---------------------------------------------- */
+function completeService(id) {
+  const j = (window.services || []).find(s => s.id === id);
+  if (!j) return;
+
+  const invest = Number(prompt("Parts / Investment Amount ₹:", j.invest || 0) || 0);
+  const paid   = Number(prompt("Total Amount Received ₹:", j.paid || 0) || 0);
+
+  j.invest = invest;
+  j.paid   = paid;
+  j.profit = paid - invest - Number(j.advance || 0);
+  j.date_out = todayDate();
+  j.status = "Completed";
+
+  saveServices();
+  renderServiceTables();
+  renderAnalytics?.();
+  updateSummaryCards?.();
+  updateTabSummaryBar?.();
+}
+
+window.completeService = completeService;
+
+/* ---------------------------------------------
+   DELETE JOB
+---------------------------------------------- */
+function deleteService(id) {
+  if (!confirm("Delete this service record?")) return;
+
+  window.services = (window.services || []).filter(s => s.id !== id);
+  saveServices();
+  renderServiceTables();
+  renderAnalytics?.();
+  updateSummaryCards?.();
+  updateTabSummaryBar?.();
+}
+
+window.deleteService = deleteService;
+
+/* ---------------------------------------------
+   RENDER SERVICE TABLES
+---------------------------------------------- */
 function renderServiceTables() {
-  const tbody = qs("#servicesTable tbody");
-  if (!tbody) return;
+  const tbody = qs("#svcTable tbody");
+  const hist  = qs("#svcHistoryTable tbody");
+  if (!tbody || !hist) return;
 
-  const fstat = qs("#svcFilterStatus")?.value || "all";
-  const fdate = qs("#svcFilterDate")?.value || "";
+  const list = window.services || [];
 
-  let list = window.services || [];
+  let pending = "";
+  let completed = "";
+  let pendingCount = 0;
+  let compCount = 0;
+  let totalProfit = 0;
 
-  if (fstat !== "all") list = list.filter(s => s.status === fstat);
-  if (fdate) list = list.filter(s => s.date_in === fdate);
+  list.forEach(s => {
+    if (s.status === "Pending") {
+      pending += `
+        <tr>
+          <td>${s.id}</td>
+          <td>${toDisplay(s.date_in)}</td>
+          <td>${s.customer}</td>
+          <td>${s.phone}</td>
+          <td>${s.item}</td>
+          <td>${s.model}</td>
+          <td>${s.problem}</td>
+          <td>${s.status}</td>
+          <td>
+            <button onclick="completeService('${s.id}')">✔ Done</button>
+            <button onclick="deleteService('${s.id}')">🗑</button>
+          </td>
+        </tr>`;
+      pendingCount++;
+    } else {
+      completed += `
+        <tr>
+          <td>${s.id}</td>
+          <td>${toDisplay(s.date_in)}</td>
+          <td>${toDisplay(s.date_out)}</td>
+          <td>${s.customer}</td>
+          <td>${s.item}</td>
+          <td>₹${s.invest}</td>
+          <td>₹${s.paid}</td>
+          <td>₹${s.profit}</td>
+          <td>${s.status}</td>
+        </tr>`;
+      compCount++;
+      totalProfit += Number(s.profit || 0);
+    }
+  });
 
-  let investTotal = 0;
-  let profitTotal = 0;
+  tbody.innerHTML = pending || `<tr><td colspan="9">No pending jobs</td></tr>`;
+  hist.innerHTML  = completed || `<tr><td colspan="9">No completed jobs</td></tr>`;
 
-  tbody.innerHTML = list
-    .map(s => {
-      if (s.status === "Completed") {
-        investTotal += Number(s.invest || 0);
-        profitTotal += Number(s.profit || 0);
-      }
-
-      return `
-      <tr>
-        <td>${toDisplay(s.date_in)}</td>
-        <td>${s.date_out ? toDisplay(s.date_out) : "-"}</td>
-        <td>${s.name}</td>
-        <td>₹${s.invest}</td>
-        <td>₹${s.profit}</td>
-        <td>${s.status}</td>
-        <td>
-          <button class="svc-complete" data-id="${s.id}">✔ Complete</button>
-          <button class="svc-delete" data-id="${s.id}">🗑 Delete</button>
-        </td>
-      </tr>
-      `;
-    })
-    .join("");
-
-  qs("#svcInvTotal").textContent = investTotal;
-  qs("#svcProfitTotal").textContent = profitTotal;
+  qs("#svcPendingCount").textContent = pendingCount;
+  qs("#svcCompletedCount").textContent = compCount;
+  qs("#svcTotalProfit").textContent = "₹" + totalProfit;
 }
 
-/* -------------------------
-   BUTTON EVENTS
--------------------------- */
-document.addEventListener("click", e => {
+window.renderServiceTables = renderServiceTables;
 
-  /* Mark as Completed */
-  if (e.target.classList.contains("svc-complete")) {
-    const id = e.target.dataset.id;
-    let s = (window.services || []).find(x => x.id === id);
-    if (!s) return;
-
-    if (s.status === "Completed")
-      return alert("Already completed!");
-
-    s.status = "Completed";
-    s.date_out = todayDate();
-
-    // Sync investment + profit
-    window.addServiceInvestment?.(s.invest);
-    window.addServiceProfit?.(s.profit);
-
-    saveServices();
-    renderServiceTables();
-    renderAnalytics?.();
-    updateSummaryCards?.();
-    updateTabSummaryBar?.();
-  }
-
-  /* Delete Service */
-  if (e.target.classList.contains("svc-delete")) {
-    const id = e.target.dataset.id;
-    if (!confirm("Delete this service?")) return;
-
-    window.services = (window.services || []).filter(s => s.id !== id);
-    saveServices();
-
-    renderServiceTables();
-    renderAnalytics?.();
-    updateSummaryCards?.();
-    updateTabSummaryBar?.();
-  }
-});
-
-/* -------------------------
-   FILTER EVENTS
--------------------------- */
-qs("#svcFilterStatus")?.addEventListener("change", renderServiceTables);
-qs("#svcFilterDate")?.addEventListener("change", renderServiceTables);
-
-/* -------------------------
-   INIT
--------------------------- */
+/* ---------------------------------------------
+   INITIAL LOAD
+---------------------------------------------- */
 window.addEventListener("load", () => {
   renderServiceTables();
 });
-
-window.renderServiceTables = renderServiceTables;
