@@ -8,8 +8,6 @@
 
 console.log("profits.js loaded");
 
-const qs = s => document.querySelector(s);
-
 /* ---------- LOCALSTORAGE KEYS ---------- */
 const KEY_NET_COLLECT   = "ks-net-profit-collected";
 const KEY_STOCK_COLLECT = "ks-stock-inv-collected";
