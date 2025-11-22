@@ -1,8 +1,9 @@
 /* ===========================================================
-   expenses.js — (FINAL v5.0)
-   ✔ dd-mm-yyyy → yyyy-mm-dd auto convert
-   ✔ Auto UI Refresh: Overview + Profit Bar + Smart Dashboard
-   ✔ No reload required
+   expenses.js — (FINAL v6.0)
+   ✔ Delete button restored
+   ✔ Action column restored
+   ✔ expTotal null-error fixed
+   ✔ Auto UI Refresh: Overview + Profit + Smart Dashboard
 =========================================================== */
 
 /* -------------------------
@@ -17,7 +18,7 @@ function addExpenseEntry() {
   if (!category || amount <= 0)
     return alert("Enter category and amount!");
 
-  // Convert dd-mm-yyyy → yyyy-mm-dd
+  // dd-mm-yyyy → yyyy-mm-dd
   if (date.includes("-") && date.split("-")[0].length === 2)
     date = toInternal(date);
 
@@ -32,7 +33,6 @@ function addExpenseEntry() {
 
   saveExpenses();
 
-  // UI Refresh
   renderExpenses();
   renderAnalytics?.();
   updateSummaryCards?.();
@@ -41,6 +41,20 @@ function addExpenseEntry() {
   qs("#expAmount").value = "";
   qs("#expNote").value = "";
 }
+
+/* -------------------------
+   DELETE EXPENSE ENTRY
+-------------------------- */
+function deleteExpense(id) {
+  window.expenses = (window.expenses || []).filter(e => e.id !== id);
+  saveExpenses();
+  renderExpenses();
+  renderAnalytics?.();
+  updateSummaryCards?.();
+  updateTabSummaryBar?.();
+}
+
+window.deleteExpense = deleteExpense;
 
 /* -------------------------
    RENDER EXPENSE TABLE
@@ -68,16 +82,21 @@ function renderExpenses() {
           <td>${e.category}</td>
           <td>₹${e.amount}</td>
           <td>${e.note || "-"}</td>
+          <td>
+            <button class="btn-del" onclick="deleteExpense('${e.id}')">🗑 Delete</button>
+          </td>
         </tr>
       `;
     })
     .join("");
 
-  qs("#expTotal").textContent = total;
+  // FIX: expTotal exists?
+  const totalBox = qs("#expTotal");
+  if (totalBox) totalBox.textContent = total;
 }
 
 /* -------------------------
-   CLEAR EXPENSES
+   CLEAR ALL
 -------------------------- */
 qs("#clearExpensesBtn")?.addEventListener("click", () => {
   if (!confirm("Clear ALL expenses?")) return;
@@ -92,7 +111,7 @@ qs("#clearExpensesBtn")?.addEventListener("click", () => {
 });
 
 /* -------------------------
-   BUTTON HANDLERS
+   FILTERS
 -------------------------- */
 qs("#addExpenseBtn")?.addEventListener("click", addExpenseEntry);
 qs("#expFilterDate")?.addEventListener("change", renderExpenses);
