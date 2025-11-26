@@ -77,49 +77,59 @@
       color:#ddd;
     }
 
-    /* ✅ LIVE CLOCK (NEW) */
-    .top-right-group{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-    .live-clock{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      margin-right:4px;
-    }
-    .clock-circle{
-      width:46px;
-      height:46px;
-      border-radius:50%;
-      border:2px solid var(--orange);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:11px;
-      font-weight:600;
-      background:#ffffff;
-      box-shadow:0 0 4px rgba(0,0,0,0.18);
-      min-width:46px;
-    }
-    body.dark .clock-circle{
-      background:#111111;
-      border-color:#ffb74d;
-      box-shadow:0 0 6px rgba(255,183,77,0.4);
-    }
-    #clockTime{
-      font-family:monospace;
-    }
-    .clock-date{
-      font-size:11px;
-      opacity:.8;
-      white-space:nowrap;
-    }
-    body.dark .clock-date{
-      color:#ddd;
-    }
+/* ✅ LIVE CLOCK (FIXED MOBILE + PERFECT ALIGNMENT v3.2) */
+.top-right-group{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:nowrap; /* prevents breaking */
+}
+
+.live-clock{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-shrink:0;     /* never shrink */
+}
+
+/* ⭐ Perfect sized circle (36px) */
+.clock-circle{
+  width:36px;
+  height:36px;
+  min-width:36px;
+  border-radius:50%;
+  border:2px solid var(--orange);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:10px;
+  font-weight:600;
+  background:#ffffff;
+  box-shadow:0 0 4px rgba(0,0,0,0.18);
+}
+
+body.dark .clock-circle{
+  background:#111;
+  border-color:#ffb74d;
+  box-shadow:0 0 6px rgba(255,183,77,0.4);
+}
+
+/* ⭐ Time text */
+#clockTime{
+  font-family:monospace;
+  font-size:10px;
+}
+
+/* ⭐ Date text */
+.clock-date{
+  font-size:11px;
+  opacity:.7;
+  white-space:nowrap;
+}
+
+body.dark .clock-date{
+  color:#ddd;
+}
 
     /* ---------- TABS ---------- */
     .tabs{
