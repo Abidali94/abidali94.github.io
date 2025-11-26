@@ -1,6 +1,6 @@
 // ===============================
-//  analytics.js — FINAL CLEAN V2
-//  Matches business-dashboard.html (v2.0)
+//  analytics.js — FINAL CLEAN V3
+//  Matches business-dashboard.html (INV NEW LOGIC)
 // ===============================
 
 let cleanPieChart = null;
@@ -103,20 +103,20 @@ window.renderAnalytics = function () {
     }
   });
 
-  // ---- TOTAL INVESTMENT ----
-  let totalInvestment = 0;
-  if (typeof getStockInvestmentCollected === "function")
-    totalInvestment += Number(getStockInvestmentCollected());
-  if (typeof getSalesInvestmentCollected === "function")
-    totalInvestment += Number(getSalesInvestmentCollected());
+  // ---- NEW INVESTMENT LOGIC ----
+  let investment = 0;
+
+  if (typeof getStockInvestmentAfterSale === "function")
+    investment += Number(getStockInvestmentAfterSale());
+
   if (typeof getServiceInvestmentCollected === "function")
-    totalInvestment += Number(getServiceInvestmentCollected());
+    investment += Number(getServiceInvestmentCollected());
 
   // ---- UPDATE CARDS ----
   qs("#dashProfit").textContent   = "₹" + Math.round(totalProfit);
   qs("#dashExpenses").textContent = "₹" + Math.round(totalExpenses);
   qs("#dashCredit").textContent   = "₹" + Math.round(creditTotal);
-  qs("#dashInv").textContent      = "₹" + Math.round(totalInvestment);
+  qs("#dashInv").textContent      = "₹" + Math.round(investment);
 
   // ---- PIE CHART ----
   const ctx = qs("#cleanPie");
@@ -133,7 +133,7 @@ window.renderAnalytics = function () {
           totalProfit,
           totalExpenses,
           creditTotal,
-          totalInvestment
+          investment
         ],
         backgroundColor: ["#2e7d32", "#c62828", "#1565c0", "#fbc02d"]
       }]
