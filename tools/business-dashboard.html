@@ -77,57 +77,32 @@
       color:#ddd;
     }
 
-/* ✅ LIVE CLOCK (FIXED MOBILE + PERFECT ALIGNMENT v3.2) */
-.top-right-group{
+/* ✅ SIMPLE CLOCK (TWO-LINE CLEAN VERSION) */
+.simple-clock{
   display:flex;
-  gap:10px;
-  align-items:center;
-  flex-wrap:nowrap; /* prevents breaking */
-}
-
-.live-clock{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  flex-shrink:0;     /* never shrink */
-}
-
-/* ⭐ Perfect sized circle (36px) */
-.clock-circle{
-  width:36px;
-  height:36px;
-  min-width:36px;
-  border-radius:50%;
-  border:2px solid var(--orange);
-  display:flex;
-  align-items:center;
+  flex-direction:column;
+  align-items:flex-start;
   justify-content:center;
-  font-size:10px;
-  font-weight:600;
-  background:#ffffff;
-  box-shadow:0 0 4px rgba(0,0,0,0.18);
+  line-height:1.1;
+  padding:4px 0;
+  margin-right:4px;
+  min-width:85px; 
 }
 
-body.dark .clock-circle{
-  background:#111;
-  border-color:#ffb74d;
-  box-shadow:0 0 6px rgba(255,183,77,0.4);
-}
-
-/* ⭐ Time text */
-#clockTime{
+.clock-line{
   font-family:monospace;
-  font-size:10px;
+  font-size:13px;
+  font-weight:600;
+  color:var(--orange);
 }
 
-/* ⭐ Date text */
-.clock-date{
+.clock-line.small{
   font-size:11px;
-  opacity:.7;
-  white-space:nowrap;
+  opacity:0.8;
+  color:var(--text);
 }
 
-body.dark .clock-date{
+body.dark .clock-line.small{
   color:#ddd;
 }
 
