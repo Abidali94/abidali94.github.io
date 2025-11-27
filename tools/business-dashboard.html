@@ -163,16 +163,19 @@
     </div>
   </div>
 
-  <!-- ===== TABS (NO PROFIT TAB) ===== -->
+  <!-- ===== FIXED TAB ORDER (EXPENSES MOVED AFTER SERVICE) ===== -->
   <div class="tabs" role="tablist">
     <div class="tab active" data-tab="types">🗂 Types</div>
     <div class="tab" data-tab="stock">📦 Stock</div>
     <div class="tab" data-tab="sales">📈 Sales</div>
     <div class="tab" data-tab="wanting">🛒 Wanting</div>
     <div class="tab" data-tab="service">🛠 Service</div>
+
+    <!-- ⭐ MOVED EXPENSES HERE -->
+    <div class="tab" data-tab="expenses">💸 Expenses</div>
+
     <div class="tab" data-tab="dashboard">📊 Overview</div>
     <div class="tab" data-tab="analytics">📈 Smart Dashboard</div>
-    <div class="tab" data-tab="expenses">💸 Expenses</div>
   </div>
   <!-- ===== TYPES ===== -->
   <section id="types" class="section active">
@@ -385,6 +388,40 @@
     </div>
   </section>
 
+  <!-- ===== EXPENSES (NOW AFTER SERVICE) ===== -->
+  <section id="expenses" class="section">
+    <h3>🧾 Expenses</h3>
+
+    <div class="row-inline" style="margin-bottom:8px">
+      <input id="expDate" type="date" onfocus="if(!this.value)this.value=todayDate()">
+      <input id="expCat" type="text" placeholder="Category" style="min-width:140px">
+      <input id="expAmount" type="number" placeholder="Amount" style="width:120px">
+      <input id="expNote" type="text" placeholder="Note" style="min-width:200px">
+      <button id="addExpenseBtn" class="small-btn">Add Expense</button>
+    </div>
+
+    <table id="expensesTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Category</th>
+          <th>Amount</th>
+          <th>Note</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+
+      <tfoot>
+        <tr>
+          <td colspan="2" style="text-align:right">Total:</td>
+          <td id="expTotal">0</td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </section>
   <!-- ===== OVERVIEW ===== -->
   <section id="dashboard" class="section">
     <h3>📊 Business Overview</h3>
@@ -455,46 +492,12 @@
     </div>
   </section>
 
-  <!-- ===== EXPENSES ===== -->
-  <section id="expenses" class="section">
-    <h3>🧾 Expenses</h3>
-
-    <div class="row-inline" style="margin-bottom:8px">
-      <input id="expDate" type="date" onfocus="if(!this.value)this.value=todayDate()">
-      <input id="expCat" type="text" placeholder="Category" style="min-width:140px">
-      <input id="expAmount" type="number" placeholder="Amount" style="width:120px">
-      <input id="expNote" type="text" placeholder="Note" style="min-width:200px">
-      <button id="addExpenseBtn" class="small-btn">Add Expense</button>
-    </div>
-
-    <table id="expensesTable">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Category</th>
-          <th>Amount</th>
-          <th>Note</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-
-      <tfoot>
-        <tr>
-          <td colspan="2" style="text-align:right">Total:</td>
-          <td id="expTotal">0</td>
-          <td></td>
-          <td></td>
-        </tr>
-      </tfoot>
-    </table>
-  </section>
   <!-- ========== JS LOGIC (BASE) ========== -->
   <script>
     const qs  = s => document.querySelector(s);
     const qsa = s => Array.from(document.querySelectorAll(s));
 
-    /* ---------- HELP MODAL ---------- */
+    /* ---------- HELP MODAL (optional, safe even if not present) ---------- */
     function toggleHelp(){
       const m = qs('#helpModal');
       if (!m) return;
@@ -576,10 +579,10 @@
         if (name === 'stock')     { updateTypeDropdowns?.(); renderStock?.(); }
         if (name === 'sales')     { refreshSaleTypeSelector?.(); renderSales?.(); }
         if (name === 'wanting')   renderWanting?.();
+        if (name === 'service')   renderServiceTables?.();
+        if (name === 'expenses')  renderExpenses?.();
         if (name === 'dashboard') updateSummaryCards?.();
         if (name === 'analytics') renderAnalytics?.();
-        if (name === 'expenses')  renderExpenses?.();
-        if (name === 'service')   renderServiceTables?.();
       }
 
       tabs.forEach(t =>
