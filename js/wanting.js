@@ -1,19 +1,19 @@
 /* =======================================================
-   🛒 wanting.js — Wanting / Reorder Manager (FINAL V7.1)
+   🛒 wanting.js — Wanting / Reorder Manager (FINAL V7.2 FIXED)
    • Colorful table compatible
    • Mobile-friendly (data-labels added)
    • Add / Delete / Add-to-stock stable
+   • GLOBAL esc() used (core.js)
 ======================================================= */
 
 const wToDisp = window.toDisplay;
 const wToInt  = window.toInternal;
-const esc = x => (x === undefined || x === null) ? "" : String(x);
 
 /* -------------------------------------------------------
    🔁 RENDER WANTING TABLE  (UI UPGRADED + MOBILE FIX)
 ------------------------------------------------------- */
 function renderWanting() {
-  const tbody = qs("#wantingTable tbody");
+  const tbody    = qs("#wantingTable tbody");
   const typeDrop = qs("#wantType");
 
   if (!tbody || !typeDrop) return;
