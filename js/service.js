@@ -1,9 +1,8 @@
 /* ===========================================================
-   🛠 service.js — Service / Repair Manager (v13 UI UPGRADED)
-   • Colorful tables (mobile + desktop)
-   • data-label support for mobile responsive tables
-   • Status badges with your global CSS
-   • Fully compatible with your dashboard & analytics
+   🛠 service.js — Service / Repair Manager (v14 FINAL)
+   • Fully compatible with Universal Profit & Investment System
+   • Clean UI, colorful tables, mobile responsive
+   • Safe storage + no double profit/invest counting
 =========================================================== */
 
 (function () {
@@ -160,7 +159,7 @@
   }
 
   /* -----------------------------
-      QUICK MENU FOR A JOB
+      QUICK MENU POPUP
   ------------------------------ */
   function openJob(id) {
     const j = ensureServices().find(x => x.id === id);
@@ -178,7 +177,7 @@
   }
 
   /* ==========================================================
-       🚀 RENDER PENDING + HISTORY TABLES (NEW UI)
+       🚀 RENDER PENDING + HISTORY TABLES
   ========================================================== */
   function renderServiceTables() {
 
@@ -192,9 +191,6 @@
     const completed = list.filter(j => j.status === "Completed");
     const failed    = list.filter(j => j.status === "Failed/Returned");
 
-    /* ------------------------
-        BADGE MAKER
-    ------------------------ */
     const badge = s => {
       if (s === "Pending")
         return `<span class='status-credit'>Pending</span>`;
@@ -203,9 +199,6 @@
       return `<span class='status-credit' style='background:#e53935'>Failed</span>`;
     };
 
-    /* ------------------------
-        PENDING TABLE (UI)
-    ------------------------ */
     pendBody.innerHTML =
       pending.map(j => `
         <tr>
@@ -225,9 +218,6 @@
       `).join("") ||
       `<tr><td colspan="9">No pending jobs</td></tr>`;
 
-    /* ------------------------
-        HISTORY TABLE (UI)
-    ------------------------ */
     histBody.innerHTML =
       [...completed, ...failed].map(j => `
         <tr>
@@ -244,9 +234,6 @@
       `).join("") ||
       `<tr><td colspan="9">No history</td></tr>`;
 
-    /* ------------------------
-        SUMMARY CARDS
-    ------------------------ */
     qs("#svcPendingCount").textContent   = pending.length;
     qs("#svcCompletedCount").textContent = completed.length;
 
@@ -303,5 +290,28 @@
   window.addEventListener("load", renderServiceTables);
 
   window.renderServiceTables = renderServiceTables;
+
+  /* ==========================================================
+      UNIVERSAL PROFIT & INVESTMENT HELPERS
+  ========================================================== */
+  window.getServiceProfitCollected = function () {
+    let total = 0;
+    (window.services || []).forEach(j => {
+      if (String(j.status).toLowerCase() === "completed") {
+        total += Number(j.profit || 0);
+      }
+    });
+    return total;
+  };
+
+  window.getServiceInvestmentCollected = function () {
+    let total = 0;
+    (window.services || []).forEach(j => {
+      if (String(j.status).toLowerCase() === "completed") {
+        total += Number(j.invest || 0);
+      }
+    });
+    return total;
+  };
 
 })();
