@@ -1,13 +1,14 @@
 /* =======================================================
-   📦 stock.js — Inventory Manager (FINAL CLEAN v11.1)
-   ✔ BEFORE-SALE investment (total purchase cost)
+   📦 stock.js — Inventory Manager (FINAL CLEAN v12)
+   ✔ BEFORE-SALE investment (purchase cost)
    ✔ AFTER-SALE investment (remain × cost)
-   ✔ Shows BEFORE-sale investment in stock tab
-   ✔ Auto-updates analytics, overview, dashboard
-   ✔ Fully compatible with core.js (V7.3)
-   ✔ NOW quick-sale also stores TIME (12-HOUR AM/PM)
+   ✔ Universal Investment Functions (global exported)
+   ✔ Auto-updates analytics + overview + universal summary
+   ✔ Compatible with collection.js, profit.js, analytics.js
+   ✔ Safe esc(), safe globalLimit, safe null checks
 ======================================================= */
 
+const esc   = x => (x === undefined || x === null) ? "" : String(x);
 const toDisp = window.toDisplay;
 const toInt  = window.toInternal;
 
@@ -29,7 +30,7 @@ function getCurrentTime12hr() {
 }
 
 /* -------------------------------------------------------
-   BEFORE SALE INVESTMENT
+   BEFORE SALE INVESTMENT  — (PURCHASE COST)
 ------------------------------------------------------- */
 function calcStockInvestmentBeforeSale() {
   let total = 0;
@@ -48,7 +49,8 @@ function calcStockInvestmentBeforeSale() {
 }
 
 /* -------------------------------------------------------
-   AFTER SALE INVESTMENT
+   AFTER SALE INVESTMENT — REMAIN × COST
+   (needed for Universal Investment summary)
 ------------------------------------------------------- */
 function calcStockInvestmentAfterSale() {
   let total = 0;
@@ -67,7 +69,18 @@ function calcStockInvestmentAfterSale() {
 }
 
 /* -------------------------------------------------------
-   UPDATE UI BOX
+   EXPORT GLOBAL HELPERS
+------------------------------------------------------- */
+window.getStockInvestmentBeforeSale = function () {
+  return calcStockInvestmentBeforeSale();
+};
+
+window.getStockInvestmentAfterSale = function () {
+  return calcStockInvestmentAfterSale();
+};
+
+/* -------------------------------------------------------
+   UPDATE UI BOX (Stock tab)
 ------------------------------------------------------- */
 function updateStockInvestmentBox() {
   const box = qs("#stockInvValue");
@@ -80,7 +93,7 @@ function updateStockInvestmentBox() {
 function addStock() {
   let date = qs("#pdate")?.value || todayDate();
   const type = qs("#ptype")?.value;
-  const name = qs("#pname")?.value.trim();
+  const name = esc(qs("#pname")?.value.trim());
   const qty  = Number(qs("#pqty")?.value || 0);
   const cost = Number(qs("#pcost")?.value || 0);
 
@@ -122,7 +135,8 @@ function renderStock() {
 
       const sold   = Number(p.sold || 0);
       const remain = Number(p.qty) - sold;
-      const limit  = Number(getGlobalLimit());
+
+      const limit  = Number(getGlobalLimit() || 0);
 
       let cls = "ok";
       if (remain <= 0) cls = "out";
@@ -174,8 +188,7 @@ function showHistory(i) {
 window.showHistory = showHistory;
 
 /* -------------------------------------------------------
-   QUICK SALE / CREDIT
-   (NOW ADDS TIME)
+   QUICK SALE / CREDIT  (Adds TIME also)
 ------------------------------------------------------- */
 function stockQuickSale(i, mode) {
   const p = window.stock[i];
@@ -196,14 +209,13 @@ function stockQuickSale(i, mode) {
 
   p.sold = (p.sold || 0) + qty;
 
-  // ADD TIME HERE
   const timeNow = getCurrentTime12hr();
 
   window.sales = window.sales || [];
   window.sales.push({
     id: uid("sale"),
     date: todayDate(),
-    time: timeNow,     // ★ NEW
+    time: timeNow,
     type: p.type,
     product: p.name,
     qty,
@@ -238,11 +250,8 @@ document.addEventListener("click", e => {
 
   if (e.target.id === "setLimitBtn") {
     const v = Number(qs("#globalLimit")?.value);
-
     if (v < 0 || isNaN(v)) return alert("Invalid Limit!");
-
     if (!confirm(`Set global limit = ${v} for ALL products?`)) return;
-
     setGlobalLimit(v);
     alert("Global limit updated.");
     renderStock();
