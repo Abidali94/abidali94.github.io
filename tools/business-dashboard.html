@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>📦 KharchaSaathi — Business Dashboard (v2.0)</title>
+  <title>📦 KharchaSaathi — Business Dashboard (v2.1 — No Profit)</title>
   <meta name="theme-color" content="#ff7a00" />
   <link rel="icon" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
@@ -77,34 +77,28 @@
       color:#ddd;
     }
 
-/* ✅ SIMPLE CLOCK (TWO-LINE CLEAN VERSION) */
-.simple-clock{
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
-  justify-content:center;
-  line-height:1.1;
-  padding:4px 0;
-  margin-right:4px;
-  min-width:85px; 
-}
-
-.clock-line{
-  font-family:monospace;
-  font-size:13px;
-  font-weight:600;
-  color:var(--orange);
-}
-
-.clock-line.small{
-  font-size:11px;
-  opacity:0.8;
-  color:var(--text);
-}
-
-body.dark .clock-line.small{
-  color:#ddd;
-}
+    /* ---------- SIMPLE CLOCK ---------- */
+    .simple-clock{
+      display:flex;
+      flex-direction:column;
+      line-height:1.1;
+      padding:4px 0;
+      min-width:85px;
+    }
+    .clock-line{
+      font-family:monospace;
+      font-size:13px;
+      font-weight:600;
+      color:var(--orange);
+    }
+    .clock-line.small{
+      font-size:11px;
+      opacity:0.8;
+      color:var(--text);
+    }
+    body.dark .clock-line.small{
+      color:#ddd;
+    }
 
     /* ---------- TABS ---------- */
     .tabs{
@@ -112,11 +106,8 @@ body.dark .clock-line.small{
       gap:8px;
       margin:8px 0 16px;
       justify-content:center;
-      flex-wrap:nowrap;
-      overflow-x:auto
+      flex-wrap:wrap;
     }
-    .tabs::-webkit-scrollbar{display:none}
-
     .tab{
       background:#eee;
       padding:8px 12px;
@@ -125,12 +116,10 @@ body.dark .clock-line.small{
       font-weight:600;
       white-space:nowrap
     }
-
     .tab.active{
       background:var(--orange);
       color:#fff
     }
-
     body.dark .tab{
       background:#222;
       color:#ccc
@@ -140,7 +129,7 @@ body.dark .clock-line.small{
       color:#fff
     }
 
-    /* ---------- SECTIONS ---------- */
+    /* ---------- SECTION ---------- */
     .section{
       display:none;
       background:var(--card);
@@ -151,161 +140,6 @@ body.dark .clock-line.small{
     }
     .section.active{display:block}
 
-    body.dark .section{
-      background:var(--dark-card);
-      border:1px solid var(--dark-border);
-      color:var(--dark-text);
-    }
-
-    /* ---------- LAYOUT ---------- */
-    .flex-row{
-      display:flex;
-      gap:18px;
-      flex-wrap:wrap;
-      align-items:flex-start
-    }
-
-    .card{
-      background:var(--card);
-      padding:12px;
-      border-radius:10px;
-      box-shadow:0 4px 12px rgba(0,0,0,0.05);
-      min-width:140px;
-    }
-    body.dark .card{
-      background:var(--dark-card);
-      border:1px solid var(--dark-border);
-    }
-
-    /* ---------- TABLE ---------- */
-    table{
-      width:100%;
-      border-collapse:collapse;
-      margin-top:12px;
-      font-size:14px;
-      border-radius:8px;
-      overflow:hidden
-    }
-    th,td{
-      padding:8px;
-      border:1px solid #ddd;
-      text-align:center
-    }
-
-    th{
-      background:var(--orange);
-      color:#fff
-    }
-    body.dark th{
-      background:var(--orange-dark)
-    }
-
-    tr:nth-child(even){
-      background:#fdfdfd
-    }
-    body.dark tr:nth-child(even){
-      background:#1f1f1f
-    }
-
-    tr:hover{
-      background:#fff3e0
-    }
-
-    /* ---------- FORM INLINE ---------- */
-    .row-inline{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      flex-wrap:wrap
-    }
-
-    .row-inline input[type="text"],
-    .row-inline input[type="number"],
-    .row-inline select,
-    .row-inline input[type="date"]{
-      padding:6px;
-      border-radius:6px;
-      border:1px solid #ddd
-    }
-
-    /* ---------- HELP MODAL ---------- */
-    .help-modal{
-      position:fixed;
-      inset:0;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      background:rgba(0,0,0,0.6);
-      z-index:999;
-    }
-    .help-content{
-      background:var(--card);
-      padding:16px;
-      border-radius:12px;
-      max-width:520px;
-      max-height:80vh;
-      overflow:auto;
-    }
-    body.dark .help-content{
-      background:var(--dark-card);
-      color:var(--dark-text);
-    }
-    .version-info{
-      font-size:10px;
-      color:#999;
-      margin-top:6px;
-      display:block;
-      text-align:center;
-    }
-
-    /* ---------- MOBILE FIXES ---------- */
-    @media (max-width: 600px) {
-
-      .tabs {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 6px;
-      }
-      .tab {
-        padding: 6px 10px;
-        font-size: 12px;
-      }
-
-      .flex-row {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-      }
-
-      .flex-row .card {
-        width: 100%;
-        text-align: center;
-      }
-
-      .row-inline {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .row-inline input,
-      .row-inline select,
-      .row-inline button {
-        width: 100% !important;
-        min-width: unset !important;
-      }
-
-      table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-        font-size: 12px;
-      }
-
-      th, td {
-        padding: 6px;
-      }
-    }
-
   </style>
 </head>
 
@@ -315,15 +149,13 @@ body.dark .clock-line.small{
   <div class="topbar">
     <h1>📦 KharchaSaathi (Offline)</h1>
 
-    <div class="top-right-group">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <span id="emailTag">Loading...</span>
 
-      <!-- 🕒 LIVE CLOCK (NEW) -->
-      <div class="live-clock">
-        <div class="clock-circle">
-          <span id="clockTime">--:--:--</span>
-        </div>
-        <span id="clockDate" class="clock-date">--</span>
+      <!-- SIMPLE CLOCK -->
+      <div class="simple-clock">
+        <span id="clockTime" class="clock-line">--:--:--</span>
+        <span id="clockDate" class="clock-line small">--</span>
       </div>
 
       <button id="themeBtn" class="theme-btn">🌙</button>
@@ -332,7 +164,7 @@ body.dark .clock-line.small{
     </div>
   </div>
 
-  <!-- ===== TABS (Profit tab inside group) ===== -->
+  <!-- ===== TABS (NO PROFIT TAB NOW) ===== -->
   <div class="tabs" role="tablist">
     <div class="tab active" data-tab="types">🗂 Types</div>
     <div class="tab" data-tab="stock">📦 Stock</div>
@@ -342,17 +174,7 @@ body.dark .clock-line.small{
     <div class="tab" data-tab="dashboard">📊 Overview</div>
     <div class="tab" data-tab="analytics">📈 Smart Dashboard</div>
     <div class="tab" data-tab="expenses">💸 Expenses</div>
-    <div class="tab" data-tab="profit">💰 Profit</div>
   </div>
-
-  <!-- NET PROFIT BAR -->
-  <div id="tabSummaryBar"
-       style="background:#1b1b1b;color:#fff;padding:10px;font-size:18px;
-              font-weight:bold;border-radius:6px;margin-bottom:10px;
-              text-align:center;">
-    Profit: ₹0
-  </div>
-
   <!-- ===== TYPES ===== -->
   <section id="types" class="section active">
     <h3>🗂 Manage Item Types</h3>
@@ -365,6 +187,7 @@ body.dark .clock-line.small{
 
     <ul id="typeList" style="margin-top:10px;padding-left:18px"></ul>
   </section>
+
 
   <!-- ===== STOCK ===== -->
   <section id="stock" class="section">
@@ -390,12 +213,12 @@ body.dark .clock-line.small{
       <b>Filter Type:</b>
       <select id="filterType"><option value="all">All</option></select>
 
-      <!-- 🔍 Product Search Bar -->
       <input id="productSearch"
              placeholder="Search product..."
              style="padding:6px; margin-left:10px;">
     </div>
 
+    <!-- BEFORE SALE INVESTMENT (unchanged) -->
     <div id="stockInvBox" 
          style="margin-top:10px; padding:10px; background:#fff3e0; border-radius:8px;
                 border:1px solid #ffbb66; max-width:260px; margin-left:auto;
@@ -421,6 +244,7 @@ body.dark .clock-line.small{
       <tbody></tbody>
     </table>
   </section>
+
 
   <!-- ===== SALES ===== -->
   <section id="sales" class="section">
@@ -472,6 +296,7 @@ body.dark .clock-line.small{
     </table>
   </section>
 
+
   <!-- ===== WANTING ===== -->
   <section id="wanting" class="section">
     <h3>🛒 Wanting List</h3>
@@ -499,11 +324,11 @@ body.dark .clock-line.small{
     </table>
   </section>
 
-  <!-- ===== SERVICE / REPAIR ===== -->
+
+  <!-- ===== SERVICE ===== -->
   <section id="service" class="section">
     <h3>🛠 Service / Repair Manager</h3>
 
-    <!-- REGISTER NEW JOB -->
     <div class="row-inline" style="margin:10px 0;align-items:center;gap:10px">
       <input id="svcReceivedDate" type="date" placeholder="Received date" style="width:160px">
       <input id="svcCustomer" type="text" placeholder="Customer name" style="min-width:160px">
@@ -519,23 +344,12 @@ body.dark .clock-line.small{
       <button id="addServiceBtn" class="small-btn">Add Job</button>
     </div>
 
-    <!-- SUMMARY -->
     <div class="flex-row" style="margin:8px 0;">
-      <div class="card" style="min-width:140px">
-        <small>Pending</small>
-        <div id="svcPendingCount">0</div>
-      </div>
-      <div class="card" style="min-width:140px">
-        <small>Completed</small>
-        <div id="svcCompletedCount">0</div>
-      </div>
-      <div class="card" style="min-width:140px">
-        <small>Total Repair Profit</small>
-        <div id="svcTotalProfit">₹0</div>
-      </div>
+      <div class="card"><small>Pending</small><div id="svcPendingCount">0</div></div>
+      <div class="card"><small>Completed</small><div id="svcCompletedCount">0</div></div>
+      <div class="card"><small>Total Repair Profit</small><div id="svcTotalProfit">₹0</div></div>
     </div>
 
-    <!-- PENDING JOBS TABLE -->
     <h4>Pending / Active Jobs</h4>
     <table id="svcTable">
       <thead>
@@ -560,7 +374,6 @@ body.dark .clock-line.small{
       🗑️ Clear All Jobs
     </button>
 
-    <!-- COMPLETED JOBS / HISTORY -->
     <h4 style="margin-top:14px">Completed / History</h4>
     <table id="svcHistoryTable">
       <thead>
@@ -579,12 +392,11 @@ body.dark .clock-line.small{
       <tbody></tbody>
     </table>
 
-    <!-- PIE CHART (Status) -->
     <div style="max-width:520px;margin:14px auto;">
       <canvas id="svcPie" height="150"></canvas>
     </div>
-
   </section>
+
 
   <!-- ===== OVERVIEW ===== -->
   <section id="dashboard" class="section">
@@ -622,24 +434,13 @@ body.dark .clock-line.small{
         <small>Today's NET Profit</small>
       </div>
 
-      <div class="card">
-        <div style="font-size:26px">📦</div>
-        <b id="stockRemainValue" style="font-size:20px;color:var(--orange)">0%</b><br>
-        <small>Stock Remaining</small>
-
-        <div style="margin-top:6px;height:6px;background:#ddd;border-radius:4px">
-          <div id="stockRemainBar"
-               style="height:6px;width:0%;background:var(--orange);border-radius:4px">
-          </div>
-        </div>
-      </div>
-
     </div>
   </section>
 
-  <!-- ===== SMART DASHBOARD (CLEAN 4 ITEMS) ===== -->
+
+  <!-- ===== SMART DASHBOARD ===== -->
   <section id="analytics" class="section">
-    <h3>📈 Smart Dashboard (Clean)</h3>
+    <h3>📈 Smart Dashboard</h3>
 
     <div class="flex-row" style="margin-bottom:18px">
 
@@ -665,13 +466,10 @@ body.dark .clock-line.small{
 
     </div>
 
-    <div style="max-width:600px;margin:auto">
+    <div style="max-width:600px;margin:auto;">
       <canvas id="cleanPie" height="150"></canvas>
     </div>
-
-    
   </section>
-
   <!-- ===== EXPENSES ===== -->
   <section id="expenses" class="section">
     <h3>🧾 Expenses</h3>
@@ -708,69 +506,10 @@ body.dark .clock-line.small{
     </table>
   </section>
 
-  <!-- ===== PROFIT TAB (CURRENT VERSION — untouched for now) ===== -->
-  <section id="profit" class="section">
-    <h3>💰 Profit Manager</h3>
-
-    <div class="flex-row" style="margin-top:12px">
-
-      <!-- 1) STOCK INVESTMENT — separate collect, net profit లో add అవదు -->
-      <div class="card" style="flex:1;min-width:180px">
-        <h4 style="line-height:1.2;">
-          Collect Investment<br>
-          <small>(Stock After Sale + Service Investment)</small>
-        </h4>
-        <b id="pStockInv" style="font-size:22px;color:#ff9800">₹0</b><br>
-        <button id="collectStockInvBtn"
-                class="small-btn"
-                style="margin-top:6px;background:#ff9800">
-          Collect
-        </button>
-      </div>
-
-      <!-- 2) SALES PROFIT — JUST DISPLAY (collect button లేదు) -->
-      <div class="card" style="flex:1;min-width:180px">
-        <h4>💰 Sales Profit</h4>
-        <b id="pSalesProfit" style="font-size:22px;color:#4caf50">₹0</b><br>
-        <small>Total Sales Profit (Paid only)</small>
-      </div>
-
-      <!-- 3) SERVICE INVESTMENT — separate collect, net profit లో add అవదు -->
-      <div class="card" style="flex:1;min-width:180px">
-        <h4>🛠 Service Investment</h4>
-        <b id="pSvcInv" style="font-size:22px;color:#03a9f4">₹0</b><br>
-        <button id="collectSvcInvBtn"
-                class="small-btn"
-                style="margin-top:6px;background:#03a9f4">
-          Collect
-        </button>
-      </div>
-
-      <!-- 4) SERVICE PROFIT — JUST DISPLAY -->
-      <div class="card" style="flex:1;min-width:180px">
-        <h4>⚙️ Service Profit</h4>
-        <b id="pSvcProfit" style="font-size:22px;color:#01579b">₹0</b><br>
-        <small>Total Service Profit (Completed jobs)</small>
-      </div>
-
-      <!-- 5) NET PROFIT — (SalesProfit + ServiceProfit - Expenses) -->
-      <div class="card" style="flex:1;min-width:180px">
-        <h4>🧮 Net Profit (Sales + Service - Expenses)</h4>
-        <b id="pNetProfit" style="font-size:22px;color:#2e7d32">₹0</b><br>
-        <button id="collectNetProfitBtn"
-                class="small-btn"
-                style="margin-top:6px;background:#2e7d32">
-          Collect Net Profit
-        </button>
-      </div>
-
-    </div>
-  </section>
-
   <!-- HELP + VERSION -->
   <div class="footer-btns" style="margin-top:18px; text-align:center;">
     <a href="#" id="helpLink" class="small-btn">📘 Help & Guide</a>
-    <div class="version-info">v2.0 — Fixed filters & dates + Profit tab</div>
+    <div class="version-info">v2.0 — Filters + Dates + Clean UI</div>
   </div>
 
   <div id="helpModal" class="help-modal">
@@ -778,22 +517,21 @@ body.dark .clock-line.small{
       <h2>📘 Quick Help & User Guide</h2>
       <ul style="line-height:1.6;font-size:15px">
         <li><b>Types</b> — Create and manage product categories.</li>
-        <li><b>Stock</b> — Add items to inventory, track qty and cost.</li>
-        <li><b>Sales</b> — Paid & Credit sales, profit auto-calculated.</li>
-        <li><b>Wanting</b> — List of items to purchase / restock.</li>
-        <li><b>Service</b> — Repair jobs, investment, payment & profit.</li>
-        <li><b>Expenses</b> — Daily expenses; reduces net profit.</li>
-        <li><b>Overview</b> — Today’s sales, credit, expenses & stock.</li>
-        <li><b>Smart Dashboard</b> — Pie: Profit, Expenses, Credit, Investment.</li>
-        <li><b>Profit</b> — Pending amounts to collect (4 blocks).</li>
+        <li><b>Stock</b> — Add items to inventory & track qty/cost.</li>
+        <li><b>Sales</b> — Paid & Credit sales with auto profit.</li>
+        <li><b>Wanting</b> — Items to purchase / restock.</li>
+        <li><b>Service</b> — Repair jobs, investment, payment, profit.</li>
+        <li><b>Expenses</b> — Daily expenses.</li>
+        <li><b>Overview</b> — Today’s full stats.</li>
+        <li><b>Smart Dashboard</b> — Profit/Expenses/Credit/Invest Pie.</li>
       </ul>
       <button class="small-btn" onclick="toggleHelp()">Close</button>
     </div>
   </div>
 
+
   <!-- ========== JS LOGIC (BASE) ========== -->
   <script>
-    // helpers
     const qs  = s => document.querySelector(s);
     const qsa = s => Array.from(document.querySelectorAll(s));
 
@@ -808,7 +546,7 @@ body.dark .clock-line.small{
       toggleHelp();
     });
 
-    // date helpers (dd-mm-yyyy <-> yyyy-mm-dd)
+    // date helpers
     window.toDisplay = function(d) {
       if (!d) return "";
       if (d.includes("-")) {
@@ -820,16 +558,16 @@ body.dark .clock-line.small{
     window.toInternal = function(d) {
       if (!d) return "";
       if (d.includes("-")) {
-        const parts = d.split("-");
-        if (parts[0].length === 2) {
-          const [dd,m,y] = parts;
+        const p = d.split("-");
+        if (p[0].length === 2) {
+          const [dd,m,y] = p;
           return `${y}-${m}-${dd}`;
         }
       }
       return d;
     };
 
-    // Theme
+    // Theme switcher
     if(localStorage.getItem('ks-theme')==='dark'){
       document.body.classList.add('dark');
     }
@@ -838,10 +576,10 @@ body.dark .clock-line.small{
       localStorage.setItem('ks-theme', d?'dark':'light');
     });
 
-    // 🕒 LIVE CLOCK SCRIPT (NEW)
+    // CLOCK
     function startLiveClock(){
-      const tEl = document.getElementById("clockTime");
-      const dEl = document.getElementById("clockDate");
+      const tEl = qs("#clockTime");
+      const dEl = qs("#clockDate");
       if (!tEl || !dEl) return;
 
       function tick(){
@@ -861,7 +599,7 @@ body.dark .clock-line.small{
       setInterval(tick, 1000);
     }
 
-    // Tabs switcher
+    // Tabs
     (function () {
       const tabs = qsa('.tab'),
             sections = qsa('.section');
@@ -870,15 +608,14 @@ body.dark .clock-line.small{
         tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === name));
         sections.forEach(s => s.classList.toggle('active', s.id === name));
 
-        if (name === 'types')   { renderTypes?.(); }
-        if (name === 'stock')   { updateTypeDropdowns?.(); renderStock?.(); }
-        if (name === 'sales')   { refreshSaleTypeSelector?.(); renderSales?.(); }
-        if (name === 'wanting') { renderWanting?.(); }
-        if (name === 'dashboard'){ updateSummaryCards?.(); }
-        if (name === 'analytics'){ renderAnalytics?.(); }
-        if (name === 'expenses'){ renderExpenses?.(); }
-        if (name === 'service') { renderServiceTables?.(); }
-        if (name === 'profit')  { renderProfitTab?.(); }
+        if (name === 'types')     renderTypes?.();
+        if (name === 'stock')     { updateTypeDropdowns?.(); renderStock?.(); }
+        if (name === 'sales')     { refreshSaleTypeSelector?.(); renderSales?.(); }
+        if (name === 'wanting')   renderWanting?.();
+        if (name === 'dashboard') updateSummaryCards?.();
+        if (name === 'analytics') renderAnalytics?.();
+        if (name === 'expenses')  renderExpenses?.();
+        if (name === 'service')   renderServiceTables?.();
       }
 
       tabs.forEach(t =>
@@ -888,7 +625,7 @@ body.dark .clock-line.small{
       window.activateTab = activate;
     })();
 
-    // LOGIN CHECK + email
+    // Login load
     window.addEventListener("load", () => {
 
       if (typeof isLoggedIn === "function" && !isLoggedIn()) {
@@ -908,13 +645,12 @@ body.dark .clock-line.small{
       });
     });
 
-    // stock filter -> refresh sales types
     qs("#filterType")?.addEventListener("change", () => {
       if (typeof refreshSaleTypeSelector === "function") refreshSaleTypeSelector();
       renderStock?.();
     });
 
-    // Sales filters immediate render
+    // attach Sales live filters
     (function attachSalesInputs() {
       if (typeof attachImmediateSalesFilters === "function") {
         try { attachImmediateSalesFilters(); } catch (e) {}
@@ -925,29 +661,20 @@ body.dark .clock-line.small{
       }
     })();
 
-    // Overview + Smart summary cards
+    // Overview Summary
     function updateSummaryCards() {
       if (typeof getAnalyticsData !== "function") return;
       const data = getAnalyticsData();
 
-      qs("#todaySales")    && (qs("#todaySales").textContent   = "₹" + data.todaySales);
-      qs("#todayCredit")   && (qs("#todayCredit").textContent  = "₹" + data.creditSales);
-      qs("#todayExpenses") && (qs("#todayExpenses").textContent= "₹" + data.todayExpenses);
-      qs("#todayGross")    && (qs("#todayGross").textContent   = "₹" + data.grossProfit);
-      qs("#todayNet")      && (qs("#todayNet").textContent     = "₹" + data.netProfit);
-
-      let total = 0, remain = 0;
-      (window.stock || []).forEach(s => {
-        total  += Number(s.qty || 0) + Number(s.sold || 0);
-        remain += Number(s.qty || 0);
-      });
-      const pct = total ? Math.round((remain / total) * 100) : 0;
-      qs("#stockRemainValue") && (qs("#stockRemainValue").textContent = pct + "%");
-      qs("#stockRemainBar")   && (qs("#stockRemainBar").style.width   = pct + "%");
+      qs("#todaySales").textContent    = "₹" + data.todaySales;
+      qs("#todayCredit").textContent   = "₹" + data.creditSales;
+      qs("#todayExpenses").textContent = "₹" + data.todayExpenses;
+      qs("#todayGross").textContent    = "₹" + data.grossProfit;
+      qs("#todayNet").textContent      = "₹" + data.netProfit;
     }
     window.updateSummaryCards = updateSummaryCards;
 
-    // initial render after modules
+    // initial render
     function safeInitialRender() {
       try { renderTypes?.(); } catch {}
       try { updateTypeDropdowns?.(); } catch {}
@@ -959,15 +686,16 @@ body.dark .clock-line.small{
       try { renderServiceTables?.(); } catch {}
       try { renderAnalytics?.(); } catch {}
       try { updateSummaryCards?.(); } catch {}
-      try { updateTabSummaryBar?.(); } catch {}
       try { startLiveClock(); } catch {}
     }
+
     window.addEventListener("load", () => {
       setTimeout(safeInitialRender, 80);
     });
   </script>
 
-  <!-- EXTERNAL LIBS + APP SCRIPTS -->
+
+  <!-- LIBS -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
 
   <!-- Firebase -->
@@ -975,29 +703,27 @@ body.dark .clock-line.small{
   <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
 
- <!-- AUTO VERSION LOADER — cache fix -->
-<script>
-(function(){
-  const v = Date.now(); // unique version every reload
-  const js = [
-    "/js/core.js",
-    "/js/firebase.js",
-    "/js/types.js",
-    "/js/stock.js",
-    "/js/sales.js",
-    "/js/wanting.js",
-    "/js/expenses.js",
-    "/js/analytics.js",
-    "/js/service.js",
-    "/js/profits.js",
-    "/js/security.js"
-  ];
-
-  js.forEach(f => {
-    document.write(`<script src="${f}?v=${v}"><\/script>`);
-  });
-})();
-</script>
+  <!-- AUTO VERSION LOADER -->
+  <script>
+  (function(){
+    const v = Date.now();
+    const js = [
+      "/js/core.js",
+      "/js/firebase.js",
+      "/js/types.js",
+      "/js/stock.js",
+      "/js/sales.js",
+      "/js/wanting.js",
+      "/js/expenses.js",
+      "/js/analytics.js",
+      "/js/service.js",
+      "/js/security.js"
+    ];
+    js.forEach(f => {
+      document.write(`<script src="${f}?v=${v}"><\/script>`);
+    });
+  })();
+  </script>
 
 </body>
 </html>
