@@ -1,12 +1,9 @@
 /* ===========================================================
-   expenses.js — FINAL V8.0 (Colorful UI + Mobile Labels + Perfect Sync)
-   • Matches new global colourful table UI
-   • Mobile-friendly: data-label support
+   expenses.js — FINAL V8.1 (Colorful UI + Mobile Labels + Perfect Sync)
+   • Uses global esc() from core.js (no duplicate)
    • Add/Delete smooth
    • Auto updates: Overview, Dashboard, Summary, TabBar
 =========================================================== */
-
-const esc = x => (x === undefined || x === null) ? "" : String(x);
 
 /* -------------------------------------------------------
    ➕ ADD EXPENSE ENTRY
@@ -69,25 +66,27 @@ function renderExpenses() {
   let list = window.expenses || [];
   let total = 0;
 
-  tbody.innerHTML = list.map(e => {
-    total += Number(e.amount || 0);
-    return `
-      <tr>
-        <td data-label="Date">${toDisplay(e.date)}</td>
-        <td data-label="Category">${esc(e.category)}</td>
-        <td data-label="Amount">₹${esc(e.amount)}</td>
-        <td data-label="Note">${esc(e.note || "-")}</td>
+  tbody.innerHTML = list
+    .map(e => {
+      total += Number(e.amount || 0);
+      return `
+        <tr>
+          <td data-label="Date">${toDisplay(e.date)}</td>
+          <td data-label="Category">${esc(e.category)}</td>
+          <td data-label="Amount">₹${esc(e.amount)}</td>
+          <td data-label="Note">${esc(e.note || "-")}</td>
 
-        <td data-label="Action">
-          <button class="btn-del small-btn" 
-                  onclick="deleteExpense('${e.id}')"
-                  style="background:#d32f2f;color:#fff;">
-            🗑 Delete
-          </button>
-        </td>
-      </tr>
-    `;
-  }).join("");
+          <td data-label="Action">
+            <button class="btn-del small-btn"
+                    onclick="deleteExpense('${e.id}')"
+                    style="background:#d32f2f;color:#fff;">
+              🗑 Delete
+            </button>
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
 
   const totalBox = qs("#expTotal");
   if (totalBox) totalBox.textContent = total;
