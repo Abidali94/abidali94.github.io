@@ -1,8 +1,9 @@
 /* ===========================================================
-   sales.js — Sales Manager (Final v11.1 Stable)
+   sales.js — Sales Manager (Final v11.2 Stable)
    ✔ Profit auto-calculated
    ✔ Time included (12-hour format)
    ✔ Analytics + Overview sync
+   ✔ Universal Profit System Ready
    ✔ No double-profit / double-invest errors
 =========================================================== */
 
@@ -183,3 +184,16 @@ document.getElementById("clearSalesBtn")?.addEventListener("click", () => {
 
 window.renderSales = renderSales;
 window.refreshSaleTypeSelector = refreshSaleTypeSelector;
+
+/* -----------------------------------------------------------
+   UNIVERSAL PROFIT HELPER (Required for Summary Bars)
+----------------------------------------------------------- */
+window.getSalesProfitCollected = function () {
+  let total = 0;
+  (window.sales || []).forEach(s => {
+    if (String(s.status).toLowerCase() !== "credit") {
+      total += Number(s.profit || 0);
+    }
+  });
+  return total;
+};
