@@ -142,6 +142,8 @@
 
     /* ==========================================
        🌈 COLORFUL TABLE (V3)
+       Used for: Stock, Sales, Service, Wanting,
+       Expenses & Collection
     =========================================== */
     table {
       width: 100%;
@@ -196,12 +198,30 @@
       border-radius: 6px;
       font-size: 12px;
     }
+
+    /* MOBILE */
+    @media (max-width: 600px) {
+      table thead { display:none; }
+      table tbody tr {
+        display:block;
+        margin-bottom:12px;
+      }
+      table tbody td {
+        display:flex;
+        justify-content:space-between;
+      }
+      table tbody td:before {
+        content: attr(data-label);
+        font-weight:600;
+        opacity:.7;
+      }
+    }
   </style>
 </head>
 
 <body>
 
-<!-- ⭐ GLOBAL HELPERS (REQUIRED) -->
+<!-- ⭐ IMPORTANT — FIX FOR ALL JS ERRORS -->
 <script>
   const qs  = s => document.querySelector(s);
   const qsa = s => Array.from(document.querySelectorAll(s));
@@ -236,8 +256,9 @@
     <div class="tab" data-tab="expenses">💸 Expenses</div>
     <div class="tab" data-tab="dashboard">📊 Overview</div>
     <div class="tab" data-tab="analytics">📈 Smart Dashboard</div>
-    <div class="tab" data-tab="collection">🪙 Collection</div>
+    <div class="tab" data-tab="collection">🪙 Collection</div> <!-- ⭐ NEW TAB -->
   </div>
+
 
 
   <!-- =============== TYPES =============== -->
@@ -277,16 +298,14 @@
 
     <div style="margin-top:12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
       <b>Filter Type:</b>
-      <select id="filterType">
-        <option value="all">All</option>
-      </select>
+      <select id="filterType"><option value="all">All</option></select>
 
       <input id="productSearch"
              placeholder="Search product..."
              style="padding:6px; margin-left:10px;">
     </div>
 
-    <!-- BEFORE SALE INVESTMENT -->
+    <!-- BEFORE SALE INVESTMENT (NO COLLECT BUTTON) -->
     <div id="stockInvBox" 
          style="margin-top:10px; padding:10px; background:#fff3e0; border-radius:8px;
                 border:1px solid #ffbb66; max-width:260px; margin-left:auto;
@@ -356,7 +375,6 @@
       </tfoot>
     </table>
   </section>
-
 
 
   <!-- =============== WANTING =============== -->
@@ -457,6 +475,9 @@
       <canvas id="svcPie" height="150"></canvas>
     </div>
   </section>
+
+
+
   <!-- =============== EXPENSES =============== -->
   <section id="expenses" class="section">
     <h3>🧾 Expenses</h3>
@@ -491,9 +512,6 @@
       </tfoot>
     </table>
   </section>
-
-
-
   <!-- =============== OVERVIEW =============== -->
   <section id="dashboard" class="section">
     <h3>📊 Business Overview</h3>
@@ -535,7 +553,6 @@
 
 
 
-
   <!-- =============== SMART DASHBOARD =============== -->
   <section id="analytics" class="section">
     <h3>📈 Smart Dashboard</h3>
@@ -570,7 +587,7 @@
 
 
 
-  <!-- =============== COLLECTION =============== -->
+  <!-- =============== ⭐ NEW COLLECTION TAB =============== -->
   <section id="collection" class="section">
     <h3>🪙 Collection Center</h3>
 
@@ -599,20 +616,25 @@
 
     </div>
 
-
+    <!-- COLLECTION HISTORY -->
     <h4>Collection History</h4>
 
-    <table id="collectionTable">
+    <table id="collectionHistory">
       <thead>
         <tr>
           <th>Date</th>
+          <th>Name</th>
           <th>Type</th>
-          <th>Details</th>
           <th>Amount</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
+
+    <!-- PIE -->
+    <div style="max-width:500px;margin:20px auto;">
+      <canvas id="collectionPie" height="150"></canvas>
+    </div>
 
     <button id="clearCollectionBtn"
             class="small-btn"
@@ -625,17 +647,18 @@
 
 
 
-  <!-- =============== SCRIPTS =============== -->
 
-  <!-- Charts -->
+  <!-- =============== LIBRARIES =============== -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
 
-  <!-- Firebase -->
+  <!-- FIREBASE -->
   <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
 
-  <!-- AUTO VERSION LOADER -->
+
+
+  <!-- =============== AUTO SCRIPT LOADER =============== -->
   <script>
     (function(){
       const v = Date.now();
