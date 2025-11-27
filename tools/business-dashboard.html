@@ -643,11 +643,6 @@
     </button>
 
   </section>
-
-
-
-
-
   <!-- =============== LIBRARIES =============== -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
 
@@ -680,6 +675,32 @@
       });
     })();
   </script>
+  <script>
+function switchTab(id) {
+    document.querySelectorAll(".section").forEach(sec => {
+        sec.classList.remove("active");
+    });
+    document.querySelector(`#${id}`).classList.add("active");
+
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelector(`.tab[data-tab="${id}"]`).classList.add("active");
+
+    // Optional renders
+    try { renderStock?.(); } catch{}
+    try { renderSales?.(); } catch{}
+    try { renderWanting?.(); } catch{}
+    try { renderExpenses?.(); } catch{}
+    try { renderServiceTables?.(); } catch{}
+    try { renderCollection?.(); } catch{}
+    try { renderAnalytics?.(); } catch{}
+    try { updateSummaryCards?.(); } catch{}
+}
+document.addEventListener("click", e => {
+    if (e.target.classList.contains("tab")) {
+        switchTab(e.target.dataset.tab);
+    }
+});
+</script>
 
 </body>
 </html>
