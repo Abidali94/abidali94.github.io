@@ -139,6 +139,127 @@
       background:var(--dark-card);
       border:1px solid var(--dark-border);
     }
+    /* ==========================================
+   🌈 BEAUTIFUL COLORFUL TABLE DESIGN (V3)
+   Works on: Stock, Sales, Service, Wanting, Expenses
+   Mobile-friendly + Desktop clean look
+=========================================== */
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  font-size: 14px;
+}
+
+table thead tr {
+  background: linear-gradient(90deg, #ff8a3d, #ff6a00);
+  color: #fff;
+}
+
+table thead th {
+  padding: 10px 8px;
+  text-align: left;
+  font-weight: 600;
+}
+
+table tbody tr {
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  border-radius: 10px;
+}
+
+body.dark table tbody tr {
+  background: #1f1f1f;
+  box-shadow: 0 2px 6px rgba(255,255,255,0.05);
+}
+
+table tbody td {
+  padding: 10px 8px;
+  vertical-align: middle;
+}
+
+table tbody tr:hover {
+  background: #fff4e6;
+}
+
+body.dark table tbody tr:hover {
+  background: #292929;
+}
+
+/* Rounded first & last cells */
+table tbody tr td:first-child {
+  border-radius: 10px 0 0 10px;
+}
+table tbody tr td:last-child {
+  border-radius: 0 10px 10px 0;
+}
+
+/* Status & Action Buttons */
+.status-paid {
+  background: #4caf50;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.status-credit {
+  background: #ff3b30;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.small-btn {
+  padding: 6px 10px !important;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.history-btn,
+.sale-btn,
+.credit-btn,
+.want-add-btn,
+.want-del-btn,
+.btn-del {
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #ff8800;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+.history-btn:hover,
+.sale-btn:hover,
+.credit-btn:hover,
+.btn-del:hover {
+  background: #d96a00;
+}
+
+/* 🎯 MOBILE OPTIMIZATION */
+@media (max-width: 600px) {
+  table thead {
+    display: none;
+  }
+
+  table tbody tr {
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  table tbody td {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+  }
+
+  table tbody td:before {
+    content: attr(data-label);
+    font-weight: 600;
+    opacity: .7;
+  }
+}
   </style>
 </head>
 
