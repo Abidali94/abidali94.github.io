@@ -1,8 +1,9 @@
 /* ===========================================================
-   sales.js — Sales Manager (Final v10.0 with Profit Sync)
-   ✔ Profit added to Profit Tab
-   ✔ Investment added to Profit Tab
-   ✔ Fully synced with Smart Dashboard
+   sales.js — Sales Manager (Final v11.0 with Time + AM/PM)
+   ✔ Profit auto-added
+   ✔ Investment auto-added
+   ✔ Smart Dashboard sync
+   ✔ NOW INCLUDES SALE TIME (12-hour format)
 =========================================================== */
 
 function refreshSaleTypeSelector() {
@@ -13,6 +14,23 @@ function refreshSaleTypeSelector() {
   (window.types || []).forEach(t => {
     sel.innerHTML += `<option value="${t.name}">${t.name}</option>`;
   });
+}
+
+/* ===========================================================
+   🔵 12-HOUR TIME GENERATOR
+=========================================================== */
+function getCurrentTime12hr() {
+  const now = new Date();
+
+  let hh = now.getHours();         // 0–23
+  const mm = String(now.getMinutes()).padStart(2, "0");
+  const ss = String(now.getSeconds()).padStart(2, "0");
+
+  const ampm = hh >= 12 ? "PM" : "AM";
+  hh = hh % 12;
+  hh = hh === 0 ? 12 : hh;
+
+  return `${hh}:${mm}:${ss} ${ampm}`;
 }
 
 /* ===========================================================
@@ -46,15 +64,16 @@ function addSaleEntry({ date, type, name, qty, price, status }) {
   p.sold += qty;
   saveStock();
 
-  // Add to Profit Box
+  // Add Profit / Investment buckets
   addSalesProfit(profit);
   addStockInvestment(invest);
 
-  // Save sale record
+  // 🔵 Add sale record with TIME
   window.sales = window.sales || [];
   window.sales.push({
     id: uid("sale"),
     date,
+    time: getCurrentTime12hr(),  // ← NEW
     type,
     product: name,
     qty,
@@ -83,9 +102,8 @@ function toggleSaleStatus(id) {
   if (s.status === "Credit") {
     if (!confirm("Mark this Credit sale as PAID?")) return;
 
-    // When credit sale becomes Paid → profit should be added now
+    // Add profit now
     addSalesProfit(Number(s.profit || 0));
-
     s.status = "Paid";
   } else {
     alert("Already Paid.");
@@ -142,7 +160,7 @@ function renderSales() {
 
       return `
         <tr>
-          <td>${toDisplay(s.date)}</td>
+          <td>${toDisplay(s.date)}<br><small>${s.time || "--"}</small></td>
           <td>${s.type}</td>
           <td>${s.product}</td>
           <td>${s.qty}</td>
