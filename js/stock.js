@@ -1,28 +1,45 @@
 /* =======================================================
-   📦 stock.js — Inventory Manager (FINAL v9.1)
-   ✔ Global limit for all products
-   ✔ Product search bar support
-   ✔ Stock Investment (Before Sale) — Correct Logic
-   ✔ Investment decreases as sales happen
-   ✔ Fully compatible with analytics + overview + profit
+   📦 stock.js — Inventory Manager (FINAL CLEAN v10.0)
+   ✔ Correct BEFORE-SALE investment (total purchase cost)
+   ✔ Correct AFTER-SALE investment (remain × cost)
+   ✔ Shows BEFORE-sale investment in stock tab
+   ✔ Auto-updates analytics, overview, dashboard
+   ✔ Fully compatible with core.js (V7.3)
 ======================================================= */
 
 const toDisp = window.toDisplay;
 const toInt  = window.toInternal;
 
 /* -------------------------------------------------------
-   CALCULATE REMAINING STOCK INVESTMENT
-   Correct Formula:
-   Investment = (qty - sold) * cost
+   1️⃣ BEFORE SALE INVESTMENT  (Correct Formula)
+      Total purchase cost = Σ (qty × cost of ALL purchases)
 ------------------------------------------------------- */
 function calcStockInvestmentBeforeSale() {
   let total = 0;
 
   (window.stock || []).forEach(p => {
-    const qty   = Number(p.qty || 0);
-    const sold  = Number(p.sold || 0);
-    const cost  = Number(p.cost || 0);
+    if (p.history?.length) {
+      p.history.forEach(h => {
+        total += Number(h.cost || 0) * Number(h.qty || 0);
+      });
+    } else {
+      total += Number(p.cost || 0) * Number(p.qty || 0);
+    }
+  });
 
+  return total;
+}
+
+/* -------------------------------------------------------
+   2️⃣ AFTER SALE INVESTMENT (Remain × Cost)
+------------------------------------------------------- */
+function calcStockInvestmentAfterSale() {
+  let total = 0;
+
+  (window.stock || []).forEach(p => {
+    const qty    = Number(p.qty || 0);
+    const sold   = Number(p.sold || 0);
+    const cost   = Number(p.cost || 0);
     const remain = qty - sold;
 
     if (remain > 0)
@@ -33,7 +50,7 @@ function calcStockInvestmentBeforeSale() {
 }
 
 /* -------------------------------------------------------
-   UPDATE UI BOX (right corner box)
+   🔸 UPDATE UI BOX (Shows BEFORE SALE investment)
 ------------------------------------------------------- */
 function updateStockInvestmentBox() {
   const box = qs("#stockInvValue");
@@ -41,7 +58,7 @@ function updateStockInvestmentBox() {
 }
 
 /* -------------------------------------------------------
-   ADD STOCK ENTRY
+   ➕ ADD STOCK ENTRY
 ------------------------------------------------------- */
 function addStock() {
   let date = qs("#pdate")?.value || todayDate();
@@ -68,7 +85,7 @@ function addStock() {
 }
 
 /* -------------------------------------------------------
-   RENDER STOCK LIST (Search + Filter + Global Limit)
+   📋 RENDER STOCK TABLE
 ------------------------------------------------------- */
 function renderStock() {
   const filterType = qs("#filterType")?.value || "all";
@@ -88,7 +105,6 @@ function renderStock() {
 
       const sold   = Number(p.sold || 0);
       const remain = Number(p.qty) - sold;
-
       const limit  = Number(getGlobalLimit());
 
       let cls = "ok";
@@ -123,7 +139,7 @@ function renderStock() {
 }
 
 /* -------------------------------------------------------
-   HISTORY POPUP
+   📜 HISTORY POPUP
 ------------------------------------------------------- */
 function showHistory(i) {
   const p = window.stock[i];
@@ -141,7 +157,7 @@ function showHistory(i) {
 window.showHistory = showHistory;
 
 /* -------------------------------------------------------
-   QUICK SALE / CREDIT
+   ⚡ QUICK SALE / CREDIT
 ------------------------------------------------------- */
 function stockQuickSale(i, mode) {
   const p = window.stock[i];
