@@ -258,4 +258,11 @@ select:focus {
   select {
     width: 100%;
   }
+   /* TAB SECTIONS: show only active */
+.section {
+  display: none;
+}
+.section.active {
+  display: block;
+}
 }
