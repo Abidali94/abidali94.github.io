@@ -3,51 +3,39 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>📦 KharchaSaathi — Business Dashboard (v3.3 Material)</title>
-  <meta name="theme-color" content="#1565d8" />
+  <title>📦 KharchaSaathi — Business Dashboard (v3.3)</title>
+  <meta name="theme-color" content="#1e4bb8" />
   <link rel="icon" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
 
   <style>
     :root{
-      /* MAIN MATERIAL BLUE PALETTE */
-      --primary:#1565d8;
-      --primary-dark:#0d47a1;
-      --primary-soft:#e3f2fd;
-
-      --accent-green:#1b9e64;
-      --accent-red:#d32f2f;
-      --accent-amber:#ffb300;
-      --accent-grey:#607d8b;
-
-      --bg:#eef3fb;          /* page background */
-      --bg-soft:#f6f8ff;      /* soft panels */
+      --primary:#1e4bb8;
+      --primary-soft:#e3ecff;
+      --primary-soft-2:#eef3ff;
+      --accent-green:#12b981;
+      --accent-red:#e53935;
+      --accent-orange:#ff8a3d;
+      --bg:#f4f6fb;
       --card:#ffffff;
-      --text:#1b2430;
-
-      --dark-bg:#0b1020;
-      --dark-card:#151b2c;
-      --dark-text:#f5f6ff;
-      --dark-border:#273148;
-
-      --border-soft:#d5ddf5;
-      --shadow-soft:0 14px 30px rgba(15, 35, 95, 0.15);
+      --text:#111827;
+      --muted:#6b7280;
+      --dark-bg:#020617;
+      --dark-card:#020617;
+      --dark-text:#e5e7eb;
+      --dark-border:#1f2937;
     }
 
-    *{
-      box-sizing:border-box;
-      transition:background .18s,color .18s,border-color .18s,box-shadow .18s;
-    }
-
+    *{box-sizing:border-box;transition:background .18s,color .18s,border-color .18s}
     body{
       margin:0;
       padding:18px;
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-      background:radial-gradient(circle at top left,#e3f2fd,#eef3fb 45%,#edf2ff 80%);
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:radial-gradient(circle at top,#eef4ff 0,#f4f6fb 40%,#eef5ff 100%);
       color:var(--text);
     }
     body.dark{
-      background:radial-gradient(circle at top left,#050814,#0b1020 45%,#050814 90%);
+      background:radial-gradient(circle at top,#020617 0,#020617 35%,#030712 100%);
       color:var(--dark-text);
     }
 
@@ -62,33 +50,33 @@
     }
     h1{
       margin:0;
-      font-size:22px;
-      font-weight:700;
-      letter-spacing:.02em;
+      font-size:20px;
       color:var(--primary);
+      display:flex;
+      align-items:center;
+      gap:6px;
     }
     #emailTag{
       font-size:13px;
-      opacity:.9;
-      background:#e6edff;
-      padding:4px 10px;
+      opacity:.85;
+      background:var(--primary-soft);
+      padding:4px 8px;
       border-radius:999px;
-      border:1px solid var(--border-soft);
+      color:var(--primary);
     }
     body.dark #emailTag{
-      background:#151c34;
-      border-color:#273148;
-      color:#d7e1ff;
+      background:#020617;
+      color:#e5e7eb;
+      border:1px solid #1f2937;
     }
 
-    /* ---------- CLOCK ---------- */
     .simple-clock{
       display:flex;
       flex-direction:column;
       line-height:1.1;
       padding:4px 0;
       min-width:95px;
-      text-align:right;
+      align-items:flex-end;
     }
     .clock-line{
       font-family:monospace;
@@ -98,212 +86,129 @@
     }
     .clock-line.small{
       font-size:11px;
-      opacity:0.8;
-      color:var(--text);
+      opacity:0.75;
+      color:var(--muted);
     }
     body.dark .clock-line.small{
-      color:#d0dbff;
+      color:#9ca3af;
     }
 
-    /* ---------- BUTTONS ---------- */
     .theme-btn,.small-btn{
       background:var(--primary);
       color:#fff;
       border:none;
-      padding:8px 12px;
+      padding:8px 14px;
       border-radius:999px;
       cursor:pointer;
       font-size:13px;
-      font-weight:500;
-      box-shadow:0 4px 10px rgba(21,101,216,0.3);
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      box-shadow:0 6px 16px rgba(30,75,184,0.35);
     }
     .theme-btn:hover,.small-btn:hover{
-      background:var(--primary-dark);
+      background:#163894;
     }
     .small-btn{
-      padding:6px 11px !important;
+      padding:6px 10px;
       font-size:12px;
       box-shadow:none;
-    }
-
-    /* ---------- GENERIC LAYOUT HELPERS ---------- */
-    .flex-row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:stretch;
-    }
-    .row-inline{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-    .card{
-      background:var(--card);
-      border-radius:18px;
-      padding:10px 12px;
-      box-shadow:0 8px 20px rgba(16,33,80,0.08);
-      border:1px solid rgba(206,214,242,0.9);
-    }
-    body.dark .card{
-      background:var(--dark-card);
-      border-color:var(--dark-border);
-      box-shadow:0 10px 30px rgba(0,0,0,0.6);
+      border-radius:999px;
     }
 
     /* ---------- TABS ---------- */
     .tabs{
       display:flex;
       gap:8px;
-      margin:10px 0 16px;
+      margin:10px 0 14px;
       justify-content:center;
       flex-wrap:wrap;
     }
     .tab{
-      background:#dde4f7;
-      padding:7px 12px;
+      background:#e5ebff;
+      padding:6px 14px;
       border-radius:999px;
       cursor:pointer;
       font-weight:600;
       white-space:nowrap;
       font-size:13px;
-      border:1px solid transparent;
+      color:#1e293b;
+      display:flex;
+      align-items:center;
+      gap:4px;
+      box-shadow:0 4px 10px rgba(15,23,42,0.12);
     }
     .tab.active{
       background:var(--primary);
       color:#fff;
-      box-shadow:0 5px 12px rgba(21,101,216,0.35);
-      border-color:rgba(0,0,0,0.0);
+      box-shadow:0 8px 20px rgba(30,75,184,0.45);
     }
     body.dark .tab{
-      background:#151c34;
-      color:#c5d2ff;
-      border-color:#273148;
+      background:#020617;
+      color:#e5e7eb;
+      border:1px solid #1f2937;
+      box-shadow:0 4px 10px rgba(0,0,0,0.65);
     }
     body.dark .tab.active{
-      background:var(--primary-dark);
-      color:#fff;
+      background:#1d4ed8;
     }
 
-    /* ---------- SECTION (big cards) ---------- */
+    /* ---------- SECTION ---------- */
     .section{
       display:none;
-      background:var(--bg-soft);
-      padding:16px 14px 18px;
-      border-radius:20px;
-      box-shadow:var(--shadow-soft);
+      background:var(--card);
+      padding:14px;
+      border-radius:18px;
+      box-shadow:0 16px 40px rgba(15,23,42,0.12);
       margin-bottom:18px;
-      border:1px solid var(--border-soft);
+      border:1px solid rgba(148,163,184,0.25);
     }
     .section.active{display:block;}
     body.dark .section{
-      background:#111729;
-      border-color:var(--dark-border);
-    }
-    .section h3{
-      margin-top:0;
-      margin-bottom:10px;
-      font-size:17px;
-      letter-spacing:.01em;
+      background:var(--dark-card);
+      border:1px solid var(--dark-border);
+      box-shadow:0 16px 40px rgba(0,0,0,0.75);
     }
 
-    /* ==========================================
-       PROFESSIONAL TABLES (Excel-style)
-    =========================================== */
+    /* ---------- TABLES ---------- */
     table{
       width:100%;
       border-collapse:collapse;
       font-size:13px;
-      background:var(--card);
-      border-radius:14px;
-      overflow:hidden;
-      box-shadow:0 8px 20px rgba(16,33,80,0.08);
     }
     table thead{
-      background:linear-gradient(90deg,#1565d8,#1e88e5);
+      background:linear-gradient(90deg,#2563eb,#1d4ed8);
       color:#fff;
     }
     table thead th{
-      padding:9px 8px;
+      padding:8px 10px;
       text-align:left;
       font-weight:600;
-      border-bottom:1px solid rgba(255,255,255,0.22);
-      border-right:1px solid rgba(255,255,255,0.14);
-      white-space:nowrap;
+      border-bottom:1px solid rgba(15,23,42,0.2);
     }
-    table thead th:last-child{
-      border-right:none;
-    }
-
     table tbody tr{
-      background:var(--card);
+      background:#f9fafb;
+      border-bottom:1px solid #e5e7eb;
     }
     body.dark table tbody tr{
-      background:var(--dark-card);
+      background:#020617;
+      border-bottom:1px solid #111827;
     }
-
-    table td{
-      padding:8px 8px;
+    table tbody td{
+      padding:8px 10px;
       vertical-align:middle;
-      border-top:1px solid var(--border-soft);
-      border-right:1px solid var(--border-soft);
-    }
-    table td:last-child{
-      border-right:none;
     }
     table tbody tr:hover{
-      background:#f3f6ff;
+      background:#eff3ff;
     }
     body.dark table tbody tr:hover{
-      background:#182237;
+      background:#020617;
     }
 
-    table tfoot td{
-      padding:8px;
-      border-top:1px solid var(--border-soft);
-      font-weight:600;
-      background:#f5f7ff;
-    }
-    body.dark table tfoot td{
-      background:#151c34;
-      border-color:#273148;
-    }
-
-    /* MOBILE RESPONSIVE TABLES */
-    @media (max-width: 720px){
-      table,
-      table thead,
-      table tbody,
-      table th,
-      table td,
-      table tr { display:block; }
-      table{
-        border-radius:14px;
-        box-shadow:none;
-        background:transparent;
-      }
-      table thead{
-        display:none;
-      }
-      table tbody tr{
-        margin-bottom:10px;
-        border-radius:14px;
-        box-shadow:0 6px 14px rgba(16,33,80,0.1);
-        overflow:hidden;
-      }
-      table tbody td{
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        border-right:none;
-      }
-      table tbody td:before{
-        content:attr(data-label);
-        font-weight:600;
-        opacity:.7;
-        margin-right:8px;
-      }
+    .small-btn{
+      padding:5px 10px!important;
+      border-radius:999px;
+      font-size:11px;
     }
 
     /* ---------- UNIVERSAL TOP METRICS BAR ---------- */
@@ -311,12 +216,12 @@
       position:sticky;
       top:0;
       z-index:5;
-      padding:6px 0 12px;
-      background:linear-gradient(to bottom,rgba(238,243,251,0.97),rgba(238,243,251,0.8));
-      backdrop-filter:blur(10px);
+      padding:4px 0 12px;
+      background:linear-gradient(to bottom,rgba(244,246,251,0.96),rgba(244,246,251,0.8));
+      backdrop-filter:blur(16px);
     }
     body.dark #universalBar{
-      background:linear-gradient(to bottom,rgba(11,16,32,0.96),rgba(11,16,32,0.85));
+      background:linear-gradient(to bottom,rgba(2,6,23,0.97),rgba(2,6,23,0.86));
     }
     .uni-row{
       display:flex;
@@ -325,50 +230,56 @@
       align-items:stretch;
     }
     .uni-card{
-      background:var(--card);
-      border-radius:20px;
-      padding:8px 11px;
+      background:#f9fafb;
+      border-radius:18px;
+      padding:10px 14px;
       display:flex;
       flex-direction:column;
-      min-width:180px;
-      flex:1;
-      box-shadow:0 10px 24px rgba(16,33,80,0.18);
-      border:1px solid var(--border-soft);
-      position:relative;
-      overflow:hidden;
+      min-width:160px;
+      box-shadow:0 10px 26px rgba(15,23,42,0.15);
+      font-size:11px;
+      border:1px solid rgba(148,163,184,0.45);
+    }
+    body.dark .uni-card{
+      background:#020617;
+      color:#e5e7eb;
+      border:1px solid #1f2937;
+      box-shadow:0 14px 30px rgba(0,0,0,0.85);
     }
     .uni-card.main{
       flex:2;
       min-width:260px;
     }
-    body.dark .uni-card{
-      background:#131a30;
-      border-color:#273148;
-      box-shadow:0 14px 32px rgba(0,0,0,0.7);
-    }
     .uni-title{
-      opacity:.8;
+      opacity:.75;
       font-size:11px;
+      letter-spacing:.03em;
       text-transform:uppercase;
-      letter-spacing:.09em;
     }
     .uni-value{
       font-size:20px;
       font-weight:700;
       line-height:1.3;
-      margin-top:4px;
+      margin-top:3px;
     }
     .uni-value.small{
       font-size:18px;
     }
     .uni-sub{
-      margin-top:3px;
+      margin-top:4px;
       font-size:10px;
       display:flex;
       gap:6px;
       flex-wrap:wrap;
       align-items:center;
-      opacity:.9;
+    }
+    .uni-chip{
+      padding:2px 8px;
+      border-radius:999px;
+      background:var(--primary-soft-2);
+      color:#1e293b;
+      font-size:10px;
+      border:1px solid rgba(148,163,184,0.6);
     }
     .uni-exp-label{
       color:var(--accent-red);
@@ -379,47 +290,29 @@
       font-weight:600;
     }
 
-    /* Collect Buttons INSIDE card, on right side */
-    .uni-actions{
-      position:absolute;
-      right:10px;
-      bottom:8px;
-      display:flex;
-      gap:6px;
-      align-items:center;
-    }
-    .uni-collect{
-      background:var(--accent-green);
-      border:none;
-      color:#fff;
-      font-size:11px;
-      padding:4px 10px;
-      border-radius:999px;
-      cursor:pointer;
-      box-shadow:0 4px 10px rgba(27,158,100,0.6);
-      white-space:nowrap;
-    }
-    .uni-collect:hover{
-      background:#128256;
-    }
-    .uni-pill-label{
-      font-size:10px;
-      padding:2px 8px;
-      border-radius:999px;
-      background:rgba(21,101,216,0.09);
-      color:var(--accent-grey);
-    }
-    body.dark .uni-pill-label{
-      background:rgba(96,125,139,0.26);
-      color:#d0e3ff;
-    }
-
-    /* ---------- SMALL STICKY PADDING ON MOBILE ---------- */
-    @media (max-width:720px){
-      #universalBar{
-        padding-bottom:8px;
+    /* MOBILE TABLE */
+    @media (max-width: 720px){
+      table thead{display:none;}
+      table tbody tr{
+        display:block;
+        margin-bottom:12px;
+        border-radius:14px;
+        overflow:hidden;
       }
-      .uni-card{
+      table tbody td{
+        display:flex;
+        justify-content:space-between;
+      }
+      table tbody td:before{
+        content:attr(data-label);
+        font-weight:600;
+        opacity:.7;
+        margin-right:10px;
+      }
+      .section{
+        padding:12px;
+      }
+      .uni-card.main{
         border-radius:18px;
       }
     }
@@ -449,11 +342,13 @@
 
     <button id="themeBtn" class="theme-btn">🌙</button>
     <a class="small-btn" href="/index.html">🏠 Back</a>
-    <button id="logoutBtn" class="small-btn" style="background:#e53935">🔓 Logout</button>
+    <button id="logoutBtn" class="small-btn" style="background:#e53935;box-shadow:0 8px 18px rgba(239,68,68,0.5);">
+      🔓 Logout
+    </button>
   </div>
 </div>
 
-<!-- 🔶 UNIVERSAL TOP METRICS BAR (VISIBLE ON ALL TABS) -->
+<!-- 🔶 UNIVERSAL TOP METRICS BAR -->
 <div id="universalBar">
   <div class="uni-row">
 
@@ -462,24 +357,19 @@
       <div class="uni-title">Net Profit (Sale + Service − Expenses)</div>
       <div class="uni-value" id="unNetProfit">₹0</div>
       <div class="uni-sub">
-        <span>Sale:</span><span id="unSaleProfit"   style="font-weight:600;">₹0</span>
+        <span>Sale:</span><span id="unSaleProfit" style="font-weight:600;">₹0</span>
         <span>Service:</span><span id="unServiceProfit" style="font-weight:600;">₹0</span>
         <span class="uni-exp-label">Exp:</span>
         <span id="unExpenses" class="uni-exp-value">₹0</span>
       </div>
-      <div class="uni-actions">
-        <span class="uni-pill-label">Today's profit</span>
-        <button class="uni-collect" id="collectNetProfitBtn">Collect</button>
-      </div>
     </div>
 
-    <!-- STOCK INVEST (AFTER SALE) -->
+    <!-- STOCK INVEST (SOLD ITEMS) -->
     <div class="uni-card">
-      <div class="uni-title">Stock Investment (After Sale)</div>
+      <div class="uni-title">Stock Investment (Sold Items)</div>
       <div class="uni-value small" id="unStockInv">₹0</div>
-      <div class="uni-actions">
-        <span class="uni-pill-label">Remaining stock</span>
-        <button class="uni-collect" id="collectStockInvBtn">Collect</button>
+      <div class="uni-sub">
+        <span class="uni-chip">Sold stock</span>
       </div>
     </div>
 
@@ -487,9 +377,8 @@
     <div class="uni-card">
       <div class="uni-title">Service Investment (Completed)</div>
       <div class="uni-value small" id="unServiceInv">₹0</div>
-      <div class="uni-actions">
-        <span class="uni-pill-label">Closed jobs</span>
-        <button class="uni-collect" id="collectServiceInvBtn">Collect</button>
+      <div class="uni-sub">
+        <span class="uni-chip">Closed jobs</span>
       </div>
     </div>
 
@@ -497,8 +386,8 @@
     <div class="uni-card">
       <div class="uni-title">Pending Credit Sales</div>
       <div class="uni-value small" id="unCreditSales">₹0</div>
-      <div class="uni-actions">
-        <span class="uni-pill-label">To be collected</span>
+      <div class="uni-sub">
+        <span class="uni-chip">To be collected</span>
       </div>
     </div>
 
@@ -507,65 +396,67 @@
 
 <!-- =============== FIXED TAB ORDER =============== -->
 <div class="tabs" role="tablist">
-  <div class="tab active" data-tab="types">🗂 Types</div>
+  <div class="tab active" data-tab="types">📁 Types</div>
   <div class="tab" data-tab="stock">📦 Stock</div>
   <div class="tab" data-tab="sales">📈 Sales</div>
   <div class="tab" data-tab="wanting">🛒 Wanting</div>
   <div class="tab" data-tab="service">🛠 Service</div>
   <div class="tab" data-tab="expenses">💸 Expenses</div>
-  <div class="tab" data-tab="dashboard">📊 Overview</div>
-  <div class="tab" data-tab="analytics">📈 Smart Dashboard</div>
+  <div class="tab" data-tab="dashboard">📊 Dashboard</div>
   <div class="tab" data-tab="collection">🪙 Collection</div>
 </div>
+
 <!-- =============== TYPES =============== -->
 <section id="types" class="section active">
   <h3>🗂 Manage Item Types</h3>
 
-  <div class="row-inline" style="margin-top:8px">
-    <input id="typeName" type="text" placeholder="Add new type" style="flex:1;min-width:160px">
+  <div class="row-inline" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+    <input id="typeName" type="text" placeholder="Add new type"
+           style="flex:1;min-width:160px;padding:8px 10px;border-radius:12px;border:1px solid #d1d5db;">
     <button id="addTypeBtn" class="small-btn">Add</button>
     <button id="clearTypesBtn" class="small-btn">Clear All</button>
   </div>
 
-  <ul id="typeList" style="margin-top:10px;padding-left:18px"></ul>
+  <ul id="typeList" style="margin-top:10px;padding-left:18px;font-size:13px;"></ul>
 </section>
-
 <!-- =============== STOCK =============== -->
 <section id="stock" class="section">
   <h3>📦 Current Stock</h3>
 
-  <div class="row-inline" style="margin-top:6px">
+  <div class="row-inline" style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
     <label>Low Stock:</label>
-    <input id="globalLimit" type="number" placeholder="2" style="width:80px">
+    <input id="globalLimit" type="number" placeholder="2" style="width:90px;padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;">
     <button id="setLimitBtn" class="small-btn">Set</button>
-    <button id="clearStockBtn" class="small-btn">Clear All</button>
+    <button id="clearStockBtn" class="small-btn" style="background:#ef4444;">Clear All</button>
   </div>
 
-  <div class="row-inline" style="margin-top:12px">
-    <input id="pdate" type="date">
-    <select id="ptype"></select>
-    <input id="pname" type="text" placeholder="Product">
-    <input id="pqty" type="number" placeholder="Qty" style="width:80px">
-    <input id="pcost" type="number" placeholder="Cost ₹" style="width:90px">
+  <div class="row-inline" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">
+    <input id="pdate" type="date" style="padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;">
+    <select id="ptype" style="padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;"></select>
+    <input id="pname" type="text" placeholder="Product" style="padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;min-width:140px;">
+    <input id="pqty" type="number" placeholder="Qty" style="width:80px;padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;">
+    <input id="pcost" type="number" placeholder="Cost ₹" style="width:100px;padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;">
     <button id="addStockBtn" class="small-btn">Add</button>
   </div>
 
   <div style="margin-top:12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
     <b>Filter Type:</b>
-    <select id="filterType"><option value="all">All</option></select>
+    <select id="filterType" style="padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;">
+      <option value="all">All</option>
+    </select>
 
     <input id="productSearch"
            placeholder="Search product..."
-           style="padding:6px; margin-left:10px;flex:1;min-width:140px;">
+           style="padding:6px 10px; border-radius:12px; border:1px solid #d1d5db; min-width:160px;">
   </div>
 
-  <!-- BEFORE SALE INVESTMENT (NO COLLECT BUTTON) -->
+  <!-- BEFORE SALE INVESTMENT -->
   <div id="stockInvBox" 
-       style="margin-top:10px; padding:10px; background:#fff9e6; border-radius:14px;
-              border:1px solid #ffecb3; max-width:280px; margin-left:auto;
+       style="margin-top:10px; padding:10px; background:#fffbeb; border-radius:12px;
+              border:1px solid #facc15; max-width:280px; margin-left:auto;
               font-weight:600; font-size:13px;">
     📦 Stock Investment (Before Sale): 
-    <span id="stockInvValue" style="color:#ff8f00;">₹0</span>
+    <span id="stockInvValue" style="color:#d97706;">₹0</span>
   </div>
 
   <table id="stockTable" style="margin-top:10px;">
@@ -590,19 +481,19 @@
 <section id="sales" class="section">
   <h3>💰 Sales & Profit</h3>
 
-  <div class="row-inline" style="margin:10px 0">
+  <div class="row-inline" style="margin:10px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
     <label>Date:</label>
-    <input id="saleDate" type="date">
+    <input id="saleDate" type="date" style="padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;">
 
-    <label style="margin-left:8px">Filter Type:</label>
-    <select id="saleType">
+    <label style="margin-left:4px">Filter Type:</label>
+    <select id="saleType" style="padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;">
       <option value="all">All Types</option>
     </select>
 
-    <button id="filterSalesBtn" class="small-btn" style="margin-left:8px">Filter</button>
+    <button id="filterSalesBtn" class="small-btn" style="margin-left:4px">Filter</button>
 
     <button id="clearSalesBtn" class="small-btn" 
-      style="background:#c62828;color:#fff;margin-left:10px">🗑️ Clear All</button>
+      style="background:#c62828;color:#fff;margin-left:8px">🗑️ Clear All</button>
   </div>
 
   <table id="salesTable">
@@ -630,14 +521,17 @@
     </tfoot>
   </table>
 </section>
+
 <!-- =============== WANTING =============== -->
 <section id="wanting" class="section">
   <h3>🛒 Wanting List</h3>
 
-  <div class="want-form row-inline" style="margin-bottom:10px;">
-    <select id="wantType"></select>
-    <input id="wantName" type="text" placeholder="Product">
-    <input id="wantNote" type="text" placeholder="Note" style="flex:1;min-width:160px">
+  <div class="want-form" style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;">
+    <select id="wantType" style="padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;"></select>
+    <input id="wantName" type="text" placeholder="Product"
+           style="padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;min-width:140px;">
+    <input id="wantNote" type="text" placeholder="Note"
+           style="padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;min-width:160px;">
     <button id="addWantBtn" class="small-btn">Add</button>
     <button id="clearWantBtn" class="small-btn">Clear</button>
     <button id="printWantBtn" class="small-btn">Print</button>
@@ -656,38 +550,34 @@
     <tbody></tbody>
   </table>
 </section>
-
 <!-- =============== SERVICE =============== -->
 <section id="service" class="section">
   <h3>🛠 Service / Repair Manager</h3>
 
-  <div class="row-inline" style="margin:10px 0;align-items:center;gap:10px">
-    <input id="svcReceivedDate" type="date" style="width:160px">
-    <input id="svcCustomer" type="text" placeholder="Customer name" style="min-width:160px">
-    <input id="svcPhone" type="text" placeholder="Phone Number" style="width:140px">
-    <select id="svcItemType" style="width:120px">
+  <div class="row-inline" style="margin:10px 0;align-items:center;gap:8px;display:flex;flex-wrap:wrap;">
+    <input id="svcReceivedDate" type="date" style="width:160px;padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;">
+    <input id="svcCustomer" type="text" placeholder="Customer name" style="min-width:160px;padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;">
+    <input id="svcPhone" type="text" placeholder="Phone Number" style="width:140px;padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;">
+    <select id="svcItemType" style="width:120px;padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;">
       <option value="Mobile">Mobile</option>
       <option value="Laptop">Laptop</option>
       <option value="Other">Other</option>
     </select>
-    <input id="svcModel" type="text" placeholder="Model" style="min-width:130px">
-    <input id="svcProblem" type="text" placeholder="Problem / Complaint" style="min-width:220px">
-    <input id="svcAdvance" type="number" placeholder="Advance ₹ (0)" style="width:120px">
+    <input id="svcModel" type="text" placeholder="Model" style="min-width:130px;padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;">
+    <input id="svcProblem" type="text" placeholder="Problem / Complaint" style="min-width:220px;padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;">
+    <input id="svcAdvance" type="number" placeholder="Advance ₹ (0)" style="width:120px;padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;">
     <button id="addServiceBtn" class="small-btn">Add Job</button>
   </div>
 
-  <div class="flex-row" style="margin:8px 0;">
-    <div class="card" style="flex:1;min-width:120px;text-align:center;">
-      <small>Pending</small>
-      <div id="svcPendingCount" style="font-size:18px;font-weight:700;">0</div>
+  <div class="flex-row" style="margin:8px 0;display:flex;gap:10px;flex-wrap:wrap;">
+    <div class="card" style="flex:1;min-width:120px;padding:8px 10px;border-radius:14px;background:#eff6ff;">
+      <small>Pending</small><div id="svcPendingCount" style="font-size:18px;font-weight:700;">0</div>
     </div>
-    <div class="card" style="flex:1;min-width:120px;text-align:center;">
-      <small>Completed</small>
-      <div id="svcCompletedCount" style="font-size:18px;font-weight:700;">0</div>
+    <div class="card" style="flex:1;min-width:120px;padding:8px 10px;border-radius:14px;background:#ecfdf3;">
+      <small>Completed</small><div id="svcCompletedCount" style="font-size:18px;font-weight:700;">0</div>
     </div>
-    <div class="card" style="flex:1;min-width:160px;text-align:center;">
-      <small>Total Repair Profit</small>
-      <div id="svcTotalProfit" style="font-size:18px;font-weight:700;color:var(--accent-green);">₹0</div>
+    <div class="card" style="flex:1;min-width:160px;padding:8px 10px;border-radius:14px;background:#fefce8;">
+      <small>Total Repair Profit</small><div id="svcTotalProfit" style="font-size:18px;font-weight:700;">₹0</div>
     </div>
   </div>
 
@@ -740,11 +630,15 @@
 <section id="expenses" class="section">
   <h3>🧾 Expenses</h3>
 
-  <div class="row-inline" style="margin-bottom:8px">
-    <input id="expDate" type="date" onfocus="if(!this.value)this.value=todayDate()">
-    <input id="expCat" type="text" placeholder="Category" style="min-width:140px">
-    <input id="expAmount" type="number" placeholder="Amount" style="width:120px">
-    <input id="expNote" type="text" placeholder="Note" style="min-width:200px;flex:1;">
+  <div class="row-inline" style="margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap;">
+    <input id="expDate" type="date" onfocus="if(!this.value)this.value=todayDate()"
+           style="padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;">
+    <input id="expCat" type="text" placeholder="Category"
+           style="min-width:140px;padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;">
+    <input id="expAmount" type="number" placeholder="Amount"
+           style="width:120px;padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;">
+    <input id="expNote" type="text" placeholder="Note"
+           style="min-width:200px;padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;">
     <button id="addExpenseBtn" class="small-btn">Add Expense</button>
   </div>
 
@@ -771,70 +665,68 @@
   </table>
 </section>
 
-<!-- =============== OVERVIEW =============== -->
+<!-- =============== MERGED DASHBOARD (Overview + Smart) =============== -->
 <section id="dashboard" class="section">
-  <h3>📊 Business Overview (Today)</h3>
+  <h3>📊 Dashboard (Today + Total)</h3>
 
-  <div id="summaryCards" class="flex-row" style="margin-top:10px">
-
-    <div class="card" style="flex:1;min-width:160px;text-align:center;">
-      <div style="font-size:26px">💰</div>
-      <b id="todaySales" style="font-size:20px;color:var(--primary)">₹0</b><br>
+  <!-- TODAY OVERVIEW -->
+  <div id="summaryCards" class="flex-row" style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
+    <div class="card" style="flex:1;min-width:140px;padding:10px;border-radius:14px;background:#eff6ff;">
+      <div style="font-size:24px">💰</div>
+      <b id="todaySales" style="font-size:18px;color:var(--primary)">₹0</b><br>
       <small>Today's Sales</small>
     </div>
 
-    <div class="card" style="flex:1;min-width:160px;text-align:center;">
-      <div style="font-size:26px">💳</div>
-      <b id="todayCredit" style="font-size:20px;color:#1565c0">₹0</b><br>
+    <div class="card" style="flex:1;min-width:140px;padding:10px;border-radius:14px;background:#eff6ff;">
+      <div style="font-size:24px">💳</div>
+      <b id="todayCredit" style="font-size:18px;color:var(--primary)">₹0</b><br>
       <small>Today's Credit</small>
     </div>
 
-    <div class="card" style="flex:1;min-width:160px;text-align:center;">
-      <div style="font-size:26px">🧾</div>
-      <b id="todayExpenses" style="font-size:20px;color:#d32f2f">₹0</b><br>
+    <div class="card" style="flex:1;min-width:140px;padding:10px;border-radius:14px;background:#fef2f2;">
+      <div style="font-size:24px">🧾</div>
+      <b id="todayExpenses" style="font-size:18px;color:#b91c1c">₹0</b><br>
       <small>Today's Expenses</small>
     </div>
 
-    <div class="card" style="flex:1;min-width:160px;text-align:center;">
-      <div style="font-size:26px">📈</div>
-      <b id="todayGross" style="font-size:20px;color:var(--accent-green)">₹0</b><br>
+    <div class="card" style="flex:1;min-width:140px;padding:10px;border-radius:14px;background:#ecfdf3;">
+      <div style="font-size:24px">📈</div>
+      <b id="todayGross" style="font-size:18px;color:#15803d">₹0</b><br>
       <small>Today's Gross Profit</small>
     </div>
 
-    <div class="card" style="flex:1;min-width:160px;text-align:center;">
-      <div style="font-size:26px">💹</div>
-      <b id="todayNet" style="font-size:20px;color:var(--primary-dark)">₹0</b><br>
+    <div class="card" style="flex:1;min-width:140px;padding:10px;border-radius:14px;background:#ecfdf3;">
+      <div style="font-size:24px">💹</div>
+      <b id="todayNet" style="font-size:18px;color:#15803d">₹0</b><br>
       <small>Today's NET Profit</small>
     </div>
-
   </div>
-</section>
 
-<!-- =============== SMART DASHBOARD =============== -->
-<section id="analytics" class="section">
-  <h3>📈 Smart Dashboard (Total)</h3>
+  <hr style="margin:18px 0;border:none;border-top:1px dashed #cbd5e1;">
 
-  <div class="flex-row" style="margin-bottom:18px">
-    <div class="card" style="flex:1;min-width:160px">
-      <h4>Total Profit</h4>
-      <b id="dashProfit" style="font-size:22px;color:#2e7d32">₹0</b>
+  <!-- SMART DASHBOARD TOTAL -->
+  <h4>Smart Dashboard (Total)</h4>
+  <div class="flex-row" style="margin-bottom:18px;display:flex;gap:10px;flex-wrap:wrap;">
+    <div class="card" style="flex:1;min-width:160px;padding:10px;border-radius:14px;background:#ecfdf3;">
+      <h4 style="margin:0 0 4px 0;font-size:13px;">Total Profit</h4>
+      <b id="dashProfit" style="font-size:22px;color:#15803d">₹0</b>
       <small>Sale + Service (collected only)</small>
     </div>
 
-    <div class="card" style="flex:1;min-width:160px">
-      <h4>Total Expenses</h4>
-      <b id="dashExpenses" style="font-size:22px;color:#c62828">₹0</b>
+    <div class="card" style="flex:1;min-width:160px;padding:10px;border-radius:14px;background:#fef2f2;">
+      <h4 style="margin:0 0 4px 0;font-size:13px;">Total Expenses</h4>
+      <b id="dashExpenses" style="font-size:22px;color:#b91c1c">₹0</b>
     </div>
 
-    <div class="card" style="flex:1;min-width:160px">
-      <h4>Credit Sales (Pending)</h4>
-      <b id="dashCredit" style="font-size:22px;color:#1565c0">₹0</b>
+    <div class="card" style="flex:1;min-width:160px;padding:10px;border-radius:14px;background:#eff6ff;">
+      <h4 style="margin:0 0 4px 0;font-size:13px;">Credit Sales (Pending)</h4>
+      <b id="dashCredit" style="font-size:22px;color:#2563eb">₹0</b>
     </div>
 
-    <div class="card" style="flex:1;min-width:160px">
-      <h4>Total Investment (After Sale)</h4>
-      <b id="dashInv" style="font-size:22px;color:#fbc02d">₹0</b>
-      <small>Stock remain + Service invest</small>
+    <div class="card" style="flex:1;min-width:160px;padding:10px;border-radius:14px;background:#fefce8;">
+      <h4 style="margin:0 0 4px 0;font-size:13px;">Total Investment (Sold Items)</h4>
+      <b id="dashInv" style="font-size:22px;color:#d97706">₹0</b>
+      <small>Sold stock + Service invest</small>
     </div>
   </div>
 
@@ -846,27 +738,27 @@
 <section id="collection" class="section">
   <h3>🪙 Collection Center</h3>
 
-  <!-- SUMMARY CARDS -->
-  <div class="flex-row" style="margin-bottom:14px">
+  <!-- SUMMARY CARDS (same numbers used universally) -->
+  <div class="flex-row" style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;">
 
-    <div class="card" style="flex:1;min-width:160px">
-      <h4>Sales Profit (Collected)</h4>
-      <b id="colSales" style="font-size:20px;color:#2e7d32">₹0</b>
+    <div class="card" style="flex:1;min-width:160px;padding:10px;border-radius:14px;background:#ecfdf3;">
+      <h4 style="margin:0 0 4px 0;font-size:13px;">Sales Profit (Collected)</h4>
+      <b id="colSales" style="font-size:20px;color:#15803d">₹0</b>
     </div>
 
-    <div class="card" style="flex:1;min-width:160px">
-      <h4>Service Profit (Collected)</h4>
-      <b id="colService" style="font-size:20px;color:#1976d2">₹0</b>
+    <div class="card" style="flex:1;min-width:160px;padding:10px;border-radius:14px;background:#eff6ff;">
+      <h4 style="margin:0 0 4px 0;font-size:13px;">Service Profit (Collected)</h4>
+      <b id="colService" style="font-size:20px;color:#2563eb">₹0</b>
     </div>
 
-    <div class="card" style="flex:1;min-width:160px">
-      <h4>Pending Credits</h4>
-      <b id="colCredit" style="font-size:20px;color:#d32f2f">₹0</b>
+    <div class="card" style="flex:1;min-width:160px;padding:10px;border-radius:14px;background:#fef2f2;">
+      <h4 style="margin:0 0 4px 0;font-size:13px;">Pending Credits</h4>
+      <b id="colCredit" style="font-size:20px;color:#b91c1c">₹0</b>
     </div>
 
-    <div class="card" style="flex:1;min-width:160px">
-      <h4>Total Investment (After Sale)</h4>
-      <b id="colInvRemain" style="font-size:20px;color:#f57f17">₹0</b>
+    <div class="card" style="flex:1;min-width:160px;padding:10px;border-radius:14px;background:#fefce8;">
+      <h4 style="margin:0 0 4px 0;font-size:13px;">Total Investment (Sold Items)</h4>
+      <b id="colInvRemain" style="font-size:20px;color:#d97706">₹0</b>
     </div>
 
   </div>
