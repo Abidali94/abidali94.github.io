@@ -1,0 +1,193 @@
+/* =========================================================
+   components.css — Buttons, inputs, tables, small widgets
+========================================================= */
+
+/* ------------------------------
+   Buttons
+------------------------------ */
+.theme-btn,
+.small-btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 6px 16px rgba(30, 75, 184, 0.35);
+  font-weight: 500;
+  transition: background var(--transition-fast),
+              box-shadow var(--transition-fast),
+              transform var(--transition-fast);
+}
+
+.theme-btn:hover,
+.small-btn:hover {
+  background: #163894;
+  box-shadow: 0 10px 22px rgba(30, 75, 184, 0.45);
+  transform: translateY(-1px);
+}
+
+.small-btn {
+  padding: 6px 11px;
+  font-size: 12px;
+  box-shadow: none;
+}
+
+/* Special danger buttons override */
+.small-btn[style*="ef4444"],
+.small-btn[style*="c62828"],
+.small-btn[style*="b71c1c"] {
+  box-shadow: 0 8px 18px rgba(239, 68, 68, 0.5);
+}
+
+/* ------------------------------
+   Inputs & selects (generic)
+------------------------------ */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select {
+  font-family: inherit;
+  font-size: 13px;
+}
+
+input,
+select {
+  outline: none;
+}
+
+input:focus,
+select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
+}
+
+/* ------------------------------
+   Tables (corporate style)
+------------------------------ */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 10px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+table thead {
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  color: #fff;
+}
+
+table thead th {
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.2);
+}
+
+table tbody tr {
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+body.dark table tbody tr {
+  background: #020617;
+  border-bottom: 1px solid #111827;
+}
+
+table tbody td {
+  padding: 8px 10px;
+  vertical-align: middle;
+}
+
+table tbody tr:hover {
+  background: #eff3ff;
+}
+body.dark table tbody tr:hover {
+  background: #020617;
+}
+
+table tfoot td {
+  padding: 6px 10px;
+  font-weight: 600;
+}
+
+/* ------------------------------
+   Mobile responsive table
+------------------------------ */
+@media (max-width: 720px) {
+  table thead {
+    display: none;
+  }
+
+  table,
+  table tbody,
+  table tr,
+  table td {
+    display: block;
+    width: 100%;
+  }
+
+  table tbody tr {
+    margin-bottom: 10px;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  table tbody td {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    opacity: 0.75;
+    margin-right: 10px;
+  }
+}
+
+/* ------------------------------
+   Status badges (service / credit)
+------------------------------ */
+.status-credit {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-paid {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* ------------------------------
+   Misc small components
+------------------------------ */
+
+/* Stock investment box */
+#stockInvBox {
+  background: #fffbeb;
+}
+
+/* Simple chips inside cards already styled via .uni-chip */
+
+/* Canvas wrapper */
+#svcPie,
+#cleanPie {
+  max-width: 100%;
+}
