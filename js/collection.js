@@ -1,17 +1,13 @@
 /* ===========================================================
-   collection.js — Collection Center (SAFE FINAL V4.1)
-   • Simple History:
-        - window.collections from localStorage
-        - addCollectionEntry(source, details, amount)
-   • Summary numbers:
-        - Sales Profit (collected)
-        - Service Profit (collected)
-        - Pending Credit Sales
-        - Total Investment (after sale)
-   • Pending table is for info only (no double-calculation)
+   collection.js — FINAL STABLE V5
+   • Adds working Collect button
+   • Proper history entry
+   • Updates sale status (credit → paid)
+   • Updates universal bar & dashboard
+   • No double calculation
 =========================================================== */
 
-// local escape (no global esc clash)
+// Safe text escape
 function escLocal(x) {
   return (x === undefined || x === null) ? "" : String(x);
 }
@@ -30,7 +26,7 @@ function saveCollections() {
 }
 
 /* -----------------------------------------------------------
-   PUBLIC ADD ENTRY  (used also by universalBar.js)
+   PUBLIC: Add collection entry (used globally)
 ----------------------------------------------------------- */
 window.addCollectionEntry = function (source, details, amount) {
   const entry = {
@@ -44,12 +40,13 @@ window.addCollectionEntry = function (source, details, amount) {
   window.collections = window.collections || [];
   window.collections.push(entry);
   saveCollections();
+
   renderCollection();
   window.updateUniversalBar?.();
 };
 
 /* -----------------------------------------------------------
-   SUMMARY NUMBERS (for Collection tab)
+   SUMMARY CALCULATION
 ----------------------------------------------------------- */
 function cNum(v) {
   const n = Number(v || 0);
@@ -62,26 +59,29 @@ function computeCollectionSummary() {
   let pendingCredit    = 0;
   let investmentRemain = 0;
 
-  // Sales profit collected (non-credit)
+  // Sales section
   (window.sales || []).forEach(s => {
     const status = String(s.status || "").toLowerCase();
-    if (status !== "credit") {
-      salesCollected += cNum(s.profit);
-    } else {
-      const total = cNum(s.total || (cNum(s.qty) * cNum(s.price)));
+
+    const total = cNum(s.total || (cNum(s.qty) * cNum(s.price)));
+
+    if (status === "credit") {
       pendingCredit += total;
+    } else {
+      // collected or paid
+      salesCollected += cNum(s.profit);
     }
   });
 
-  // Service profit collected
+  // Service section
   (window.services || []).forEach(job => {
     if (String(job.status || "").toLowerCase() === "completed") {
       serviceCollected += cNum(job.profit);
-      investmentRemain += cNum(job.invest); // part of after-sale investment
+      investmentRemain += cNum(job.invest);
     }
   });
 
-  // Stock investment (after sale)
+  // After-sale stock investment
   if (typeof window.getStockInvestmentAfterSale === "function") {
     investmentRemain += cNum(window.getStockInvestmentAfterSale());
   }
@@ -90,12 +90,11 @@ function computeCollectionSummary() {
 }
 
 /* -----------------------------------------------------------
-   BUILD PENDING COLLECTION LIST (for display only)
+   GET PENDING LIST
 ----------------------------------------------------------- */
 function getPendingList() {
   const list = [];
 
-  // Credit sales only (pure info; collect happens via Sales)
   (window.sales || []).forEach(s => {
     if (String(s.status || "").toLowerCase() === "credit") {
       const total = cNum(s.total || (cNum(s.qty) * cNum(s.price)));
@@ -103,7 +102,7 @@ function getPendingList() {
         list.push({
           id: s.id,
           name: s.product || "Sale",
-          type: "Sale Credit",
+          type: s.type || "Sale",
           date: s.date,
           pending: total
         });
@@ -115,19 +114,18 @@ function getPendingList() {
 }
 
 /* -----------------------------------------------------------
-   RENDER PENDING COLLECTIONS TABLE
+   RENDER PENDING TABLE  (WITH COLLECT BUTTON)
 ----------------------------------------------------------- */
 function renderPendingCollections() {
   const tbody = qs("#pendingCollectionTable tbody");
   if (!tbody) return;
 
   const list = getPendingList();
+
   if (!list.length) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="5" style="text-align:center;opacity:0.6;">
-          No pending collections
-        </td>
+        <td colspan="5" style="text-align:center;opacity:0.6;">No pending collections</td>
       </tr>`;
     return;
   }
@@ -139,34 +137,32 @@ function renderPendingCollections() {
       <td data-label="Type">${escLocal(r.type)}</td>
       <td data-label="Pending">₹${r.pending}</td>
       <td data-label="Action">
-        <!-- Info only; no Collect button here -->
-        <span style="font-size:11px;opacity:0.7;">Shown for info</span>
+        <button class="small-btn collect-btn"
+                data-id="${r.id}"
+                data-amount="${r.pending}">
+          Collect
+        </button>
       </td>
     </tr>
   `).join("");
 }
 
 /* -----------------------------------------------------------
-   RENDER COLLECTION TAB (SUMMARY + HISTORY)
+   RENDER COLLECTION HISTORY + SUMMARY
 ----------------------------------------------------------- */
 function renderCollection() {
-  // Summary cards
   const sum = computeCollectionSummary();
-
-  const colSales   = document.getElementById("colSales");
-  const colService = document.getElementById("colService");
-  const colCredit  = document.getElementById("colCredit");
-  const colInv     = document.getElementById("colInvRemain");
 
   const fmt = v => "₹" + Math.round(cNum(v));
 
-  if (colSales)   colSales.textContent   = fmt(sum.salesCollected);
-  if (colService) colService.textContent = fmt(sum.serviceCollected);
-  if (colCredit)  colCredit.textContent  = fmt(sum.pendingCredit);
-  if (colInv)     colInv.textContent     = fmt(sum.investmentRemain);
+  // Summary card elements
+  if (qs("#colSales"))   qs("#colSales").textContent   = fmt(sum.salesCollected);
+  if (qs("#colService")) qs("#colService").textContent = fmt(sum.serviceCollected);
+  if (qs("#colCredit"))  qs("#colCredit").textContent  = fmt(sum.pendingCredit);
+  if (qs("#colInvRemain")) qs("#colInvRemain").textContent = fmt(sum.investmentRemain);
 
   // History table
-  const tbody = document.querySelector("#collectionHistory tbody");
+  const tbody = qs("#collectionHistory tbody");
   if (!tbody) return;
 
   const list = window.collections || [];
@@ -174,7 +170,7 @@ function renderCollection() {
   if (!list.length) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="4" style="text-align:center;opacity:0.6">
+        <td colspan="4" style="text-align:center;opacity:0.6;">
           No collection history yet
         </td>
       </tr>`;
@@ -194,26 +190,56 @@ function renderCollection() {
 window.renderCollection = renderCollection;
 
 /* -----------------------------------------------------------
-   CLEAR HISTORY BUTTON
+   DELETE HISTORY BUTTON
 ----------------------------------------------------------- */
 document.addEventListener("click", e => {
-  if (e.target && e.target.id === "clearCollectionBtn") {
+  // Clear all collection history
+  if (e.target.id === "clearCollectionBtn") {
     if (!confirm("Clear entire collection history?")) return;
     window.collections = [];
     saveCollections();
     renderCollection();
     window.updateUniversalBar?.();
   }
+
+  /* -----------------------------------------------
+     COLLECT BUTTON HANDLER (Credit → Paid)
+  ----------------------------------------------- */
+  if (e.target.classList.contains("collect-btn")) {
+    const id = e.target.getAttribute("data-id");
+    const amt = Number(e.target.getAttribute("data-amount") || 0);
+
+    const sale = (window.sales || []).find(s => s.id == id);
+    if (!sale) {
+      alert("Error: Sale not found!");
+      return;
+    }
+
+    // Convert credit → paid
+    sale.status = "paid";
+    saveSales?.();
+
+    // Add collection history entry
+    window.addCollectionEntry("Sale", sale.product, amt);
+
+    // Refresh UI
+    renderPendingCollections();
+    renderCollection();
+    window.updateUniversalBar?.();
+
+    alert("Amount collected successfully!");
+  }
 });
 
 /* -----------------------------------------------------------
-   INIT ON LOAD
+   INIT
 ----------------------------------------------------------- */
 window.addEventListener("load", () => {
   if (!Array.isArray(window.collections)) {
     window.collections = [];
     saveCollections();
   }
+
   renderPendingCollections();
   renderCollection();
   window.updateUniversalBar?.();
