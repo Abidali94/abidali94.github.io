@@ -184,38 +184,46 @@ table tfoot td {
   background: #fffbeb;
 }
 
-/* Simple chips inside cards already styled via .uni-chip */
-
 /* Canvas wrapper */
 #svcPie,
 #cleanPie {
   max-width: 100%;
 }
+
+/* =========================================================
+   Universal bar collect buttons
+========================================================= */
+
+/* Cards in universal bar need space for collect button */
 .uni-card {
-  position: relative;   /* parent for absolute button */
-  padding-bottom: 36px !important;  /* to give space for button */
+  position: relative;
+  padding-bottom: 32px !important;   /* space at bottom for button */
 }
 
+/* Small blue "₹ Collect" bubble in bottom-right */
 .collect-btn {
   position: absolute;
   right: 10px;
-  bottom: 8px;
-  background: white;
-  color: #1e4bb8;
-  border: 1px solid #cbd5e1;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 13px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  display: flex;
-  gap: 6px;
+  bottom: 10px;
+  background: #1e40af;          /* blue */
+  color: #ffffff;
+  border: none;
+  padding: 4px 10px;            /* small */
+  font-size: 11px;
+  border-radius: 14px;          /* small pill */
+  display: inline-flex;
   align-items: center;
+  gap: 4px;
   cursor: pointer;
-  transition: 0.2s;
+  box-shadow: 0 3px 8px rgba(30, 64, 175, 0.35);
+  transition: 0.2s ease;
 }
 
 .collect-btn:hover {
-  background: #f1f5ff;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+  background: #1e3a8a;
+  box-shadow: 0 4px 10px rgba(30, 64, 175, 0.45);
 }
 
+.collect-btn span {
+  font-weight: 600;
+}
