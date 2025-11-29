@@ -212,3 +212,6 @@ table tfoot td {
 .collect-btn:active {
   transform: scale(0.94);
 }
+.uni-card {
+    position: relative;
+}
