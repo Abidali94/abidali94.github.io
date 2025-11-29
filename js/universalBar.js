@@ -1,190 +1,177 @@
 /* ===========================================================
-   universalBar.js — Top Summary Bar + Net Profit Collect
-   • Computes:
-       - Sale Profit (collected only)
-       - Service Profit (completed jobs)
-       - Total Expenses
-       - Net Profit (sale + service − expenses − already collected)
-       - Stock Investment (after sale)
-       - Service Investment (completed)
+   universal-bar.js — Top Metrics + Collect Buttons (v1.0)
+   • Calculates:
+       - Net Profit  = (Sale + Service) − Expenses
+       - Stock Investment (sold items)
+       - Service Investment (completed jobs)
        - Pending Credit Sales
-   • Updates:
-       - Universal top bar (unNetProfit, unSaleProfit, ...)
-       - Collection tab summary (colSales, colService, ...)
-   • Adds Net Profit "Collect" button & writes to Collection Center
+   • Provides:
+       - window.updateUniversalBar()
+       - Collect buttons for Net, Stock, Service
+   • Uses:
+       - window.sales, window.services, window.expenses, window.stock
+       - window.addCollectionEntry (from collection.js)
 =========================================================== */
 
 (function () {
+
   function num(v) {
     const n = Number(v || 0);
     return isNaN(n) ? 0 : n;
   }
 
-  function fmt(v) {
-    return "₹" + Math.round(num(v));
-  }
+  function computeMetrics() {
+    const sales   = window.sales   || [];
+    const services = window.services || [];
+    const expenses = window.expenses || [];
+    const stock    = window.stock    || [];
 
-  function computeTotals() {
-    const sales     = window.sales     || [];
-    const services  = window.services  || [];
-    const expenses  = window.expenses  || [];
-    const collects  = window.collections || [];
+    let saleProfitCollected   = 0;
+    let serviceProfitCollected = 0;
+    let totalExpenses         = 0;
+    let pendingCreditTotal    = 0;
+    let stockInvestSold       = 0;
+    let serviceInvestCompleted = 0;
 
-    // ---- Sale Profit & Credit ----
-    let saleProfit  = 0;
-    let creditSales = 0;
-
+    // ---- Sales ----
     sales.forEach(s => {
-      const status = String(s.status || "").toLowerCase();
+      const st = String(s.status || "").toLowerCase();
       const profit = num(s.profit);
-      const total  = num(s.total || s.amount || (num(s.qty) * num(s.price)));
+      const total  = num(s.total || (num(s.qty) * num(s.price)));
 
-      if (status === "credit") {
-        creditSales += total;
+      if (st === "credit") {
+        pendingCreditTotal += total;
       } else {
-        saleProfit += profit;
+        saleProfitCollected += profit;
       }
     });
 
-    // ---- Service Profit + Investment ----
-    let serviceProfit = 0;
-    let serviceInvest = 0;
-
+    // ---- Service ----
     services.forEach(j => {
-      const status = String(j.status || "").toLowerCase();
-      if (status === "completed") {
-        serviceProfit += num(j.profit);
-        serviceInvest += num(j.invest);
+      const st = String(j.status || "").toLowerCase();
+      if (st === "completed") {
+        serviceProfitCollected += num(j.profit);
+        serviceInvestCompleted += num(j.invest);
       }
     });
 
     // ---- Expenses ----
-    let totalExp = 0;
-    expenses.forEach(e => { totalExp += num(e.amount); });
+    expenses.forEach(e => {
+      totalExpenses += num(e.amount || e.value);
+    });
 
-    // ---- Stock Investment (After Sale) ----
-    let stockInvAfter = 0;
-    if (typeof window.getStockInvestmentAfterSale === "function") {
-      stockInvAfter = num(window.getStockInvestmentAfterSale());
-    }
-
-    // ---- Already collected Net Profit (history) ----
-    let collectedNet = 0;
-    collects.forEach(c => {
-      const src = (c.source || c.type || "").toLowerCase();
-      if (src === "net profit") {
-        collectedNet += num(c.amount);
+    // ---- Stock Investment (Sold Items) ----
+    stock.forEach(p => {
+      const soldQty = num(p.sold);
+      const cost    = num(p.cost);
+      if (soldQty > 0 && cost > 0) {
+        stockInvestSold += soldQty * cost;
       }
     });
 
-    const grossProfit = saleProfit + serviceProfit;
-    const netRaw      = grossProfit - totalExp;
-    const netCurrent  = netRaw - collectedNet;
+    const netProfit = saleProfitCollected + serviceProfitCollected - totalExpenses;
 
     return {
-      saleProfit,
-      serviceProfit,
-      expenses: totalExp,
-      stockInvAfter,
-      serviceInvest,
-      creditSales,
-      grossProfit,
-      netRaw,
-      netCurrent,
-      collectedNet
+      saleProfitCollected,
+      serviceProfitCollected,
+      totalExpenses,
+      pendingCreditTotal,
+      stockInvestSold,
+      serviceInvestCompleted,
+      netProfit
     };
+  }
+
+  function formatMoney(v) {
+    return "₹" + Math.round(num(v));
   }
 
   function updateUniversalBar() {
-    const t = computeTotals();
+    const m = computeMetrics();
 
-    const set = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = fmt(val);
-    };
+    const elNet        = document.getElementById("unNetProfit");
+    const elSaleProfit = document.getElementById("unSaleProfit");
+    const elServProfit = document.getElementById("unServiceProfit");
+    const elExpenses   = document.getElementById("unExpenses");
+    const elStockInv   = document.getElementById("unStockInv");
+    const elServInv    = document.getElementById("unServiceInv");
+    const elCredit     = document.getElementById("unCreditSales");
 
-    set("unNetProfit",    t.netCurrent);
-    set("unSaleProfit",   t.saleProfit);
-    set("unServiceProfit",t.serviceProfit);
-    set("unExpenses",     t.expenses);
-    set("unStockInv",     t.stockInvAfter);
-    set("unServiceInv",   t.serviceInvest);
-    set("unCreditSales",  t.creditSales);
+    if (elNet)        elNet.textContent        = formatMoney(m.netProfit);
+    if (elSaleProfit) elSaleProfit.textContent = formatMoney(m.saleProfitCollected);
+    if (elServProfit) elServProfit.textContent = formatMoney(m.serviceProfitCollected);
+    if (elExpenses)   elExpenses.textContent   = formatMoney(m.totalExpenses);
+    if (elStockInv)   elStockInv.textContent   = formatMoney(m.stockInvestSold);
+    if (elServInv)    elServInv.textContent    = formatMoney(m.serviceInvestCompleted);
+    if (elCredit)     elCredit.textContent     = formatMoney(m.pendingCreditTotal);
 
-    // ---- Mirror into Collection summary cards (if present) ----
-    const cSales   = document.getElementById("colSales");
-    const cServ    = document.getElementById("colService");
-    const cCredit  = document.getElementById("colCredit");
-    const cInv     = document.getElementById("colInvRemain");
-
-    if (cSales)  cSales.textContent  = fmt(t.saleProfit);
-    if (cServ)   cServ.textContent   = fmt(t.serviceProfit);
-    if (cCredit) cCredit.textContent = fmt(t.creditSales);
-    if (cInv)    cInv.textContent    = fmt(t.stockInvAfter + t.serviceInvest);
+    // last snapshot – collect prompts లో చూపించడానికి
+    window.__unMetrics = m;
   }
 
-  // ---- Net Profit Collect Button ----
-  function ensureCollectButton() {
-    const card = document.querySelector("#universalBar .uni-card.main");
-    if (!card) return;
-    if (document.getElementById("unProfitCollectBtn")) return;
+  window.updateUniversalBar = updateUniversalBar;
 
-    const btn = document.createElement("button");
-    btn.id = "unProfitCollectBtn";
-    btn.className = "small-btn";
-    btn.style.marginTop = "4px";
-    btn.style.alignSelf = "flex-start";
-    btn.textContent = "Collect";
-
-    card.appendChild(btn);
-  }
-
-  function onCollectClick() {
-    const t = computeTotals();
-    const amt = Math.round(t.netCurrent);
-
-    if (amt <= 0) {
-      alert("No net profit to collect right now.");
+  // ---------- Collect Button Logic (Option 1) ----------
+  function handleCollect(kind) {
+    if (!window.addCollectionEntry) {
+      alert("Collection history is not ready yet.");
       return;
     }
 
-    if (typeof window.addCollectionEntry !== "function") {
-      alert("Collection module not ready.");
+    const m = window.__unMetrics || computeMetrics();
+
+    let label = "";
+    let approx = 0;
+
+    if (kind === "net") {
+      label = "Net Profit (Sale + Service − Expenses)";
+      approx = m.netProfit;
+    } else if (kind === "stock") {
+      label = "Stock Investment (Sold Items)";
+      approx = m.stockInvestSold;
+    } else if (kind === "service") {
+      label = "Service Investment (Completed)";
+      approx = m.serviceInvestCompleted;
+    } else {
       return;
     }
 
-    if (!confirm(`Add current net profit ₹${amt} to Collection Center?`)) return;
+    const hint = approx > 0
+      ? `Approx available: ₹${Math.round(approx)}`
+      : `No positive balance visible.`;
 
-    window.addCollectionEntry(
-      "Net Profit",
-      "Sale + Service − Expenses",
-      amt
+    const inStr = prompt(
+      `${label}\n${hint}\n\nEnter amount to record as collected:`
     );
+    if (!inStr) return;
 
-    // Refresh UI
-    if (typeof window.renderCollection === "function") {
-      window.renderCollection();
+    const amt = Number(inStr);
+    if (!amt || amt <= 0) {
+      alert("Invalid amount.");
+      return;
     }
-    updateUniversalBar();
-    alert("Net profit added to Collection History.");
+
+    const note = prompt("Optional note (e.g., 'Owner withdrawal', 'Bank deposit'):", "") || "";
+
+    // 👉 Option 1: Just record in collection history. We DO NOT touch sales/stock/services.
+    window.addCollectionEntry(label, note, amt);
+
+    // Collection tab + universal bar refresh
+    window.renderCollection?.();
+    window.updateUniversalBar?.();
+    alert("Collection recorded in history.");
   }
 
-  // Init after everything is loaded
-  window.addEventListener("load", () => {
-    try {
-      ensureCollectButton();
-      updateUniversalBar();
-
-      const btn = document.getElementById("unProfitCollectBtn");
-      if (btn && !btn._bound) {
-        btn.addEventListener("click", onCollectClick);
-        btn._bound = true;
-      }
-    } catch (e) {
-      console.error("Universal bar init error:", e);
-    }
+  document.addEventListener("click", e => {
+    const t = e.target;
+    const kind = t?.dataset?.collect;
+    if (!kind) return;
+    handleCollect(kind);
   });
 
-  // Make function available to other files
-  window.updateUniversalBar = updateUniversalBar;
+  window.addEventListener("load", () => {
+    // initial render once all data loaded
+    setTimeout(updateUniversalBar, 50);
+  });
+
 })();
