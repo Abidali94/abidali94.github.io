@@ -1,9 +1,9 @@
 /* ===========================================================
-   sales.js — Sales Manager (Final v11.2 with Universal Bar)
+   sales.js — Sales Manager (Final v11.3 + Credit Collect UI)
    ✔ Profit auto-calculated
    ✔ Time included (12-hour format)
    ✔ Analytics + Overview + Universal bar sync
-   ✔ No double-profit / double-invest errors
+   ✔ Separate Collect button for Credit rows
 =========================================================== */
 
 function refreshSaleTypeSelector() {
@@ -34,7 +34,7 @@ function getCurrentTime12hr() {
 }
 
 /* -----------------------------------------------------------
-   ADD SALE ENTRY (Clean — No double profit/invest)
+   ADD SALE ENTRY (for other modules)
 ----------------------------------------------------------- */
 function addSaleEntry({ date, type, name, qty, price, status }) {
 
@@ -80,6 +80,7 @@ function addSaleEntry({ date, type, name, qty, price, status }) {
     cost,
     profit,
     status: status || "Paid"
+    // NOTE: if needed, you can extend with customer/phone later
   });
 
   window.saveSales && window.saveSales();
@@ -92,28 +93,40 @@ function addSaleEntry({ date, type, name, qty, price, status }) {
 }
 
 /* -----------------------------------------------------------
-   TOGGLE CREDIT → PAID
+   CREDIT → PAID (used by Collect button)
 ----------------------------------------------------------- */
-function toggleSaleStatus(id) {
-  const s = (window.sales || []).find(x => x.id === id);
+function collectCreditSale(id) {
+  const list = window.sales || [];
+  const s = list.find(x => x.id === id);
   if (!s) return;
 
-  if (s.status === "Credit") {
-    if (!confirm("Mark this Credit sale as PAID?")) return;
-    s.status = "Paid";
-  } else {
-    alert("Already Paid.");
+  if (String(s.status).toLowerCase() !== "credit") {
+    alert("This sale is already Paid.");
     return;
   }
 
+  const msgLines = [];
+
+  msgLines.push(`Product: ${s.product} (${s.type})`);
+  msgLines.push(`Qty: ${s.qty}, Total: ₹${s.total}`);
+  if (s.customer) msgLines.push(`Customer: ${s.customer}`);
+  if (s.phone)    msgLines.push(`Phone: ${s.phone}`);
+
+  const ok = confirm(
+    msgLines.join("\n") + "\n\nMark this CREDIT sale as PAID?"
+  );
+  if (!ok) return;
+
+  s.status = "Paid";
   window.saveSales && window.saveSales();
+
   renderSales();
   window.renderAnalytics?.();
   window.updateSummaryCards?.();
   window.updateTabSummaryBar?.();
   window.updateUniversalBar?.();
 }
-window.toggleSaleStatus = toggleSaleStatus;
+window.collectCreditSale = collectCreditSale;
 
 /* -----------------------------------------------------------
    RENDER SALES TABLE
@@ -136,20 +149,45 @@ function renderSales() {
       const t = Number(s.total || s.amount || 0);
       total += t;
 
-      if (String(s.status).toLowerCase() !== "credit")
+      const statusLower = String(s.status || "").toLowerCase();
+
+      if (statusLower !== "credit")
         profit += Number(s.profit || 0);
 
-      const statusHTML = 
-        s.status === "Credit"
-          ? `<button onclick="toggleSaleStatus('${s.id}')" 
-               style="background:#2196f3;color:white;border:none;
-               padding:4px 10px;border-radius:5px;cursor:pointer;">
-               💳 Credit
-             </button>`
-          : `<span style="background:#4caf50;color:white;
-                  padding:4px 10px;border-radius:5px;">
-                💰 Paid
-             </span>`;
+      let statusHTML = "";
+
+      if (statusLower === "credit") {
+        // 🔵 Credit row → show badge + Collect button
+        statusHTML = `
+          <span style="
+            display:inline-block;
+            padding:2px 8px;
+            border-radius:999px;
+            background:#2563eb;
+            color:#fff;
+            font-size:11px;
+            margin-right:4px;">
+            Credit
+          </span>
+          <button class="small-btn"
+                  style="background:#16a34a;font-size:11px;padding:3px 8px;"
+                  onclick="collectCreditSale('${s.id}')">
+            Collect
+          </button>
+        `;
+      } else {
+        statusHTML = `
+          <span style="
+            display:inline-block;
+            padding:2px 8px;
+            border-radius:999px;
+            background:#16a34a;
+            color:#fff;
+            font-size:11px;">
+            Paid
+          </span>
+        `;
+      }
 
       return `
         <tr>
