@@ -234,3 +234,12 @@ table tfoot td {
   color: white !important;
   border: none !important;
 }
+.collect-btn {
+  padding: 3px 10px !important;   /* smaller size */
+  font-size: 10px !important;     /* smaller text */
+  border-radius: 12px !important; /* smaller pill */
+  right: 10px !important;
+  bottom: 8px !important;
+  height: auto !important;
+  line-height: 1 !important;
+}
