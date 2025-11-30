@@ -1,9 +1,10 @@
 /* ===========================================================
-   firebase.js — FINAL V12 (ONLINE ONLY + LOGIN GUARD)
+   firebase.js — FINAL V13 (ONLINE ONLY + LOGIN GUARD + FIXED LOGOUT)
    ✔ Firebase Auth + Firestore
    ✔ Works with core.js cloudPullAllIfAvailable()
    ✔ Saves ks-user-email after login
    ✔ Protects Business pages (auto-redirect to login)
+   ✔ Logout ALWAYS redirects to login.html (fixed)
 =========================================================== */
 
 console.log("%c🔥 firebase.js loaded", "color:#ff9800;font-weight:bold;");
@@ -36,19 +37,15 @@ try {
   console.error("❌ Firebase init failed:", e);
 }
 
-/* Helper: current path */
+/* -----------------------------------------------------------
+   PATH HELPERS
+----------------------------------------------------------- */
 function currentPath() {
-  try {
-    return window.location.pathname || "";
-  } catch {
-    return "";
-  }
+  return window.location.pathname || "";
 }
 
-/* Which pages must require login? */
 const PROTECTED_PATHS = [
-  "/tools/business-dashboard.html"      // main business app
-  // అవసరమైతే ఇంకో tools కూడా ఇక్కడ add చేయొచ్చు
+  "/tools/business-dashboard.html"
 ];
 
 const AUTH_PAGES = [
@@ -57,61 +54,64 @@ const AUTH_PAGES = [
   "/reset.html"
 ];
 
-/* ===========================================================
-   AUTH FUNCTIONS (global helpers)
-=========================================================== */
-
+/* -----------------------------------------------------------
+   LOCAL EMAIL HELPERS
+----------------------------------------------------------- */
 function setLocalEmail(email) {
-  if (!email) return;
-  try {
-    localStorage.setItem("ks-user-email", email);
-  } catch {}
+  try { localStorage.setItem("ks-user-email", email); } catch {}
 }
 
 function clearLocalEmail() {
-  try {
-    localStorage.removeItem("ks-user-email");
-  } catch {}
+  try { localStorage.removeItem("ks-user-email"); } catch {}
 }
 
-/* --- Sign In (exposed as fsLogin & fsSignIn) --- */
+/* ===========================================================
+   AUTH FUNCTIONS
+=========================================================== */
+
 async function _doSignIn(email, password) {
   if (!auth) throw new Error("Auth not ready");
+
   const cred = await auth.signInWithEmailAndPassword(email, password);
+
   if (cred.user?.email) setLocalEmail(cred.user.email);
+
   return cred;
 }
 
 window.fsLogin  = _doSignIn;
-window.fsSignIn = _doSignIn;     // ఇద్దరూ ఒకటే, safety కోసం
+window.fsSignIn = _doSignIn;
 
-/* --- Sign Up --- */
 window.fsSignUp = async function (email, password) {
-  if (!auth) throw new Error("Auth not ready");
   const cred = await auth.createUserWithEmailAndPassword(email, password);
-  try { await cred.user.sendEmailVerification(); } catch (_) {}
+
+  try { await cred.user.sendEmailVerification(); } catch {}
+
   if (cred.user?.email) setLocalEmail(cred.user.email);
+
   return cred;
 };
 
-/* --- Logout --- */
+/*  
+   ✔ LOGOUT FIXED (always redirects to login)
+*/
 window.fsLogout = async function () {
-  if (!auth) return;
-  await auth.signOut();
+  try { 
+    await auth.signOut(); 
+  } catch (e) {
+    console.error("Logout error:", e);
+  }
+
   clearLocalEmail();
-  window.dispatchEvent(new Event("storage"));
+
+  // HARD REDIRECT → 100% guaranteed logout
+  window.location.href = "/login.html";
 };
 
-/* --- Password Reset --- */
-window.fsSendPasswordReset = async function (email) {
-  if (!auth) throw new Error("Auth not ready");
-  return auth.sendPasswordResetEmail(email);
-};
+window.fsSendPasswordReset = email => auth.sendPasswordResetEmail(email);
 
-/* --- Check auth once --- */
 window.fsCheckAuth = function () {
   return new Promise(resolve => {
-    if (!auth) return resolve(null);
     const off = auth.onAuthStateChanged(u => {
       off();
       resolve(u);
@@ -119,16 +119,13 @@ window.fsCheckAuth = function () {
   });
 };
 
-/* --- Expose current user for core.js etc --- */
-window.getFirebaseUser = function () {
-  return auth?.currentUser || null;
-};
+window.getFirebaseUser = () => auth?.currentUser || null;
 
 /* ===========================================================
    AUTH STATE LISTENER — LOGIN GUARD
 =========================================================== */
 if (auth) {
-  auth.onAuthStateChanged(async (user) => {
+  auth.onAuthStateChanged(async user => {
     const path = currentPath();
 
     if (user) {
@@ -137,16 +134,12 @@ if (auth) {
 
       console.log("%c🔐 Logged in:", "color:#03a9f4;font-weight:bold;", email);
 
-      // After login → sync all cloud data
-      if (typeof window.cloudPullAllIfAvailable === "function") {
-        try { await window.cloudPullAllIfAvailable(); } catch (e) {
-          console.warn("cloudPullAllIfAvailable failed:", e);
-        }
+      // Sync data after login
+      if (typeof cloudPullAllIfAvailable === "function") {
+        try { await cloudPullAllIfAvailable(); } catch {}
       }
 
-      window.dispatchEvent(new Event("storage"));
-
-      // If user is on login / signup / reset page → send to dashboard
+      // If user is on login/signup page → redirect to dashboard
       if (AUTH_PAGES.some(p => path.endsWith(p))) {
         window.location.replace("/tools/business-dashboard.html");
       }
@@ -154,9 +147,8 @@ if (auth) {
     } else {
       clearLocalEmail();
       console.log("%c🔓 Logged out", "color:#f44336;font-weight:bold;");
-      window.dispatchEvent(new Event("storage"));
 
-      // 🔒 If this is a PROTECTED page → force to login
+      // If user tries to access protected page → go to login
       if (PROTECTED_PATHS.some(p => path.endsWith(p))) {
         window.location.replace("/login.html");
       }
@@ -165,30 +157,15 @@ if (auth) {
 }
 
 /* ===========================================================
-   FIRESTORE HELPERS — CLOUD ONLY WHEN LOGGED IN
+   FIRESTORE HELPERS
 =========================================================== */
-
 function getCloudUser() {
-  // Prefer live auth
-  if (auth?.currentUser?.email) return auth.currentUser.email;
-
-  // Fallback to stored email (if auth already resolved)
-  try {
-    const stored = localStorage.getItem("ks-user-email");
-    return stored || null;
-  } catch {
-    return null;
-  }
+  return auth?.currentUser?.email || localStorage.getItem("ks-user-email") || null;
 }
 
-/* ----------- CLOUD SAVE ----------- */
 window.cloudSave = async function (collection, data) {
-  if (!db) return;
   const user = getCloudUser();
-  if (!user) {
-    console.warn("cloudSave skipped (no user)");
-    return;
-  }
+  if (!user) return console.warn("cloudSave skipped: no user");
 
   try {
     await db.collection(collection)
@@ -197,10 +174,9 @@ window.cloudSave = async function (collection, data) {
 
     console.log(`☁️ Saved: ${collection} → ${user}`);
 
-    // Very light “pull again” to sync all tabs
     setTimeout(() => {
-      if (typeof window.cloudPullAllIfAvailable === "function") {
-        try { window.cloudPullAllIfAvailable(); } catch {}
+      if (typeof cloudPullAllIfAvailable === "function") {
+        try { cloudPullAllIfAvailable(); } catch {}
       }
     }, 300);
 
@@ -209,16 +185,13 @@ window.cloudSave = async function (collection, data) {
   }
 };
 
-/* ----------- CLOUD LOAD ----------- */
 window.cloudLoad = async function (collection) {
-  if (!db) return [];
   const user = getCloudUser();
   if (!user) return [];
 
   try {
     const snap = await db.collection(collection).doc(user).get();
     if (!snap.exists) return [];
-
     const data = snap.data() || {};
     return Array.isArray(data.items) ? data.items : [];
 
@@ -228,22 +201,16 @@ window.cloudLoad = async function (collection) {
   }
 };
 
-/* ===========================================================
-   DEBOUNCED SAVE (to avoid spam writes)
-=========================================================== */
-let _debounceTimers = {};
-
+/* ---------------- DEBOUNCED SAVE ---------------- */
+let _timers = {};
 window.cloudSaveDebounced = function (collection, data) {
-  if (_debounceTimers[collection]) {
-    clearTimeout(_debounceTimers[collection]);
-  }
-
-  _debounceTimers[collection] = setTimeout(() => {
+  if (_timers[collection]) clearTimeout(_timers[collection]);
+  _timers[collection] = setTimeout(() => {
     window.cloudSave(collection, data);
   }, 400);
 };
 
-/* -----------------------------------------------------------
+/* ===========================================================
    READY
------------------------------------------------------------ */
+=========================================================== */
 console.log("%c⚙️ firebase.js READY ✔ (ONLINE ONLY)", "color:#03a9f4;font-weight:bold;");
