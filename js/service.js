@@ -1,13 +1,14 @@
 /* ===========================================================
-   🛠 service.js — Service / Repair Manager (v16 ONLINE)
+   🛠 service.js — Service / Repair Manager (v17 ONLINE + CREDIT READY)
    • Fully compatible with:
-       - core.js v9 (saveServices, toDisplay, todayDate, esc)
-       - universalBar.js v3
-       - collection.js v8
+       - core.js (saveServices, toDisplay, todayDate, esc, metrics)
+       - universalBar.js (profit only when status = "Completed")
        - analytics + dashboard
-   • Uses cloud-aware saveServices() (NO direct localStorage key mismatch)
+       - future Credit History tab (service credits)
+   • OPTION 1:
+       🔹 Paid → Profit add immediately
+       🔹 Credit → Profit add only after collection (later)
    • Safe date handling (toInternalIfNeeded)
-   • Centralized refresh after each change
 =========================================================== */
 
 (function () {
@@ -15,10 +16,10 @@
   const qs = s => document.querySelector(s);
 
   // Use global helpers from core.js if available
-  const escSafe      = window.esc || (x => (x === undefined || x === null) ? "" : String(x));
-  const toDisplay    = window.toDisplay        || (d => d);
-  const toInternalIf = window.toInternalIfNeeded || (d => d);
-  const todayDateFn  = window.todayDate        || (() => new Date().toISOString().slice(0, 10));
+  const escSafe       = window.esc || (x => (x === undefined || x === null) ? "" : String(x));
+  const toDisplay     = window.toDisplay          || (d => d);
+  const toInternalIf  = window.toInternalIfNeeded || (d => d);
+  const todayDateFn   = window.todayDate          || (() => new Date().toISOString().slice(0, 10));
 
   let svcPie = null;
 
@@ -50,11 +51,11 @@
   }
 
   function refreshAllAfterChange() {
-    try { renderServiceTables(); }        catch {}
-    try { window.renderAnalytics?.(); }   catch {}
-    try { window.updateSummaryCards?.(); }catch {}
-    try { window.updateUniversalBar?.(); }catch {}
-    try { window.renderCollection?.(); }  catch {}
+    try { renderServiceTables(); }         catch {}
+    try { window.renderAnalytics?.(); }    catch {}
+    try { window.updateSummaryCards?.(); } catch {}
+    try { window.updateUniversalBar?.(); } catch {}
+    try { window.renderCollection?.(); }   catch {}
   }
 
   /* -----------------------------
@@ -110,21 +111,21 @@
       model,
       problem,
 
-      advance,
-      invest: 0,
-      paid: 0,
-      remaining: 0,
-      profit: 0,
+      advance,          // already collected when device received
+      invest: 0,        // parts cost
+      paid: 0,          // total collected (advance + remaining paid)
+      remaining: 0,     // pending amount (for credit jobs)
+      profit: 0,        // final profit (only counted when status = 'Completed')
       returnedAdvance: 0,
 
-      status: "Pending"
+      status: "Pending" // Pending / Completed / Credit / Failed/Returned
     };
 
     ensureServices().push(job);
     persistServices();
     refreshAllAfterChange();
 
-    // Clear form fields (optional, small UX)
+    // Clear form fields (optional UX)
     try {
       qs("#svcCustomer").value = "";
       qs("#svcPhone").value    = "";
@@ -135,34 +136,64 @@
   }
 
   /* -----------------------------
-      COMPLETE JOB
+      COMPLETE JOB (Paid / Credit)
+      mode = "paid" | "credit"
   ------------------------------ */
-  function markCompleted(id) {
+  function markCompleted(id, mode) {
     const list = ensureServices();
     const job  = list.find(j => j.id === id);
     if (!job) return;
 
     const invest = Number(prompt("Parts / Repair Cost ₹:", job.invest || 0) || 0);
-    const full   = Number(prompt("Total Amount Collected ₹:", job.paid   || 0) || 0);
+    const full   = Number(prompt("Total Bill Amount (Full) ₹:", job.paid || 0) || 0);
 
-    const remaining = full - job.advance;
-    const profit    = full - invest;
+    if (!full || full <= 0) {
+      alert("Invalid total amount.");
+      return;
+    }
 
-    if (!confirm(
-      `Save this job?\n\n` +
-      `Invest: ₹${invest}\n` +
-      `Advance: ₹${job.advance}\n` +
-      `Full: ₹${full}\n` +
-      `Remaining (Customer pays): ₹${remaining}\n` +
-      `Profit: ₹${profit}`
-    )) return;
+    const totalProfit = full - invest;
+    const alreadyGot  = Number(job.advance || 0); // already taken at receive time
 
-    job.invest    = invest;
-    job.paid      = full;
-    job.remaining = remaining;
-    job.profit    = profit;
-    job.status    = "Completed";
-    job.date_out  = todayDateFn();   // already internal format
+    let confirmMsg = `Job ${job.jobId} — ${job.customer}\n\n` +
+                     `Invest: ₹${invest}\n` +
+                     `Advance (already taken): ₹${alreadyGot}\n` +
+                     `Full Bill: ₹${full}\n`;
+
+    if (mode === "paid") {
+      const remainingNow = full - alreadyGot;   // ఈ visit లో తీసుకునే remaining
+
+      confirmMsg +=
+        `Remaining (to collect now): ₹${remainingNow}\n` +
+        `Final Profit: ₹${totalProfit}\n\n` +
+        `Mark as COMPLETED (PAID)?`;
+
+      if (!confirm(confirmMsg)) return;
+
+      job.invest    = invest;
+      job.paid      = full;          // full bill collected (advance + remaining)
+      job.remaining = 0;
+      job.profit    = totalProfit;
+      job.status    = "Completed";   // ✅ Profit will count in metrics
+      job.date_out  = todayDateFn();
+    } else {
+      // mode === "credit"
+      const remainingDue = full - alreadyGot;   // ఇంకా pending amount
+
+      confirmMsg +=
+        `Pending (Credit) after advance: ₹${remainingDue}\n` +
+        `Expected Profit (when collected): ₹${totalProfit}\n\n` +
+        `Mark as COMPLETED (CREDIT)?`;
+
+      if (!confirm(confirmMsg)) return;
+
+      job.invest    = invest;
+      job.paid      = alreadyGot;    // ఇప్పటివరకు వచ్చిన మొత్తం (only advance)
+      job.remaining = remainingDue;  // pending credit
+      job.profit    = totalProfit;   // profit store అవుతుంది కానీ
+      job.status    = "Credit";      // ⚠️ metrics లో ఇంకా count కాదు (status ≠ 'Completed')
+      job.date_out  = todayDateFn();
+    }
 
     persistServices();
     refreshAllAfterChange();
@@ -203,6 +234,7 @@
 
   /* -----------------------------
       QUICK POPUP MENU FOR JOB
+      (Now supports Credit option)
   ------------------------------ */
   function openJob(id) {
     const j = ensureServices().find(x => x.id === id);
@@ -212,11 +244,14 @@
       `Job ${j.jobId}\n` +
       `Customer: ${j.customer}\nPhone: ${j.phone}\n` +
       `Item: ${j.item} - ${j.model}\nProblem: ${j.problem}\nAdvance: ₹${j.advance}\n\n` +
-      `1 - Completed\n2 - Failed/Returned`;
+      `1 - Completed (Paid)\n` +
+      `2 - Completed (Credit)\n` +
+      `3 - Failed/Returned`;
 
     const ch = prompt(msg, "1");
-    if (ch === "1") return markCompleted(id);
-    if (ch === "2") return markFailed(id);
+    if (ch === "1") return markCompleted(id, "paid");
+    if (ch === "2") return markCompleted(id, "credit");
+    if (ch === "3") return markFailed(id);
   }
 
   /* ==========================================================
@@ -231,6 +266,7 @@
 
     const pending   = list.filter(j => j.status === "Pending");
     const completed = list.filter(j => j.status === "Completed");
+    const credit    = list.filter(j => j.status === "Credit");
     const failed    = list.filter(j => j.status === "Failed/Returned");
 
     const badge = s => {
@@ -238,9 +274,12 @@
         return `<span class="status-credit">Pending</span>`;
       if (s === "Completed")
         return `<span class="status-paid">Completed</span>`;
+      if (s === "Credit")
+        return `<span class="status-credit" style="background:#facc15;color:#000;">Credit</span>`;
       return `<span class="status-credit" style="background:#e53935;color:#fff;">Failed</span>`;
     };
 
+    /* ---------- PENDING TABLE ---------- */
     pendBody.innerHTML =
       pending.map(j => `
         <tr>
@@ -260,20 +299,34 @@
       `).join("") ||
       `<tr><td colspan="9" style="text-align:center;opacity:0.6;">No pending jobs</td></tr>`;
 
+    /* ---------- HISTORY TABLE (Completed + Credit + Failed) ---------- */
+    const historyList = [...completed, ...credit, ...failed];
+
     histBody.innerHTML =
-      [...completed, ...failed].map(j => `
-        <tr>
-          <td data-label="Job ID">${j.jobId}</td>
-          <td data-label="Received">${toDisplay(j.date_in)}</td>
-          <td data-label="Completed">${j.date_out ? toDisplay(j.date_out) : "-"}</td>
-          <td data-label="Customer">${escSafe(j.customer)}</td>
-          <td data-label="Item">${escSafe(j.item)}</td>
-          <td data-label="Invest">₹${j.invest}</td>
-          <td data-label="Paid">₹${j.paid}</td>
-          <td data-label="Profit">₹${j.profit}</td>
-          <td data-label="Status">${badge(j.status)}</td>
-        </tr>
-      `).join("") ||
+      historyList.map(j => {
+        const isCredit = j.status === "Credit";
+        const profitText = isCredit
+          ? `₹${j.profit} (credit)`
+          : `₹${j.profit}`;
+
+        const paidText = isCredit
+          ? `₹${j.paid} (only advance)`
+          : `₹${j.paid}`;
+
+        return `
+          <tr>
+            <td data-label="Job ID">${j.jobId}</td>
+            <td data-label="Received">${toDisplay(j.date_in)}</td>
+            <td data-label="Completed">${j.date_out ? toDisplay(j.date_out) : "-"}</td>
+            <td data-label="Customer">${escSafe(j.customer)}</td>
+            <td data-label="Item">${escSafe(j.item)}</td>
+            <td data-label="Invest">₹${j.invest}</td>
+            <td data-label="Paid">${paidText}</td>
+            <td data-label="Profit">${profitText}</td>
+            <td data-label="Status">${badge(j.status)}</td>
+          </tr>
+        `;
+      }).join("") ||
       `<tr><td colspan="9" style="text-align:center;opacity:0.6;">No history</td></tr>`;
 
     // Summary cards
@@ -284,7 +337,14 @@
     if (pendingCount)   pendingCount.textContent   = pending.length;
     if (completedCount) completedCount.textContent = completed.length;
 
-    const totalProfit = list.reduce((s, j) => s + Number(j.profit || 0), 0);
+    // OPTION 1: totalProfit = sum(profit for status === 'Completed')
+    const totalProfit = list.reduce((s, j) => {
+      if (String(j.status || "").toLowerCase() === "completed") {
+        return s + Number(j.profit || 0);
+      }
+      return s;
+    }, 0);
+
     if (totalProfitEl) totalProfitEl.textContent = "₹" + totalProfit;
 
     renderServicePie();
@@ -300,6 +360,7 @@
     const list = ensureServices();
     const P = list.filter(j => j.status === "Pending").length;
     const C = list.filter(j => j.status === "Completed").length;
+    const R = list.filter(j => j.status === "Credit").length;
     const F = list.filter(j => j.status === "Failed/Returned").length;
 
     if (svcPie) svcPie.destroy();
@@ -307,10 +368,10 @@
     svcPie = new Chart(ctx, {
       type: "pie",
       data: {
-        labels: ["Pending", "Completed", "Failed/Returned"],
+        labels: ["Pending", "Completed", "Credit", "Failed/Returned"],
         datasets: [{
-          data: [P, C, F],
-          backgroundColor: ["#FFEB3B", "#4CAF50", "#E53935"]
+          data: [P, C, R, F],
+          backgroundColor: ["#FFEB3B", "#4CAF50", "#FACC15", "#E53935"]
         }]
       },
       options: {
