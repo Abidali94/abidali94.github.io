@@ -88,42 +88,44 @@
     </div>
   </div>
 
-  <!-- FIREBASE (MUST BE IN THIS ORDER) -->
+  <!-- FIREBASE (REQUIRED ORDER) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
 
-  <!-- your firebase.js -->
+  <!-- firebase.js -->
   <script src="/js/firebase.js"></script>
+
+  <!-- login-utils.js (Online Mode Auth Helpers) -->
+  <script src="/js/login-utils.js"></script>
 
   <script>
     const qs = s => document.querySelector(s);
 
-    // Password Show/Hide
+    // Password visibility toggle
     qs("#togglePw").addEventListener("click", () => {
       const pw = qs("#password");
       pw.type = pw.type === "password" ? "text" : "password";
     });
 
+    // LOGIN BUTTON
     qs("#loginBtn").addEventListener("click", async () => {
       const email = qs("#email").value.trim();
-      const pw = qs("#password").value.trim();
+      const pw    = qs("#password").value.trim();
 
-      if(!email || !pw){
-        qs("#msg").textContent = "Enter login details";
+      if (!email || !pw) {
+        qs("#msg").textContent = "Enter both email and password.";
         return;
       }
 
-      try {
-        // Use modern fsSignIn
-        await window.fsSignIn(email, pw);
+      qs("#msg").textContent = "Please wait...";
 
-        // Redirect to dashboard
+      const res = await loginUser(email, pw);
+
+      if (res.success) {
         window.location.href = "/tools/business-dashboard.html";
-
-      } catch (e) {
-        qs("#msg").textContent = "Login failed: " + e.message;
-        console.error(e);
+      } else {
+        qs("#msg").textContent = "Login failed: " + res.error;
       }
     });
   </script>
