@@ -1,49 +1,45 @@
 /* ==========================================================
-   stock.js — Clean Full Version (v3.0)
-   • Supports:
-       - Add stock
-       - Render stock table
-       - Sell / Credit sale
-       - Update sold qty
-       - Filter + search
-       - Auto add Wanting when finished
-       - Correct universalBar updates
+   stock.js — ONLINE REALTIME VERSION (v4.0)
+   ✔ Fully online (core.js + firebase.js compatible)
+   ✔ Cloud sync instant (cloudSaveDebounced)
+   ✔ Sales.js live sync
+   ✔ Collection, UniversalBar instant update
 ========================================================== */
 
 /* -----------------------------
    Helpers
 ----------------------------- */
-function $(s) { return document.querySelector(s); }
-function $all(s) { return Array.from(document.querySelectorAll(s)); }
+const $  = s => document.querySelector(s);
+const $all = s => Array.from(document.querySelectorAll(s));
 
-function num(v) { 
-  const n = Number(v || 0);
-  return isNaN(n) ? 0 : n;
-}
-
-function todayDate() {
-  return new Date().toISOString().slice(0,10);
-}
+const num = v => isNaN(Number(v)) ? 0 : Number(v);
 
 function getCurrentTime12hr() {
-  const d = new Date();
-  return d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+  return new Date().toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
-
-function uid(prefix) {
-  return prefix + "_" + Math.random().toString(36).substr(2,9);
-}
-
 
 /* ==========================================================
-   LOAD / SAVE STOCK
+   STOCK DATA (Loaded by core.js – DO NOT OVERWRITE)
 ========================================================== */
-window.stock = JSON.parse(localStorage.getItem("stock") || "[]");
+/*  ⚠️ Do NOT: window.stock = JSON.parse(...)
+    core.js already loads stock + cloud sync
+*/
 
+/* ==========================================================
+   SAVE STOCK (LOCAL + CLOUD)
+========================================================== */
 window.saveStock = function () {
-  localStorage.setItem("stock", JSON.stringify(window.stock));
-};
+  try {
+    localStorage.setItem("stock-data", JSON.stringify(window.stock));
+  } catch {}
 
+  if (typeof cloudSaveDebounced === "function") {
+    cloudSaveDebounced("stock", window.stock);
+  }
+};
 
 /* ==========================================================
    ADD STOCK
@@ -56,7 +52,8 @@ $("#addStockBtn")?.addEventListener("click", () => {
   const cost = num($("#pcost").value);
 
   if (!type || !name || qty <= 0 || cost <= 0) {
-    alert("Enter valid product details."); return;
+    alert("Enter valid product details.");
+    return;
   }
 
   window.stock.push({
@@ -75,19 +72,18 @@ $("#addStockBtn")?.addEventListener("click", () => {
   window.updateUniversalBar?.();
 });
 
-
 /* ==========================================================
    CLEAR ALL STOCK
 ========================================================== */
 $("#clearStockBtn")?.addEventListener("click", () => {
-  if (confirm("Delete ALL stock?")) {
-    window.stock = [];
-    window.saveStock();
-    renderStock();
-    window.updateUniversalBar?.();
-  }
-});
+  if (!confirm("Delete ALL stock?")) return;
 
+  window.stock = [];
+  window.saveStock();
+
+  renderStock();
+  window.updateUniversalBar?.();
+});
 
 /* ==========================================================
    SET GLOBAL LIMIT
@@ -95,13 +91,13 @@ $("#clearStockBtn")?.addEventListener("click", () => {
 $("#setLimitBtn")?.addEventListener("click", () => {
   const limit = num($("#globalLimit").value || 2);
   window.stock.forEach(p => p.limit = limit);
+
   window.saveStock();
   renderStock();
 });
 
-
 /* ==========================================================
-   STOCK QUICK SALE / CREDIT SALE
+   STOCK QUICK SALE (Cash / Credit)
 ========================================================== */
 function stockQuickSale(i, mode) {
   const p = window.stock[i];
@@ -116,7 +112,6 @@ function stockQuickSale(i, mode) {
   const price = num(prompt("Enter Selling Price ₹:"));
   if (!price || price <= 0) return;
 
-  // For credit sale
   let customer = "";
   let phone = "";
 
@@ -129,10 +124,11 @@ function stockQuickSale(i, mode) {
   const total = qty * price;
   const profit = total - qty * cost;
 
+  /* Update sold qty */
   p.sold += qty;
+  window.saveStock();
 
-  // Add sale entry
-  window.sales = window.sales || [];
+  /* Add sale entry (sales.js handles sync) */
   window.sales.push({
     id: uid("sale"),
     date: todayDate(),
@@ -149,19 +145,23 @@ function stockQuickSale(i, mode) {
     phone
   });
 
-  window.saveSales && window.saveSales();
-  window.saveStock();
+  window.saveSales?.();
 
-  // Auto Wanting
+  /* Auto Wanting */
   if (p.sold >= p.qty && window.autoAddWanting) {
     window.autoAddWanting(p.type, p.name, "Finished");
   }
 
+  /* 🔥 FULL REALTIME UPDATE */
   renderStock();
   window.renderSales?.();
+  renderPendingCollections?.();
+  renderCollection?.();
   window.updateUniversalBar?.();
 }
 
+/* expose */
+window.stockQuickSale = stockQuickSale;
 
 /* ==========================================================
    RENDER STOCK TABLE
@@ -173,15 +173,15 @@ function renderStock() {
   const filterType = $("#filterType")?.value || "all";
   const searchTxt = ($("#productSearch")?.value || "").toLowerCase();
 
-  let data = window.stock;
+  let data = window.stock || [];
 
   if (filterType !== "all") {
     data = data.filter(p => p.type === filterType);
   }
 
   if (searchTxt) {
-    data = data.filter(p => 
-      p.name.toLowerCase().includes(searchTxt) || 
+    data = data.filter(p =>
+      p.name.toLowerCase().includes(searchTxt) ||
       p.type.toLowerCase().includes(searchTxt)
     );
   }
@@ -189,7 +189,7 @@ function renderStock() {
   tbody.innerHTML = data.map((p, i) => {
     const remain = num(p.qty) - num(p.sold);
     const alert = remain <= p.limit ? "⚠️" : "";
-    
+
     return `
       <tr>
         <td>${p.date}</td>
@@ -200,11 +200,10 @@ function renderStock() {
         <td>${remain}</td>
         <td>${alert}</td>
         <td>${p.limit}</td>
-
         <td>
-          <button class="small-btn" onclick="stockQuickSale(${i}, 'Cash')">Cash</button>
+          <button class="small-btn" onclick="stockQuickSale(${i}, 'Paid')">Cash</button>
           <button class="small-btn" onclick="stockQuickSale(${i}, 'Credit')"
-            style="background:#facc15;color:#000;">Credit</button>
+            style="background:#facc15;color:black;">Credit</button>
         </td>
       </tr>
     `;
@@ -213,9 +212,8 @@ function renderStock() {
   updateStockInvestment();
 }
 
-
 /* ==========================================================
-   STOCK INVESTMENT BOX (Before Sale)
+   STOCK INVESTMENT (Before sale)
 ========================================================== */
 function updateStockInvestment() {
   const total = window.stock.reduce((sum, p) => {
@@ -226,14 +224,11 @@ function updateStockInvestment() {
   $("#stockInvValue").textContent = "₹" + total;
 }
 
-
 /* ==========================================================
    EVENTS
 ========================================================== */
-
 $("#productSearch")?.addEventListener("input", renderStock);
 $("#filterType")?.addEventListener("change", renderStock);
-
 
 /* ==========================================================
    INIT
