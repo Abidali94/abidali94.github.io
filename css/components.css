@@ -1,6 +1,6 @@
 /* =========================================================
    components.css — Buttons, inputs, tables, small widgets
-   FINAL CLEAN v7 — NO DUPLICATES — FIXED COLLECT BUTTON
+   FINAL CLEAN v8 — FIXED COLLECT BUTTON (bottom-right)
 ========================================================= */
 
 /* ------------------------------
@@ -174,18 +174,18 @@ table tfoot td {
 }
 
 /* =========================================================
-   FIXED - FINAL COLLECT BUTTON (Top cards)
+   FINAL COLLECT BUTTON — bottom-right position
 ========================================================= */
 
 .uni-card {
   position: relative;
-  padding-bottom: 28px;  /* space for collect-btn */
+  padding-bottom: 40px;   /* space for bottom-right button */
 }
 
 .collect-btn {
   position: absolute;
   right: 10px;
-  top: 10px;
+  bottom: 10px;     /* moved from top → bottom */
 
   background: #2563eb;
   color: #fff;
@@ -214,7 +214,7 @@ table tfoot td {
 }
 
 /* =========================================================
-   Pending collection table button (separate style)
+   Pending collection button (separate)
 ========================================================= */
 .pending-collect-btn {
   background: #2563eb !important;
