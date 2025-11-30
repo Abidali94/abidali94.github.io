@@ -1,7 +1,7 @@
 /* ===========================================================
-   universal-bar.js — FINAL v3.0
-   ✔ 100% FIXED — No 'Loading...' bug
-   ✔ Fully matches sales.js v12, stock.js v3, collection.js v7
+   universal-bar.js — FINAL v3.1
+   ✔ Matches sales.js v12, stock.js v3, collection.js v10
+   ✔ Labels exactly same as dashboard cards
    ✔ Accurate metrics: profit, credit, investments
    ✔ Safe even if arrays missing or empty
 =========================================================== */
@@ -113,6 +113,7 @@
     if (el.servInv) el.servInv.textContent = money(m.serviceInvestCompleted);
     if (el.credit)  el.credit.textContent  = money(m.pendingCreditTotal);
 
+    // snapshot for collection.js etc.
     window.__unMetrics = m;
   }
 
@@ -130,10 +131,20 @@
 
     const m = window.__unMetrics || computeMetrics();
 
+    // 🔹 Labels EXACTLY match business-dashboard.html cards
     const labels = {
-      net:     ["Net Profit (Sale + Service – Expenses)", m.netProfit],
-      stock:   ["Stock Investment Collected", m.stockInvestSold],
-      service: ["Service Investment Collected", m.serviceInvestCompleted]
+      net: [
+        "Net Profit (Sale + Service − Expenses)",
+        m.netProfit
+      ],
+      stock: [
+        "Stock Investment (Sold Items)",
+        m.stockInvestSold
+      ],
+      service: [
+        "Service Investment (Completed)",
+        m.serviceInvestCompleted
+      ]
     };
 
     if (!labels[kind]) return;
@@ -163,7 +174,7 @@
   window.handleCollect = handleCollect;
 
   /* ===========================================================
-     CLICK LISTENER
+     CLICK LISTENER (Top bar buttons)
   ============================================================ */
   document.addEventListener("click", e => {
     const btn = e.target.closest(".collect-btn");
