@@ -163,7 +163,6 @@ btn.addEventListener("click", ()=>{
 </script>
 
 <style>
-/* DARK MODE STYLE */
 body.dark{
   background:#0e0e0e;
   color:#fff;
@@ -172,6 +171,11 @@ body.dark{
 body.dark .header{
   background:#1a1a1a;
   color:#fff;
+}
+
+/* FIX: Header Title Visible in Dark Mode */
+body.dark .header-title{
+  color:#fff !important;
 }
 
 body.dark .tool-card{
