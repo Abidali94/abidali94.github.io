@@ -1,9 +1,10 @@
 /* ===========================================================
-   collection.js — FINAL CLEAN v8.0
-   ✔ Shows Qty × Rate = Total everywhere
-   ✔ Customer + Phone always visible
-   ✔ Credit → Paid update + detailed history entry
-   ✔ Fully synced with universalBar metrics
+   collection.js — FINAL ONLINE VERSION (V10.0)
+   ✔ Instant cloud sync (no refresh)
+   ✔ Qty × Rate shown everywhere
+   ✔ Customer + Phone visible
+   ✔ Credit → Paid with full detailed history
+   ✔ Fully synced with universalBar + core.js
 =========================================================== */
 
 /* -----------------------------
@@ -12,46 +13,51 @@
 function escLocal(x) {
   return (x === undefined || x === null) ? "" : String(x);
 }
-
 function cNum(v) {
   const n = Number(v || 0);
   return isNaN(n) ? 0 : n;
 }
 
-/* -----------------------------
-   Local storage (History)
------------------------------ */
-window.collections = JSON.parse(localStorage.getItem("ks-collections") || "[]");
-
-function saveCollections() {
-  localStorage.setItem("ks-collections", JSON.stringify(window.collections || []));
-}
+/* ===========================================================
+   LOAD LOCAL (Cloud sync handled by core.js)
+=========================================================== */
+window.collections = Array.isArray(window.collections) ? window.collections : [];
 
 /* ===========================================================
-   PUBLIC: addCollectionEntry (FULL DETAILS)
+   SAVE (LOCAL + CLOUD)
+=========================================================== */
+function saveCollections() {
+  localStorage.setItem("ks-collections", JSON.stringify(window.collections));
+  if (typeof cloudSaveDebounced === "function") {
+    cloudSaveDebounced("collections", window.collections);
+  }
+}
+window.saveCollections = saveCollections;
+
+/* ===========================================================
+   PUBLIC: addCollectionEntry
 =========================================================== */
 window.addCollectionEntry = function (source, details, amount) {
   const entry = {
-    id: Date.now().toString(),
-    date: window.todayDate ? todayDate() : new Date().toISOString().slice(0, 10),
-    source: escLocal(source || ""),
-    details: escLocal(details || ""),
+    id: uid("coll"),
+    date: todayDate(),
+    source: escLocal(source),
+    details: escLocal(details),
     amount: cNum(amount)
   };
 
   window.collections.push(entry);
   saveCollections();
+
   renderCollection();
   window.updateUniversalBar?.();
 };
 
 /* ===========================================================
-   SUMMARY
+   SUMMARY (Uses universalBar metrics)
 =========================================================== */
 function computeCollectionSummary() {
-  window.updateUniversalBar?.();
   const m = window.__unMetrics || {};
-
   return {
     salesCollected:   cNum(m.saleProfitCollected),
     serviceCollected: cNum(m.serviceProfitCollected),
@@ -67,9 +73,7 @@ function getPendingList() {
   const list = [];
 
   (window.sales || []).forEach(s => {
-    if (String(s.status || "").toLowerCase() === "credit") {
-      const total = cNum(s.total || s.qty * s.price);
-
+    if (String(s.status).toLowerCase() === "credit") {
       list.push({
         id: s.id,
         name: s.product,
@@ -77,7 +81,7 @@ function getPendingList() {
         date: s.date,
         qty: cNum(s.qty),
         price: cNum(s.price),
-        pending: total,
+        pending: cNum(s.total),
         customer: escLocal(s.customer),
         phone: escLocal(s.phone)
       });
@@ -88,10 +92,9 @@ function getPendingList() {
 }
 
 /* ===========================================================
-   RENDER PENDING COLLECTION TABLE
-   (Now shows Qty × Rate also)
+   RENDER PENDING
 =========================================================== */
-function renderPendingCollections() {
+window.renderPendingCollections = function () {
   const tbody = qs("#pendingCollectionTable tbody");
   if (!tbody) return;
 
@@ -107,8 +110,7 @@ function renderPendingCollections() {
 
   tbody.innerHTML = list.map(r => `
     <tr>
-
-      <td data-label="Date">${window.toDisplay ? toDisplay(r.date) : r.date}</td>
+      <td data-label="Date">${toDisplay(r.date)}</td>
 
       <td data-label="Name">
         ${escLocal(r.name)}
@@ -118,7 +120,6 @@ function renderPendingCollections() {
       </td>
 
       <td data-label="Type">${escLocal(r.type)}</td>
-
       <td data-label="Pending"><b>₹${r.pending}</b></td>
 
       <td data-label="Action">
@@ -130,12 +131,12 @@ function renderPendingCollections() {
       </td>
     </tr>
   `).join("");
-}
+};
 
 /* ===========================================================
-   RENDER COLLECTION HISTORY + SUMMARY
+   RENDER HISTORY
 =========================================================== */
-function renderCollection() {
+window.renderCollection = function () {
   const sum = computeCollectionSummary();
   const fmt = v => "₹" + Math.round(cNum(v));
 
@@ -147,9 +148,7 @@ function renderCollection() {
   const tbody = qs("#collectionHistory tbody");
   if (!tbody) return;
 
-  const list = window.collections;
-
-  if (!list.length) {
+  if (!window.collections.length) {
     tbody.innerHTML = `
       <tr><td colspan="4" style="text-align:center;opacity:0.6;">
         No collection history yet
@@ -157,7 +156,7 @@ function renderCollection() {
     return;
   }
 
-  tbody.innerHTML = list.map(e => `
+  tbody.innerHTML = window.collections.map(e => `
     <tr>
       <td data-label="Date">${e.date}</td>
       <td data-label="Source">${escLocal(e.source)}</td>
@@ -165,86 +164,74 @@ function renderCollection() {
       <td data-label="Amount">₹${e.amount}</td>
     </tr>
   `).join("");
-}
-
-window.renderCollection = renderCollection;
+};
 
 /* ===========================================================
-   GLOBAL CLICK HANDLER (Collect button)
+   GLOBAL CLICK HANDLER
 =========================================================== */
 document.addEventListener("click", e => {
   const target = e.target;
 
-  /* CLEAR HISTORY */
+  /* Clear history */
   if (target.id === "clearCollectionBtn") {
-    if (!confirm("Clear entire collection history?")) return;
-    window.collections = [];
-    saveCollections();
-    renderCollection();
-    window.updateUniversalBar?.();
+    if (confirm("Clear entire collection history?")) {
+      window.collections = [];
+      saveCollections();
+      renderCollection();
+      window.updateUniversalBar?.();
+    }
     return;
   }
 
-  /* CREDIT → PAID */
+  /* Credit → Paid collect */
   const btn = target.closest(".pending-collect-btn");
   if (!btn) return;
 
   const id  = btn.dataset.id;
   const amt = cNum(btn.dataset.amount);
 
-  const sale = (window.sales || []).find(s => s.id == id);
+  const sale = (window.sales || []).find(s => s.id === id);
   if (!sale) return alert("Sale not found.");
 
   if (String(sale.status).toLowerCase() !== "credit") {
-    alert("This sale is not CREDIT anymore.");
-    renderPendingCollections();
-    renderCollection();
-    return;
+    alert("Already Paid");
+    return renderPendingCollections();
   }
 
-  /* Confirmation (full details) */
-  const confirmMsg =
+  const msg =
     `Product: ${sale.product}\n` +
     `Qty: ${sale.qty}\n` +
     `Rate: ₹${sale.price}\n` +
     `Total: ₹${sale.total}\n` +
     (sale.customer ? `Customer: ${sale.customer}\n` : "") +
     (sale.phone ? `Phone: ${sale.phone}\n` : "") +
-    `\nMark this as COLLECTED?`;
+    `\nMark as PAID?`;
 
-  if (!confirm(confirmMsg)) return;
+  if (!confirm(msg)) return;
 
-  /* Mark as paid */
+  /* Update Status */
   sale.status = "Paid";
   window.saveSales?.();
 
-  /* Build history string */
-  const detailText =
+  /* Add History Entry */
+  const fullDetails =
     `${sale.product} — Qty ${sale.qty} × ₹${sale.price} = ₹${sale.total}` +
     (sale.customer ? ` — ${sale.customer}` : "") +
     (sale.phone ? ` — ${sale.phone}` : "");
 
-  /* Save entry */
-  window.addCollectionEntry("Sale (Credit cleared)", detailText, amt);
+  window.addCollectionEntry("Sale (Credit cleared)", fullDetails, amt);
 
-  /* Refresh UI */
+  /* FULL REALTIME REFRESH */
   renderPendingCollections();
   renderCollection();
   window.renderSales?.();
   window.updateUniversalBar?.();
-
-  alert("Collection saved & marked as Paid.");
 });
 
 /* ===========================================================
    INIT
 =========================================================== */
 window.addEventListener("load", () => {
-  if (!Array.isArray(window.collections)) {
-    window.collections = [];
-    saveCollections();
-  }
-
   renderPendingCollections();
   renderCollection();
   window.updateUniversalBar?.();
