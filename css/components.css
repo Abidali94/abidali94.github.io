@@ -1,5 +1,6 @@
 /* =========================================================
    components.css — Buttons, inputs, tables, small widgets
+   FINAL CLEAN v7 — NO DUPLICATES — FIXED COLLECT BUTTON
 ========================================================= */
 
 /* ------------------------------
@@ -37,7 +38,7 @@
   box-shadow: none;
 }
 
-/* Danger button override */
+/* Danger button shadow fix */
 .small-btn[style*="ef4444"],
 .small-btn[style*="c62828"],
 .small-btn[style*="b71c1c"] {
@@ -173,12 +174,12 @@ table tfoot td {
 }
 
 /* =========================================================
-   FINAL COLLECT BUTTON — Clean Blue Version
+   FIXED - FINAL COLLECT BUTTON (Top cards)
 ========================================================= */
 
 .uni-card {
   position: relative;
-  padding-bottom: 30px;
+  padding-bottom: 28px;  /* space for collect-btn */
 }
 
 .collect-btn {
@@ -187,31 +188,39 @@ table tfoot td {
   top: 10px;
 
   background: #2563eb;
-  color: white;
+  color: #fff;
   border: none;
 
-  padding: 3px 10px;
-  font-size: 10px;
+  padding: 4px 11px;
+  font-size: 11px;
   font-weight: 600;
 
-  border-radius: 12px;
+  border-radius: 14px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
   cursor: pointer;
 
-  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
   transition: 0.2s ease;
 }
 
 .collect-btn:hover {
   background: #1e4bb8;
-  box-shadow: 0 4px 10px rgba(30, 75, 184, 0.3);
+  box-shadow: 0 4px 12px rgba(30, 75, 184, 0.35);
 }
 
 .collect-btn:active {
   transform: scale(0.94);
 }
-.uni-card {
-    position: relative;
+
+/* =========================================================
+   Pending collection table button (separate style)
+========================================================= */
+.pending-collect-btn {
+  background: #2563eb !important;
+  color: #fff !important;
+  padding: 5px 12px !important;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
 }
