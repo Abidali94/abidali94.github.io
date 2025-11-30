@@ -1,11 +1,5 @@
 /* ==========================================================
    🔐 security.js — Login + Logout + Email + Admin Password
-   Combines:
-     ✔ Login System
-     ✔ Logout System
-     ✔ Email Handling
-     ✔ Profit Lock / Unlock
-     ✔ Admin Password Tools
    ========================================================== */
 
 /* --------------------------
@@ -114,7 +108,7 @@ function resetAdminPassword() {
   }
 
   const newPw = prompt("Enter new password:");
-  if (!newPw || newPw.length < 4) {
+ 	if (!newPw || newPw.length < 4) {
     alert("Invalid new password.");
     return;
   }
@@ -123,7 +117,33 @@ function resetAdminPassword() {
   alert("Password successfully reset.");
 }
 
-/* EXPORT */
+/* ==========================================================
+   🔵 EMAIL TAG UPDATE (Fixes "Loading...")
+========================================================== */
+
+window.updateEmailTag = function () {
+  const tag = document.getElementById("emailTag");
+  if (!tag) return;
+
+  try {
+    const email = getUserEmail();
+
+    if (email) {
+      tag.textContent = email;
+    } else {
+      tag.textContent = "Offline (Local mode)";
+    }
+  } catch (err) {
+    console.error("updateEmailTag error:", err);
+    tag.textContent = "Offline";
+  }
+};
+
+/* Auto-update email badge */
+window.addEventListener("load", updateEmailTag);
+window.addEventListener("storage", updateEmailTag);
+
+/* EXPORTS */
 window.isLoggedIn = isLoggedIn;
 window.loginUser = loginUser;
 window.logoutUser = logoutUser;
@@ -133,3 +153,5 @@ window.updateAdminPassword = updateAdminPassword;
 window.unlockProfitWithPassword = unlockProfitWithPassword;
 window.secureToggle = secureToggle;
 window.resetAdminPassword = resetAdminPassword;
+
+console.log("🔐 security.js loaded");
