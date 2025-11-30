@@ -1,8 +1,9 @@
 /* ===========================================================
-   firebase.js — FINAL V10
-   ✔ Full Auth + Firestore + Cloud Sync
-   ✔ Matching login-utils.js requirements
-   ✔ Includes fsLogin / fsCheckAuth / fsLogout
+   firebase.js — FINAL V11 (ONLINE ONLY + INSTANT CLOUD SYNC)
+   ✔ FASTEST Auth + Firestore
+   ✔ Instant Cloud Pull After Any Save
+   ✔ No Offline Mode Confusion
+   ✔ 1-second UI Sync (NO refresh needed)
 =========================================================== */
 
 console.log("%c🔥 firebase.js loaded", "color:#ff9800;font-weight:bold;");
@@ -21,151 +22,142 @@ const firebaseConfig = {
 };
 
 /* -----------------------------------------------------------
-   INITIALIZE FIREBASE
+   INITIALIZE
 ----------------------------------------------------------- */
 let db = null;
 let auth = null;
 
 try {
   firebase.initializeApp(firebaseConfig);
-
   db = firebase.firestore();
   auth = firebase.auth();
-
   console.log("%c☁️ Firebase connected!", "color:#4caf50;font-weight:bold;");
 } catch (e) {
   console.error("❌ Firebase init failed:", e);
 }
 
-/* -----------------------------------------------------------
-   REQUIRED AUTH FUNCTIONS (FOR login-utils.js)
------------------------------------------------------------ */
+/* ===========================================================
+   AUTH FUNCTIONS (Used by login-utils.js)
+=========================================================== */
 
-// LOGIN (used by login.html)
 window.fsLogin = async function (email, password) {
-  if (!auth) throw "Auth not ready";
   return auth.signInWithEmailAndPassword(email, password);
 };
 
-// SIGNUP (used by signup.html)
 window.fsSignUp = async function (email, password) {
-  if (!auth) throw "Auth not ready";
-
   const cred = await auth.createUserWithEmailAndPassword(email, password);
-
-  try {
-    await cred.user.sendEmailVerification();
-  } catch (_) {}
-
+  try { await cred.user.sendEmailVerification(); } catch (_) {}
   return cred;
 };
 
-// LOGOUT
 window.fsLogout = async function () {
-  if (!auth) return;
   await auth.signOut();
   localStorage.removeItem("ks-user-email");
   window.dispatchEvent(new Event("storage"));
 };
 
-// PASSWORD RESET
 window.fsSendPasswordReset = async function (email) {
-  if (!auth) throw "Auth not ready";
   return auth.sendPasswordResetEmail(email);
 };
 
-// CHECK AUTH STATE (used by login-utils.js)
 window.fsCheckAuth = function () {
   return new Promise(resolve => {
-    if (!auth) return resolve(null);
-
-    const unsub = auth.onAuthStateChanged(user => {
-      unsub();
-      resolve(user);
+    const off = auth.onAuthStateChanged(u => {
+      off();
+      resolve(u);
     });
   });
 };
 
 /* -----------------------------------------------------------
-   ON AUTH STATE CHANGE
+   AUTH LISTENER — ALWAYS ONLINE MODE
 ----------------------------------------------------------- */
 if (auth) {
   auth.onAuthStateChanged(async (user) => {
     if (user) {
       localStorage.setItem("ks-user-email", user.email || "");
-
       console.log("%c🔐 Logged in:", "color:#03a9f4;font-weight:bold;", user.email);
 
-      // Pull Firestore → Local
-      if (typeof window.cloudPullAllIfAvailable === "function") {
-        try { await window.cloudPullAllIfAvailable(); } catch (e) {}
+      // Always pull fresh live cloud data instantly
+      if (typeof cloudPullAllIfAvailable === "function") {
+        await cloudPullAllIfAvailable();
       }
 
       window.dispatchEvent(new Event("storage"));
     } else {
       localStorage.removeItem("ks-user-email");
-      console.log("%c🔓 Logged out", "color:#999");
+      console.log("%c🔓 Logged out", "color:#f44336;font-weight:bold;");
       window.dispatchEvent(new Event("storage"));
     }
   });
 }
 
-/* -----------------------------------------------------------
-   FIRESTORE HELPERS
------------------------------------------------------------ */
+/* ===========================================================
+   FIRESTORE HELPERS — INSTANT CLOUD MODE
+=========================================================== */
+
 function getCloudUser() {
   if (auth?.currentUser?.email) return auth.currentUser.email;
   return localStorage.getItem("ks-user-email") || "guest";
 }
 
-/* SAVE */
+/* ----------- CLOUD SAVE (Instant + Push UI) ----------- */
 window.cloudSave = async function (collection, data) {
   if (!db) return;
 
   const user = getCloudUser();
-
   try {
     await db.collection(collection)
             .doc(user)
             .set({ items: data }, { merge: true });
 
     console.log(`☁️ Saved: ${collection} → ${user}`);
+
+    // ⭐ Instant cloud → UI sync
+    setTimeout(() => {
+      if (typeof window.cloudPullAllIfAvailable === "function") {
+        window.cloudPullAllIfAvailable();
+      }
+    }, 200);
+
   } catch (e) {
-    console.error("❌ Save error:", e);
+    console.error("❌ Cloud Save error:", e);
   }
 };
 
-/* LOAD */
+/* ----------- CLOUD LOAD ----------- */
 window.cloudLoad = async function (collection) {
   if (!db) return null;
 
   const user = getCloudUser();
 
   try {
-    const snap = await db.collection(collection).doc(user).get();
-    if (!snap.exists) return null;
+    const snap = await db.collection(collection).document(user).get();
+
+    if (!snap.exists) return [];
 
     const data = snap.data();
     return Array.isArray(data.items) ? data.items : [];
+
   } catch (e) {
-    console.error("❌ Load error:", e);
-    return null;
+    console.error("❌ Cloud Load error:", e);
+    return [];
   }
 };
 
-/* -----------------------------------------------------------
-   DEBOUNCED CLOUD SAVE
------------------------------------------------------------ */
-let _t = {};
+/* ===========================================================
+   DEBOUNCED SAVE (smooth UI)
+=========================================================== */
+let _delay = {};
 window.cloudSaveDebounced = function (collection, data) {
-  if (_t[collection]) clearTimeout(_t[collection]);
+  if (_delay[collection]) clearTimeout(_delay[collection]);
 
-  _t[collection] = setTimeout(() => {
+  _delay[collection] = setTimeout(() => {
     window.cloudSave(collection, data);
-  }, 500);
+  }, 300); // very fast
 };
 
 /* -----------------------------------------------------------
    READY
 ----------------------------------------------------------- */
-console.log("%c⚙️ firebase.js READY ✔", "color:#03a9f4;font-weight:bold;");
+console.log("%c⚙️ firebase.js READY ✔ (ONLINE MODE)", "color:#03a9f4;font-weight:bold;");
