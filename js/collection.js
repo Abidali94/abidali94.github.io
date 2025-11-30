@@ -1,9 +1,9 @@
 /* ===========================================================
-   collection.js — FINAL CLEAN v7.0
-   ✔ Fully compatible with sales.js v12 / stock.js v3
-   ✔ Customer + Phone display in pending list
-   ✔ Credit → Paid update + history entry
-   ✔ Uses universalBar metrics
+   collection.js — FINAL CLEAN v8.0
+   ✔ Shows Qty × Rate = Total everywhere
+   ✔ Customer + Phone always visible
+   ✔ Credit → Paid update + detailed history entry
+   ✔ Fully synced with universalBar metrics
 =========================================================== */
 
 /* -----------------------------
@@ -19,20 +19,16 @@ function cNum(v) {
 }
 
 /* -----------------------------
-   Local storage for history
+   Local storage (History)
 ----------------------------- */
 window.collections = JSON.parse(localStorage.getItem("ks-collections") || "[]");
 
 function saveCollections() {
-  try {
-    localStorage.setItem("ks-collections", JSON.stringify(window.collections || []));
-  } catch (e) {
-    console.warn("Collection save error:", e);
-  }
+  localStorage.setItem("ks-collections", JSON.stringify(window.collections || []));
 }
 
 /* ===========================================================
-   PUBLIC: addCollectionEntry
+   PUBLIC: addCollectionEntry (FULL DETAILS)
 =========================================================== */
 window.addCollectionEntry = function (source, details, amount) {
   const entry = {
@@ -43,16 +39,14 @@ window.addCollectionEntry = function (source, details, amount) {
     amount: cNum(amount)
   };
 
-  window.collections = window.collections || [];
   window.collections.push(entry);
   saveCollections();
-
   renderCollection();
   window.updateUniversalBar?.();
 };
 
 /* ===========================================================
-   SUMMARY (uses universalBar metrics)
+   SUMMARY
 =========================================================== */
 function computeCollectionSummary() {
   window.updateUniversalBar?.();
@@ -73,22 +67,20 @@ function getPendingList() {
   const list = [];
 
   (window.sales || []).forEach(s => {
-    const st = String(s.status || "").toLowerCase();
+    if (String(s.status || "").toLowerCase() === "credit") {
+      const total = cNum(s.total || s.qty * s.price);
 
-    if (st === "credit") {
-      const total = cNum(s.total || (cNum(s.qty) * cNum(s.price)));
-
-      if (total > 0) {
-        list.push({
-          id: s.id,
-          name: s.product || "Sale",
-          type: s.type || "Sale",
-          date: s.date,
-          pending: total,
-          customer: s.customer || "",
-          phone: s.phone || ""
-        });
-      }
+      list.push({
+        id: s.id,
+        name: s.product,
+        type: s.type,
+        date: s.date,
+        qty: cNum(s.qty),
+        price: cNum(s.price),
+        pending: total,
+        customer: escLocal(s.customer),
+        phone: escLocal(s.phone)
+      });
     }
   });
 
@@ -97,6 +89,7 @@ function getPendingList() {
 
 /* ===========================================================
    RENDER PENDING COLLECTION TABLE
+   (Now shows Qty × Rate also)
 =========================================================== */
 function renderPendingCollections() {
   const tbody = qs("#pendingCollectionTable tbody");
@@ -106,26 +99,27 @@ function renderPendingCollections() {
 
   if (!list.length) {
     tbody.innerHTML = `
-      <tr>
-        <td colspan="5" style="text-align:center;opacity:0.6;">
-          No pending collections
-        </td>
-      </tr>`;
+      <tr><td colspan="5" style="text-align:center;opacity:0.6;">
+        No pending collections
+      </td></tr>`;
     return;
   }
 
   tbody.innerHTML = list.map(r => `
     <tr>
+
       <td data-label="Date">${window.toDisplay ? toDisplay(r.date) : r.date}</td>
 
       <td data-label="Name">
         ${escLocal(r.name)}
-        ${r.customer ? `<br><small>${escLocal(r.customer)}</small>` : ""}
-        ${r.phone ? `<br><small>📞 ${escLocal(r.phone)}</small>` : ""}
+        <br><small>Qty ${r.qty} × ₹${r.price} = <b>₹${r.pending}</b></small>
+        ${r.customer ? `<br><small>${r.customer}</small>` : ""}
+        ${r.phone ? `<br><small>📞 ${r.phone}</small>` : ""}
       </td>
 
       <td data-label="Type">${escLocal(r.type)}</td>
-      <td data-label="Pending">₹${r.pending}</td>
+
+      <td data-label="Pending"><b>₹${r.pending}</b></td>
 
       <td data-label="Action">
         <button class="small-btn pending-collect-btn"
@@ -139,29 +133,27 @@ function renderPendingCollections() {
 }
 
 /* ===========================================================
-   RENDER HISTORY + SUMMARY
+   RENDER COLLECTION HISTORY + SUMMARY
 =========================================================== */
 function renderCollection() {
   const sum = computeCollectionSummary();
   const fmt = v => "₹" + Math.round(cNum(v));
 
-  if (qs("#colSales"))      qs("#colSales").textContent     = fmt(sum.salesCollected);
-  if (qs("#colService"))    qs("#colService").textContent   = fmt(sum.serviceCollected);
-  if (qs("#colCredit"))     qs("#colCredit").textContent    = fmt(sum.pendingCredit);
-  if (qs("#colInvRemain"))  qs("#colInvRemain").textContent = fmt(sum.investmentRemain);
+  if (qs("#colSales"))     qs("#colSales").textContent     = fmt(sum.salesCollected);
+  if (qs("#colService"))   qs("#colService").textContent   = fmt(sum.serviceCollected);
+  if (qs("#colCredit"))    qs("#colCredit").textContent    = fmt(sum.pendingCredit);
+  if (qs("#colInvRemain")) qs("#colInvRemain").textContent = fmt(sum.investmentRemain);
 
   const tbody = qs("#collectionHistory tbody");
   if (!tbody) return;
 
-  const list = window.collections || [];
+  const list = window.collections;
 
   if (!list.length) {
     tbody.innerHTML = `
-      <tr>
-        <td colspan="4" style="text-align:center;opacity:0.6;">
-          No collection history yet
-        </td>
-      </tr>`;
+      <tr><td colspan="4" style="text-align:center;opacity:0.6;">
+        No collection history yet
+      </td></tr>`;
     return;
   }
 
@@ -178,12 +170,12 @@ function renderCollection() {
 window.renderCollection = renderCollection;
 
 /* ===========================================================
-   GLOBAL CLICK HANDLER
+   GLOBAL CLICK HANDLER (Collect button)
 =========================================================== */
 document.addEventListener("click", e => {
   const target = e.target;
 
-  /* --- CLEAR HISTORY --- */
+  /* CLEAR HISTORY */
   if (target.id === "clearCollectionBtn") {
     if (!confirm("Clear entire collection history?")) return;
     window.collections = [];
@@ -193,46 +185,55 @@ document.addEventListener("click", e => {
     return;
   }
 
-  /* --- CREDIT → PAID (Collect) --- */
+  /* CREDIT → PAID */
   const btn = target.closest(".pending-collect-btn");
   if (!btn) return;
 
-  const id  = btn.getAttribute("data-id");
-  const amt = cNum(btn.getAttribute("data-amount") || 0);
+  const id  = btn.dataset.id;
+  const amt = cNum(btn.dataset.amount);
 
   const sale = (window.sales || []).find(s => s.id == id);
   if (!sale) return alert("Sale not found.");
 
-  if (String(sale.status || "").toLowerCase() !== "credit") {
+  if (String(sale.status).toLowerCase() !== "credit") {
     alert("This sale is not CREDIT anymore.");
     renderPendingCollections();
     renderCollection();
     return;
   }
 
-  const lines = [
-    `Product: ${sale.product} (${sale.type})`,
-    `Qty: ${sale.qty}, Total: ₹${sale.total}`
-  ];
-  if (sale.customer) lines.push(`Customer: ${sale.customer}`);
-  if (sale.phone)    lines.push(`Phone: ${sale.phone}`);
+  /* Confirmation (full details) */
+  const confirmMsg =
+    `Product: ${sale.product}\n` +
+    `Qty: ${sale.qty}\n` +
+    `Rate: ₹${sale.price}\n` +
+    `Total: ₹${sale.total}\n` +
+    (sale.customer ? `Customer: ${sale.customer}\n` : "") +
+    (sale.phone ? `Phone: ${sale.phone}\n` : "") +
+    `\nMark this as COLLECTED?`;
 
-  if (!confirm(lines.join("\n") + "\n\nMark this as COLLECTED?")) return;
+  if (!confirm(confirmMsg)) return;
 
-  // 1) Mark as paid
+  /* Mark as paid */
   sale.status = "Paid";
-  window.saveSales && window.saveSales();
+  window.saveSales?.();
 
-  // 2) Add history entry
-  window.addCollectionEntry("Sale (Credit cleared)", sale.product, amt);
+  /* Build history string */
+  const detailText =
+    `${sale.product} — Qty ${sale.qty} × ₹${sale.price} = ₹${sale.total}` +
+    (sale.customer ? ` — ${sale.customer}` : "") +
+    (sale.phone ? ` — ${sale.phone}` : "");
 
-  // 3) UI refresh
+  /* Save entry */
+  window.addCollectionEntry("Sale (Credit cleared)", detailText, amt);
+
+  /* Refresh UI */
   renderPendingCollections();
   renderCollection();
   window.renderSales?.();
   window.updateUniversalBar?.();
 
-  alert("Collection recorded and marked as Paid.");
+  alert("Collection saved & marked as Paid.");
 });
 
 /* ===========================================================
