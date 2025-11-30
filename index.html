@@ -5,392 +5,195 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>KharchaSaathi</title>
 
-<!-- Font -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+<!-- FONT -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap">
 
 <style>
-    :root{
-        --primary:#1a73e8;      /* Google/JioMart style Blue */
-        --primary-dark:#0f5fc4;
-        --card-bg:#ffffff;
-        --card-border:#e5e5e5;
-        --text-dark:#222;
-        --text-light:#666;
-        --page-bg:#f6f7fb;      /* Same as your Business Dashboard */
-    }
+:root{
+  --blue:#0A66C2;     /* Commercial App Blue */
+  --light-bg:#f4f6f9;
+  --card-bg:#ffffff;
+  --dark:#111;
+}
 
-    body{
-        margin:0;
-        padding:0;
-        font-family:'Poppins',sans-serif;
-        background:var(--page-bg);
-        color:var(--text-dark);
-    }
+/* RESET */
+body{
+  margin:0;
+  padding:0;
+  background:var(--light-bg);
+  font-family:'Poppins',sans-serif;
+}
 
-    /* ===============================
-          TOP BRAND HEADER
-    ================================ */
-    .header{
-        padding:22px 18px;
-        background:white;
-        border-bottom:1px solid #e4e4e4;
-        display:flex;
-        align-items:center;
-        gap:14px;
-        position:sticky;
-        top:0;
-        z-index:100;
-    }
+/* HEADER */
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:18px 20px;
+  background:#fff;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+  position:sticky;
+  top:0;
+  z-index:99;
+}
 
-    .brand-icon img{
-        width:42px;
-        height:42px;
-        object-fit:contain;
-    }
+.header-title{
+  font-size:24px;
+  font-weight:700;
+  color:#000;
+}
 
-    .brand-title{
-        font-size:22px;
-        font-weight:700;
-    }
+/* Theme Button */
+.theme-btn{
+  padding:8px 12px;
+  border:none;
+  border-radius:12px;
+  font-size:18px;
+  cursor:pointer;
+  background:#eee;
+}
 </style>
 </head>
 
 <body>
 
-<!-- ===============================
-        HEADER
-=============================== -->
+<!-- HEADER (NO LOGO) -->
 <div class="header">
-    <div class="brand-icon">
-        <img src="/img/goldbag.png" alt="bag">
-    </div>
-    <div class="brand-title">KharchaSaathi</div>
+  <div class="header-title">KharchaSaathi</div>
+  <button id="themeBtn" class="theme-btn">🌙</button>
 </div>
-<!-- ===============================
-        MAIN CONTENT WRAPPER
-=============================== -->
-<div class="main">
-
-    <!-- Section Title -->
-    <h2 class="section-title">📦 Business Manager</h2>
-
-    <!-- Tools Grid -->
-    <div class="tools-grid">
-
-        <!-- Business Dashboard -->
-        <a class="tool-card" href="tools/business-dashboard.html">
-            <div class="emoji">📊</div>
-            <div class="title">Business Manager</div>
-            <div class="desc">Stock • Sales • Service • Credit • Analytics</div>
-        </a>
-
-        <!-- Invoice Pro -->
-        <a class="tool-card" href="tools/invoice-pro.html">
-            <div class="emoji">🧾</div>
-            <div class="title">Invoice Pro</div>
-            <div class="desc">Print professional bills</div>
-        </a>
-
-        <!-- GST Calculator -->
-        <a class="tool-card" href="tools/gst-bill.html">
-            <div class="emoji">📄</div>
-            <div class="title">GST Calculator</div>
-            <div class="desc">18% + Reverse GST Tool</div>
-        </a>
-
-    </div>
-
-    <!-- Coming Soon -->
-    <div class="coming-soon">
-        🚀 <b>More Business Tools Coming Soon!</b><br>
-        Auto Backup • PDF Reports • Sync • WhatsApp Invoice • Bulk Upload
-    </div>
-
-</div>
-
 <style>
-
-/* PAGE CONTENT WRAPPER */
-.main{
-    padding:22px 16px;
-    max-width:980px;
-    margin:auto;
-}
-
 /* SECTION TITLE */
 .section-title{
-    font-size:20px;
-    font-weight:600;
-    margin:10px 0 18px;
-    color:#1a73e8;
+  font-size:22px;
+  margin:20px 18px 14px;
+  font-weight:700;
+  color:var(--blue);
 }
 
 /* GRID */
 .tools-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-    gap:20px;
+  display:grid;
+  grid-template-columns:1fr;
+  gap:18px;
+  padding:0 18px;
 }
 
-/* CARD STYLE – SAME AS BUSINESS DASHBOARD (white, clean, soft shadow) */
+/* TOOL CARD */
 .tool-card{
-    background:white;
-    border:1px solid #e5e5e5;
-    border-radius:12px;
-    padding:22px 18px;
-    text-decoration:none;
-    color:#222;
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.06);
-    transition:0.25s;
+  background:var(--card-bg);
+  padding:22px;
+  border-radius:16px;
+  text-decoration:none;
+  color:#000;
+  box-shadow:0 3px 12px rgba(0,0,0,0.08);
+  transition:.2s;
+  display:block;
 }
 
 .tool-card:hover{
-    transform:translateY(-4px);
-    box-shadow:0 4px 14px rgba(0,0,0,0.12);
-    border-color:#d7d7d7;
+  transform:translateY(-5px);
+  box-shadow:0 5px 16px rgba(0,0,0,0.12);
 }
 
-/* CARD ICON */
-.emoji{
-    font-size:36px;
-    margin-bottom:6px;
+.tool-title{
+  font-size:20px;
+  font-weight:600;
 }
 
-/* CARD TITLE */
-.tool-card .title{
-    font-size:18px;
-    font-weight:600;
-}
-
-/* CARD DESCRIPTION */
-.tool-card .desc{
-    font-size:13px;
-    color:#666;
-}
-
-/* COMING SOON BOX */
-.coming-soon{
-    margin-top:26px;
-    background:white;
-    padding:18px;
-    border-radius:12px;
-    border:1px solid #e3e3e3;
-    font-size:14px;
-    text-align:center;
-    color:#333;
-    box-shadow:0 2px 8px rgba(0,0,0,0.05);
-}
-
-</style>
-<!-- ===============================
-        HEADER BAR (LIGHT THEME)
-=============================== -->
-<header class="topbar">
-    <div class="top-left">
-        <img src="/img/kharcha-icon.png" class="logo" alt="logo">
-        <span class="brand">KharchaSaathi</span>
-    </div>
-
-    <button id="themeBtn" class="theme-btn">🌙</button>
-</header>
-
-
-<style>
-/* TOPBAR */
-.topbar{
-    width:100%;
-    background:white;
-    border-bottom:1px solid #e6e6e6;
-    padding:14px 18px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    position:sticky;
-    top:0;
-    z-index:10;
-    box-shadow:0 1px 6px rgba(0,0,0,0.06);
-}
-
-.top-left{
-    display:flex;
-    align-items:center;
-    gap:10px;
-}
-
-.logo{
-    width:34px;
-    height:34px;
-    border-radius:6px;
-    object-fit:contain;
-}
-
-.brand{
-    font-size:20px;
-    font-weight:700;
-    color:#1a73e8;
-    letter-spacing:0.4px;
-}
-
-/* THEME BUTTON */
-.theme-btn{
-    background:#f0f0f0;
-    border:1px solid #d9d9d9;
-    padding:8px 12px;
-    border-radius:8px;
-    font-size:18px;
-    cursor:pointer;
-    transition:0.25s;
-}
-
-.theme-btn:hover{
-    background:#e5e5e5;
-}
-
-/* DARK MODE TOPBAR */
-body.dark .topbar{
-    background:#1b1b1b;
-    border-bottom:1px solid #333;
-}
-
-body.dark .brand{
-    color:#4da3ff;
-}
-
-body.dark .theme-btn{
-    background:#333;
-    color:white;
-    border-color:#555;
+.tool-desc{
+  font-size:13px;
+  color:#555;
+  margin-top:6px;
 }
 </style>
 
+<!-- BUSINESS TOOLS -->
+<div class="section-title">📦 Business Tools</div>
 
-
-<!-- ======================================
-        FOOTER
-====================================== -->
-<footer class="footer">
-    © 2025 KharchaSaathi • All Rights Reserved
-</footer>
-
+<div class="tools-grid">
+  <a href="tools/business-dashboard.html" class="tool-card">
+      <div class="tool-title">Business Manager</div>
+      <div class="tool-desc">Stock • Sales • Service • Credit • Analytics</div>
+  </a>
+</div>
 <style>
+.coming-box{
+  margin:22px 18px;
+  padding:15px;
+  background:#eaf3ff;
+  border-left:4px solid var(--blue);
+  border-radius:12px;
+  font-size:14px;
+  color:#0A3E80;
+}
+
 .footer{
-    margin-top:40px;
-    padding:20px 0;
-    color:#666;
-    font-size:13px;
-    text-align:center;
+  text-align:center;
+  padding:25px 0;
+  margin-top:40px;
+  color:#777;
+  font-size:13px;
+}
+</style>
+
+<div class="coming-box">
+  🚀 <b>More Big Business Tools Coming Soon</b><br>
+  Auto Backup • Sync • Multi Shop • PDF Reports • Bulk Upload • WhatsApp Invoice • More…
+</div>
+
+<footer class="footer">
+  © 2025 KharchaSaathi • All Rights Reserved
+</footer>
+<script>
+const btn = document.getElementById("themeBtn");
+
+// Load saved theme
+if(localStorage.getItem("ks-theme") === "dark"){
+  document.body.classList.add("dark");
+  btn.textContent = "☀️";
+}
+
+// Toggle Theme
+btn.addEventListener("click", ()=>{
+  const mode = document.body.classList.toggle("dark");
+  localStorage.setItem("ks-theme", mode ? "dark" : "light");
+  btn.textContent = mode ? "☀️" : "🌙";
+});
+</script>
+
+<style>
+/* DARK MODE STYLE */
+body.dark{
+  background:#0e0e0e;
+  color:#fff;
+}
+
+body.dark .header{
+  background:#1a1a1a;
+  color:#fff;
+}
+
+body.dark .tool-card{
+  background:#1a1a1a;
+  color:#fff;
+  box-shadow:0 3px 10px rgba(255,255,255,0.06);
+}
+
+body.dark .tool-card:hover{
+  box-shadow:0 5px 14px rgba(255,255,255,0.12);
+}
+
+body.dark .coming-box{
+  background:#222;
+  color:#ddd;
+  border-left:4px solid #888;
 }
 
 body.dark .footer{
-    color:#bbb;
+  color:#aaa;
 }
 </style>
 
-
-
-<!-- =======================================
-       THEME TOGGLE SCRIPT
-======================================= -->
-<script>
-(function(){
-    const btn = document.getElementById("themeBtn");
-
-    // Load saved theme
-    const saved = localStorage.getItem("ks-theme");
-    if(saved === "dark"){
-        document.body.classList.add("dark");
-        btn.textContent = "☀️";
-    }
-
-    // Toggle theme
-    btn.addEventListener("click", ()=>{
-        const dark = document.body.classList.toggle("dark");
-        localStorage.setItem("ks-theme", dark ? "dark" : "light");
-        btn.textContent = dark ? "☀️" : "🌙";
-    });
-})();
-</script>
-<!-- ==========================================
-     PART 4 — CLEAN BACKGROUND + PAGE FADE
-=========================================== -->
-
-<style>
-/* ==========================================
-    GLOBAL CLEAN BACKGROUND (Commercial Style)
-========================================== */
-body{
-    background:#f4f6f9;           /* Light corporate grey */
-    transition:background .35s;
-}
-
-/* Dark mode background */
-body.dark{
-    background:#0f1115;           /* Deep tech black */
-}
-
-/* Smooth entry fade */
-body{
-    opacity:0;
-    animation:pageFade .5s ease-out forwards;
-}
-
-@keyframes pageFade{
-    from{opacity:0;}
-    to{opacity:1;}
-}
-
-/* Section fade-in animation */
-.section-anim{
-    opacity:0;
-    transform:translateY(20px);
-    transition:.6s ease-out;
-}
-
-.section-anim.visible{
-    opacity:1;
-    transform:translateY(0);
-}
-</style>
-
-
-<!-- ==========================================
-     PART 4 — PAGE INIT SCRIPT (Animations)
-========================================== -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-
-    /* ============================
-        SECTION SCROLL ANIMATION
-    ============================= */
-    const observer = new IntersectionObserver((entries)=>{
-        entries.forEach(entry=>{
-            if(entry.isIntersecting){
-                entry.target.classList.add("visible");
-            }
-        });
-    }, { threshold: 0.12 });
-
-    document.querySelectorAll(".section-title, .tools-grid, .coming-box")
-            .forEach(el => {
-                el.classList.add("section-anim");
-                observer.observe(el);
-            });
-
-    /* ============================
-        MOBILE SCROLL POLISH
-    ============================= */
-    let lastY = 0;
-    window.addEventListener("scroll", ()=>{
-        const y = window.scrollY;
-        if(Math.abs(y - lastY) > 120){
-            lastY = y;
-        }
-    });
-
-});
-</script>
 </body>
 </html>
