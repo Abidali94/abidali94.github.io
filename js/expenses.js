@@ -1,8 +1,10 @@
 /* ===========================================================
-   expenses.js — FINAL V8.1 (Colorful UI + Mobile Labels + Perfect Sync)
-   • Uses global esc() from core.js (no duplicate)
-   • Add/Delete smooth
-   • Auto updates: Overview, Dashboard, Summary, TabBar
+   expenses.js — FINAL ONLINE VERSION v9.0
+   ✔ Fully compatible with core.js v4+ (cloud sync)
+   ✔ Instant UI refresh (no delay)
+   ✔ toDisplay(), toInternal() from core.js
+   ✔ Prevents invalid date formats
+   ✔ Updates: Dashboard + Summary + UniversalBar
 =========================================================== */
 
 /* -------------------------------------------------------
@@ -17,9 +19,8 @@ function addExpenseEntry() {
   if (!category || amount <= 0)
     return alert("Enter category and amount!");
 
-  // Convert dd-mm-yyyy → yyyy-mm-dd
-  if (date.includes("-") && date.split("-")[0].length === 2)
-    date = toInternal(date);
+  // Convert DD-MM-YYYY → YYYY-MM-DD safely
+  date = toInternalIfNeeded(date);
 
   window.expenses = window.expenses || [];
 
@@ -31,13 +32,17 @@ function addExpenseEntry() {
     note
   });
 
-  saveExpenses();
+  // LOCAL + CLOUD SAVE
+  if (window.saveExpenses) window.saveExpenses();
 
+  // UI REFRESH
   renderExpenses();
   renderAnalytics?.();
   updateSummaryCards?.();
   updateTabSummaryBar?.();
+  updateUniversalBar?.();
 
+  // Clear fields
   qs("#expAmount").value = "";
   qs("#expNote").value = "";
 }
@@ -47,28 +52,31 @@ function addExpenseEntry() {
 ------------------------------------------------------- */
 function deleteExpense(id) {
   window.expenses = (window.expenses || []).filter(e => e.id !== id);
-  saveExpenses();
+
+  if (window.saveExpenses) window.saveExpenses();
 
   renderExpenses();
   renderAnalytics?.();
   updateSummaryCards?.();
   updateTabSummaryBar?.();
+  updateUniversalBar?.();
 }
 window.deleteExpense = deleteExpense;
 
 /* -------------------------------------------------------
-   📊 RENDER EXPENSE TABLE (UI UPGRADED)
+   📊 RENDER EXPENSE TABLE
 ------------------------------------------------------- */
 function renderExpenses() {
   const tbody = qs("#expensesTable tbody");
   if (!tbody) return;
 
-  let list = window.expenses || [];
+  const list = window.expenses || [];
   let total = 0;
 
   tbody.innerHTML = list
     .map(e => {
       total += Number(e.amount || 0);
+
       return `
         <tr>
           <td data-label="Date">${toDisplay(e.date)}</td>
@@ -77,9 +85,9 @@ function renderExpenses() {
           <td data-label="Note">${esc(e.note || "-")}</td>
 
           <td data-label="Action">
-            <button class="btn-del small-btn"
+            <button class="small-btn"
                     onclick="deleteExpense('${e.id}')"
-                    style="background:#d32f2f;color:#fff;">
+                    style="background:#d32f2f;color:white;">
               🗑 Delete
             </button>
           </td>
@@ -99,12 +107,13 @@ qs("#clearExpensesBtn")?.addEventListener("click", () => {
   if (!confirm("Clear ALL expenses?")) return;
 
   window.expenses = [];
-  saveExpenses();
+  if (window.saveExpenses) window.saveExpenses();
 
   renderExpenses();
   renderAnalytics?.();
   updateSummaryCards?.();
   updateTabSummaryBar?.();
+  updateUniversalBar?.();
 });
 
 /* -------------------------------------------------------
@@ -113,10 +122,11 @@ qs("#clearExpensesBtn")?.addEventListener("click", () => {
 qs("#addExpenseBtn")?.addEventListener("click", addExpenseEntry);
 
 /* -------------------------------------------------------
-   🚀 INITIAL PAGE LOAD
+   🚀 INITIAL LOAD
 ------------------------------------------------------- */
 window.addEventListener("load", () => {
   renderExpenses();
+  updateUniversalBar?.();
 });
 
 window.renderExpenses = renderExpenses;
