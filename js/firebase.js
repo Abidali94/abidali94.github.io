@@ -1,12 +1,14 @@
 /* ===========================================================
-   firebase.js — Compat (Auth + Firestore + Debounced Cloud Save)
-   Uses the Firebase compat libraries (works with firebase-*-compat.js)
-   =========================================================== */
+   firebase.js — FINAL V10
+   ✔ Full Auth + Firestore + Cloud Sync
+   ✔ Matching login-utils.js requirements
+   ✔ Includes fsLogin / fsCheckAuth / fsLogout
+=========================================================== */
 
 console.log("%c🔥 firebase.js loaded", "color:#ff9800;font-weight:bold;");
 
 /* -----------------------------------------------------------
-   Firebase Config (from your Firebase Console)
+   FIREBASE CONFIG
 ----------------------------------------------------------- */
 const firebaseConfig = {
   apiKey: "AIzaSyC1TSwODhcD88-IizbteOGF-bbebAP6Poc",
@@ -19,80 +21,84 @@ const firebaseConfig = {
 };
 
 /* -----------------------------------------------------------
-   Initialize Firebase (Compat Mode)
-   NOTE: Your pages must include the compat scripts:
-     firebase-app-compat.js
-     firebase-auth-compat.js
-     firebase-firestore-compat.js
+   INITIALIZE FIREBASE
 ----------------------------------------------------------- */
 let db = null;
 let auth = null;
 
 try {
   firebase.initializeApp(firebaseConfig);
-  // Firestore and Auth (compat)
-  db = firebase.firestore ? firebase.firestore() : null;
-  auth = firebase.auth ? firebase.auth() : null;
 
-  console.log("%c☁️ Firebase connected successfully!", "color:#4caf50;font-weight:bold;");
+  db = firebase.firestore();
+  auth = firebase.auth();
+
+  console.log("%c☁️ Firebase connected!", "color:#4caf50;font-weight:bold;");
 } catch (e) {
-  console.error("❌ Firebase initialization failed:", e);
+  console.error("❌ Firebase init failed:", e);
 }
 
 /* -----------------------------------------------------------
-   AUTH FUNCTIONS (exposed on window)
+   REQUIRED AUTH FUNCTIONS (FOR login-utils.js)
 ----------------------------------------------------------- */
 
-// Create / Signup
-window.fsSignUp = async function (email, password) {
-  if (!auth) throw new Error("Auth not available");
-  const cred = await auth.createUserWithEmailAndPassword(email, password);
-  try {
-    if (cred && cred.user && typeof cred.user.sendEmailVerification === "function") {
-      await cred.user.sendEmailVerification();
-    }
-  } catch (e) {
-    console.warn("Email verification send failed:", e);
-  }
-  return cred;
-};
-
-// Sign in
-window.fsSignIn = async function (email, password) {
-  if (!auth) throw new Error("Auth not available");
+// LOGIN (used by login.html)
+window.fsLogin = async function (email, password) {
+  if (!auth) throw "Auth not ready";
   return auth.signInWithEmailAndPassword(email, password);
 };
 
-// Sign out
-window.fsSignOut = async function () {
+// SIGNUP (used by signup.html)
+window.fsSignUp = async function (email, password) {
+  if (!auth) throw "Auth not ready";
+
+  const cred = await auth.createUserWithEmailAndPassword(email, password);
+
+  try {
+    await cred.user.sendEmailVerification();
+  } catch (_) {}
+
+  return cred;
+};
+
+// LOGOUT
+window.fsLogout = async function () {
   if (!auth) return;
   await auth.signOut();
   localStorage.removeItem("ks-user-email");
   window.dispatchEvent(new Event("storage"));
 };
 
-// Password reset
+// PASSWORD RESET
 window.fsSendPasswordReset = async function (email) {
-  if (!auth) throw new Error("Auth not available");
+  if (!auth) throw "Auth not ready";
   return auth.sendPasswordResetEmail(email);
 };
 
-// Get current firebase user
-window.getFirebaseUser = function () {
-  return auth ? auth.currentUser : null;
+// CHECK AUTH STATE (used by login-utils.js)
+window.fsCheckAuth = function () {
+  return new Promise(resolve => {
+    if (!auth) return resolve(null);
+
+    const unsub = auth.onAuthStateChanged(user => {
+      unsub();
+      resolve(user);
+    });
+  });
 };
 
 /* -----------------------------------------------------------
-   Auth state listener — keep localStorage in sync + cloud pull
+   ON AUTH STATE CHANGE
 ----------------------------------------------------------- */
 if (auth) {
   auth.onAuthStateChanged(async (user) => {
     if (user) {
       localStorage.setItem("ks-user-email", user.email || "");
+
       console.log("%c🔐 Logged in:", "color:#03a9f4;font-weight:bold;", user.email);
 
+      // Pull Firestore → Local
       if (typeof window.cloudPullAllIfAvailable === "function") {
-        try { await window.cloudPullAllIfAvailable(); } catch (e) { console.warn("cloudPull failed", e); }
+        try { await window.cloudPullAllIfAvailable(); } catch (e) {}
       }
 
       window.dispatchEvent(new Event("storage"));
@@ -105,70 +111,61 @@ if (auth) {
 }
 
 /* -----------------------------------------------------------
-   Helper to pick cloud user id (email)
+   FIRESTORE HELPERS
 ----------------------------------------------------------- */
 function getCloudUser() {
-  try {
-    if (auth && auth.currentUser && auth.currentUser.email) return auth.currentUser.email;
-  } catch (e) { /* ignore */ }
-  return localStorage.getItem("ks-user-email") || "guest-user";
+  if (auth?.currentUser?.email) return auth.currentUser.email;
+  return localStorage.getItem("ks-user-email") || "guest";
 }
 
-/* -----------------------------------------------------------
-   CLOUD SAVE & LOAD (Firestore) — per-collection
-   We store { items: [...] } for compatibility
------------------------------------------------------------ */
+/* SAVE */
 window.cloudSave = async function (collection, data) {
-  if (!db) {
-    console.error("❌ Firestore unavailable for cloudSave");
-    return;
-  }
+  if (!db) return;
 
   const user = getCloudUser();
+
   try {
     await db.collection(collection)
             .doc(user)
             .set({ items: data }, { merge: true });
-    console.log(`☁️ Cloud Save OK → [${collection}] for ${user}`);
+
+    console.log(`☁️ Saved: ${collection} → ${user}`);
   } catch (e) {
-    console.error("❌ Cloud Save Error:", e);
+    console.error("❌ Save error:", e);
   }
 };
 
+/* LOAD */
 window.cloudLoad = async function (collection) {
-  if (!db) {
-    console.error("❌ Firestore unavailable for cloudLoad");
-    return null;
-  }
+  if (!db) return null;
+
   const user = getCloudUser();
+
   try {
     const snap = await db.collection(collection).doc(user).get();
-    if (!snap.exists) {
-      console.warn(`⚠️ No cloud data for ${collection}`);
-      return null;
-    }
+    if (!snap.exists) return null;
+
     const data = snap.data();
-    return Array.isArray(data.items) ? data.items : data;
+    return Array.isArray(data.items) ? data.items : [];
   } catch (e) {
-    console.error("❌ Cloud Load Error:", e);
+    console.error("❌ Load error:", e);
     return null;
   }
 };
 
 /* -----------------------------------------------------------
-   Debounced cloud save (per collection key)
+   DEBOUNCED CLOUD SAVE
 ----------------------------------------------------------- */
-let _cloudSaveTimers = {};
+let _t = {};
 window.cloudSaveDebounced = function (collection, data) {
-  if (_cloudSaveTimers[collection]) clearTimeout(_cloudSaveTimers[collection]);
-  _cloudSaveTimers[collection] = setTimeout(() => {
-    if (typeof window.cloudSave === "function") {
-      window.cloudSave(collection, data);
-    }
+  if (_t[collection]) clearTimeout(_t[collection]);
+
+  _t[collection] = setTimeout(() => {
+    window.cloudSave(collection, data);
   }, 500);
 };
 
 /* -----------------------------------------------------------
-   Ready log
+   READY
 ----------------------------------------------------------- */
-console.log("%c⚙️ firebase.js READY (Auth + Firestore + Cloud Sync)", "color:#03a9f4;font-weight:bold;");
+console.log("%c⚙️ firebase.js READY ✔", "color:#03a9f4;font-weight:bold;");
