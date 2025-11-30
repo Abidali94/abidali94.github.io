@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>📦 KharchaSaathi — Business Dashboard (v3.4)</title>
+  <title>📦 KharchaSaathi — Business Dashboard (Online v4.0)</title>
   <meta name="theme-color" content="#1e4bb8" />
   <link rel="icon" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
@@ -13,8 +13,6 @@
   <link rel="stylesheet" href="/css/base.css" />
   <link rel="stylesheet" href="/css/layout.css" />
   <link rel="stylesheet" href="/css/components.css" />
-
-  
 </head>
 
 <body>
@@ -25,12 +23,12 @@
   const qsa = s => Array.from(document.querySelectorAll(s));
 </script>
 
-<!-- 🔐 TOPBAR -->
+<!-- 🔐 TOPBAR (ONLINE MODE) -->
 <div class="topbar">
-  <h1>📦 KharchaSaathi (Offline)</h1>
+  <h1>📦 KharchaSaathi (Online)</h1>
 
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span id="emailTag">Loading...</span>
+    <span id="emailTag">Loading…</span>
 
     <!-- Clock -->
     <div class="simple-clock">
@@ -52,58 +50,40 @@
 <div id="universalBar">
   <div class="uni-row">
 
-    <!-- NET PROFIT CARD -->
     <div class="uni-card main">
       <button class="collect-btn" data-collect="net">₹ Collect</button>
-
       <div class="uni-title">Net Profit (Sale + Service − Expenses)</div>
       <div class="uni-value" id="unNetProfit">₹0</div>
-
       <div class="uni-sub">
-        <span>Sale:</span>
-        <span id="unSaleProfit" style="font-weight:600;">₹0</span>
-
-        <span>Service:</span>
-        <span id="unServiceProfit" style="font-weight:600;">₹0</span>
-
+        <span>Sale:</span><span id="unSaleProfit">₹0</span>
+        <span>Service:</span><span id="unServiceProfit">₹0</span>
         <span class="uni-exp-label">Exp:</span>
         <span id="unExpenses" class="uni-exp-value">₹0</span>
       </div>
     </div>
 
-    <!-- STOCK INVESTMENT -->
     <div class="uni-card">
       <button class="collect-btn" data-collect="stock">₹ Collect</button>
-
       <div class="uni-title">Stock Investment (Sold Items)</div>
       <div class="uni-value small" id="unStockInv">₹0</div>
-      <div class="uni-sub">
-        <span class="uni-chip">Sold stock</span>
-      </div>
+      <div class="uni-sub"><span class="uni-chip">Sold stock</span></div>
     </div>
 
-    <!-- SERVICE INVESTMENT -->
     <div class="uni-card">
       <button class="collect-btn" data-collect="service">₹ Collect</button>
-
       <div class="uni-title">Service Investment (Completed)</div>
       <div class="uni-value small" id="unServiceInv">₹0</div>
-      <div class="uni-sub">
-        <span class="uni-chip">Closed jobs</span>
-      </div>
+      <div class="uni-sub"><span class="uni-chip">Closed jobs</span></div>
     </div>
 
-    <!-- CREDIT SALES (NO COLLECT) -->
     <div class="uni-card">
       <div class="uni-title">Pending Credit Sales</div>
       <div class="uni-value small" id="unCreditSales">₹0</div>
-      <div class="uni-sub">
-        <span class="uni-chip">To be collected</span>
-      </div>
+      <div class="uni-sub"><span class="uni-chip">To be collected</span></div>
     </div>
-
   </div>
 </div>
+
 <!-- =============== FIXED TAB ORDER =============== -->
 <div class="tabs" role="tablist">
   <div class="tab active" data-tab="types">📁 Types</div>
@@ -115,7 +95,6 @@
   <div class="tab" data-tab="dashboard">📊 Dashboard</div>
   <div class="tab" data-tab="collection">🪙 Collection</div>
 </div>
-
 <!-- =============== TYPES =============== -->
 <section id="types" class="section active">
   <h3>🗂 Manage Item Types</h3>
@@ -244,9 +223,6 @@
     </tfoot>
   </table>
 </section>
-
-
-
 <!-- =============== WANTING =============== -->
 <section id="wanting" class="section">
   <h3>🛒 Wanting List</h3>
@@ -260,7 +236,7 @@
       style="padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;min-width:140px;">
 
     <input id="wantNote" type="text" placeholder="Note"
-      style="padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;min-width:160px;">
+      style="min-width:160px;padding:6px 8px;border-radius:10px;border:1px solid #d1d5db;">
 
     <button id="addWantBtn" class="small-btn">Add</button>
     <button id="clearWantBtn" class="small-btn">Clear</button>
@@ -318,6 +294,7 @@
     <button id="addServiceBtn" class="small-btn">Add Job</button>
   </div>
 
+  <!-- Summary boxes -->
   <div class="flex-row"
     style="margin:8px 0;display:flex;gap:10px;flex-wrap:wrap;">
     <div class="card"
@@ -385,6 +362,9 @@
     <canvas id="svcPie" height="150"></canvas>
   </div>
 </section>
+
+
+
 <!-- =============== EXPENSES =============== -->
 <section id="expenses" class="section">
   <h3>🧾 Expenses</h3>
@@ -427,10 +407,6 @@
     </tfoot>
   </table>
 </section>
-
-
-
-
 <!-- =============== DASHBOARD (TODAY + TOTAL) =============== -->
 <section id="dashboard" class="section">
   <h3>📊 Dashboard (Today + Total)</h3>
@@ -504,6 +480,7 @@
 
 
 
+
 <!-- =============== COLLECTION TAB =============== -->
 <section id="collection" class="section">
   <h3>🪙 Collection Center</h3>
@@ -563,42 +540,53 @@
     🗑 Clear Collection History
   </button>
 </section>
+
+
+
+
 <!-- =============== LIBRARIES =============== -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
+
+<!-- Firebase v9 compat -->
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
 
 
-<!-- =============== AUTO SCRIPT LOADER =============== -->
+
+<!-- =============== AUTO JS LOADER =============== -->
 <script>
 (function () {
   const v = Date.now();
-  const js = [
-  "/js/core.js",
-  "/js/firebase.js",
-  "/js/types.js",
-  "/js/stock.js",
-  "/js/sales.js",
-  "/js/wanting.js",
-  "/js/expenses.js",
-  "/js/analytics.js",
-  "/js/service.js",
-  "/js/collection.js",
-  "/js/universalBar.js",   // ✅ కరెక్ట్ ఫైల్ పేరు
-  "/js/security.js"
-];
+  const files = [
+    "/js/core.js",
+    "/js/firebase.js",
+    "/js/types.js",
+    "/js/stock.js",
+    "/js/sales.js",
+    "/js/wanting.js",
+    "/js/expenses.js",
+    "/js/analytics.js",
+    "/js/service.js",
+    "/js/collection.js",
+    "/js/universalBar.js",
+    "/js/security.js"
+  ];
 
-  js.forEach(f => {
+  files.forEach(f => {
     document.write(`<script src="${f}?v=${v}"><\/script>`);
   });
 })();
 </script>
-  <script>
+
+
+
+<!-- =============== EMAIL TAG FIX =============== -->
+<script>
 window.addEventListener("load", () => {
   try {
     if (typeof updateEmailTag === "function") {
-      updateEmailTag();         // ⭐ THIS FIXES "Loading…"
+      updateEmailTag();
     }
   } catch (e) {
     console.error("emailTag update failed:", e);
@@ -608,49 +596,27 @@ window.addEventListener("load", () => {
 
 
 
-<!-- =============== COLLECT BUTTON CLICK HANDLER =============== -->
-<script>
-document.addEventListener("click", e => {
-  const btn = e.target.closest(".collect-btn");
-  if (!btn) return;
-
-  const type = btn.dataset.collect;
-
-  if (typeof window.handleCollect === "function") {
-    handleCollect(type);      // universalBar.js
-  } else {
-    alert("Collect handler missing: " + type);
-  }
-});
-</script>
-
-
-
 <!-- =============== TAB SWITCHER =============== -->
 <script>
 function switchTab(id) {
-  // Hide all sections
   qsa(".section").forEach(sec => sec.classList.remove("active"));
 
   const target = qs("#" + id);
   if (target) target.classList.add("active");
 
-  // Highlight active tab
   qsa(".tab").forEach(t => t.classList.remove("active"));
   const tab = qs(`.tab[data-tab="${id}"]`);
   if (tab) tab.classList.add("active");
 
-  // Refresh data
-  try { renderStock?.(); } catch { }
-  try { renderSales?.(); } catch { }
-  try { renderWanting?.(); } catch { }
-  try { renderExpenses?.(); } catch { }
-  try { renderServiceTables?.(); } catch { }
-  try { renderCollection?.(); } catch { }
-  try { renderAnalytics?.(); } catch { }
-  try { updateSummaryCards?.(); } catch { }
+  try { renderStock?.(); } catch {}
+  try { renderSales?.(); } catch {}
+  try { renderWanting?.(); } catch {}
+  try { renderExpenses?.(); } catch {}
+  try { renderServiceTables?.(); } catch {}
+  try { renderCollection?.(); } catch {}
+  try { renderAnalytics?.(); } catch {}
+  try { updateSummaryCards?.(); } catch {}
 }
-
 document.addEventListener("click", e => {
   if (e.target.classList.contains("tab")) {
     switchTab(e.target.dataset.tab);
@@ -664,17 +630,12 @@ document.addEventListener("click", e => {
 <script>
 function updateClock() {
   const d = new Date();
-  const t = qs("#clockTime");
-  const dt = qs("#clockDate");
-
-  if (t) t.textContent = d.toLocaleTimeString();
-  if (dt) dt.textContent = d.toLocaleDateString();
+  qs("#clockTime").textContent = d.toLocaleTimeString();
+  qs("#clockDate").textContent = d.toLocaleDateString();
 }
-
 setInterval(updateClock, 1000);
 updateClock();
 </script>
-
 
 </body>
 </html>
