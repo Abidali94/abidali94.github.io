@@ -1,9 +1,9 @@
 /* ===========================================================
-   collection.js — FINAL ONLINE VERSION (V10.1 CUSTOM)
+   collection.js — FINAL ONLINE VERSION (V11.0 HISTORY ONLY)
    ✔ Instant cloud sync (no refresh)
-   ✔ Qty × Rate shown everywhere
-   ✔ Customer + Phone visible
-   ✔ Credit → Paid with detailed history (amount in brackets ONLY)
+   ✔ Summary cards: Sales, Service, Pending Credit, Investment
+   ✔ Collection tab = ONLY History (NO collect buttons here)
+   ✔ Credit → Paid logic NOW handled in sales.js / service.js
    ✔ Fully synced with universalBar + core.js + analytics
 =========================================================== */
 
@@ -13,6 +13,7 @@
 function escLocal(x) {
   return (x === undefined || x === null) ? "" : String(x);
 }
+
 function cNum(v) {
   const n = Number(v || 0);
   return isNaN(n) ? 0 : n;
@@ -30,7 +31,9 @@ function saveCollections() {
   try {
     localStorage.setItem("ks-collections", JSON.stringify(window.collections || []));
   } catch {}
+
   if (typeof cloudSaveDebounced === "function") {
+    // Firestore collection name → "collections" (core.js లో map ఉంది)
     cloudSaveDebounced("collections", window.collections || []);
   }
 }
@@ -38,15 +41,16 @@ window.saveCollections = saveCollections;
 
 /* ===========================================================
    PUBLIC: addCollectionEntry
-   👉 amount ఇక్కడకి వస్తుంది. Credit clear case లో మనం 0 పంపిస్తాం.
+   👉 Credit clear case లో amount = 0 మాత్రమే పంపాలి
+      (Collected amount details లో bracket లో ఉంటుంది)
 =========================================================== */
 window.addCollectionEntry = function (source, details, amount) {
   const entry = {
     id: uid("coll"),
-    date: todayDate(),
+    date: todayDate(),                // YYYY-MM-DD (core.js helper)
     source: escLocal(source),
     details: escLocal(details),
-    amount: cNum(amount)
+    amount: cNum(amount)             // Credit clear అయితే 0
   };
 
   window.collections.push(entry);
@@ -61,6 +65,7 @@ window.addCollectionEntry = function (source, details, amount) {
 =========================================================== */
 function computeCollectionSummary() {
   const m = window.__unMetrics || {};
+
   return {
     salesCollected:   cNum(m.saleProfitCollected),
     serviceCollected: cNum(m.serviceProfitCollected),
@@ -70,84 +75,34 @@ function computeCollectionSummary() {
 }
 
 /* ===========================================================
-   GET PENDING CREDIT LIST
-=========================================================== */
-function getPendingList() {
-  const list = [];
-
-  (window.sales || []).forEach(s => {
-    if (String(s.status || "").toLowerCase() === "credit") {
-
-      const qty    = cNum(s.qty);
-      const price  = cNum(s.price);
-      const total  = cNum(s.total || (qty * price));
-
-      list.push({
-        id: s.id,
-        name: s.product,
-        type: s.type,
-        date: s.date,
-        qty,
-        price,
-        pending: total,
-        customer: escLocal(s.customer),
-        phone: escLocal(s.phone)
-      });
-    }
-  });
-
-  return list;
-}
-
-/* ===========================================================
-   RENDER PENDING
+   RENDER PENDING (INFO ONLY — NO COLLECT HERE)
+   👉 Collection tab లో "Pending Collections" table ఉన్నా,
+      ఇక్కడ నుంచి collect చేయం. Credit handling ఇప్పుడు
+      Sales / Service file లో మాత్రమే.
 =========================================================== */
 window.renderPendingCollections = function () {
   const tbody = qs("#pendingCollectionTable tbody");
   if (!tbody) return;
 
-  const list = getPendingList();
-
-  if (!list.length) {
-    tbody.innerHTML = `
-      <tr><td colspan="5" style="text-align:center;opacity:0.6;">
-        No pending collections
-      </td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = list.map(r => `
+  tbody.innerHTML = `
     <tr>
-      <td data-label="Date">${toDisplay(r.date)}</td>
-
-      <td data-label="Name">
-        ${escLocal(r.name)}
-        <br><small>Qty ${r.qty} × ₹${r.price} = <b>₹${r.pending}</b></small>
-        ${r.customer ? `<br><small>${r.customer}</small>` : ""}
-        ${r.phone ? `<br><small>📞 ${r.phone}</small>` : ""}
-      </td>
-
-      <td data-label="Type">${escLocal(r.type)}</td>
-      <td data-label="Pending"><b>₹${r.pending}</b></td>
-
-      <td data-label="Action">
-        <button class="small-btn pending-collect-btn"
-                data-id="${r.id}"
-                data-amount="${r.pending}">
-          Collect
-        </button>
+      <td colspan="5" style="text-align:center;opacity:0.7;">
+        Pending Credit ఇప్పుడు <b>Sales / Credit History</b> లో handle అవుతుంది.
+        <br>
+        ఇక్కడ only summary & history మాత్రమే.
       </td>
     </tr>
-  `).join("");
+  `;
 };
 
 /* ===========================================================
-   RENDER HISTORY
+   RENDER HISTORY (Collection Tab Main Table)
 =========================================================== */
 window.renderCollection = function () {
   const sum = computeCollectionSummary();
   const fmt = v => "₹" + Math.round(cNum(v));
 
+  // Top cards
   if (qs("#colSales"))     qs("#colSales").textContent     = fmt(sum.salesCollected);
   if (qs("#colService"))   qs("#colService").textContent   = fmt(sum.serviceCollected);
   if (qs("#colCredit"))    qs("#colCredit").textContent    = fmt(sum.pendingCredit);
@@ -160,9 +115,11 @@ window.renderCollection = function () {
 
   if (!list.length) {
     tbody.innerHTML = `
-      <tr><td colspan="4" style="text-align:center;opacity:0.6;">
-        No collection history yet
-      </td></tr>`;
+      <tr>
+        <td colspan="4" style="text-align:center;opacity:0.6;">
+          No collection history yet
+        </td>
+      </tr>`;
     return;
   }
 
@@ -178,89 +135,36 @@ window.renderCollection = function () {
 
 /* ===========================================================
    GLOBAL CLICK HANDLER
+   👉 ఇక్కడ ఇప్పుడు ఒక్క Clear History మాత్రమే ఉంది
 =========================================================== */
 document.addEventListener("click", e => {
   const target = e.target;
 
-  /* Clear history */
+  /* Clear entire history */
   if (target.id === "clearCollectionBtn") {
-    if (confirm("Clear entire collection history?")) {
-      window.collections = [];
-      saveCollections();
-      renderCollection();
-      window.updateUniversalBar?.();
-      window.renderAnalytics?.();
-      window.updateSummaryCards?.();
-    }
+    if (!confirm("Clear entire collection history?")) return;
+
+    window.collections = [];
+    saveCollections();
+
+    renderCollection();
+    window.updateUniversalBar?.();
+    window.renderAnalytics?.();
+    window.updateSummaryCards?.();
     return;
   }
 
-  /* Credit → Paid collect */
-  const btn = target.closest(".pending-collect-btn");
-  if (!btn) return;
-
-  const id  = btn.dataset.id;
-  const amt = cNum(btn.dataset.amount);
-
-  const sale = (window.sales || []).find(s => s.id === id);
-  if (!sale) {
-    alert("Sale not found.");
-    return;
-  }
-
-  if (String(sale.status || "").toLowerCase() !== "credit") {
-    alert("Already Paid");
-    renderPendingCollections();
-    return;
-  }
-
-  const qty   = cNum(sale.qty);
-  const price = cNum(sale.price);
-  const total = cNum(sale.total || (qty * price));
-
-  const msg =
-    `Product: ${sale.product}\n` +
-    `Qty: ${qty}\n` +
-    `Rate: ₹${price}\n` +
-    `Total: ₹${total}\n` +
-    (sale.customer ? `Customer: ${sale.customer}\n` : "") +
-    (sale.phone ? `Phone: ${sale.phone}\n` : "") +
-    `\nMark as PAID & collect now?`;
-
-  if (!confirm(msg)) return;
-
-  /* Update Status */
-  sale.status = "Paid";
-  window.saveSales?.();
-
-  /* Build details text
-     👉 Amount historyలో కాదు, details లో bracket లో మాత్రమే */
-  const collectedAmt = amt || total;
-
-  const fullDetails =
-    `${sale.product} — Qty ${qty} × ₹${price} = ₹${total}` +
-    ` (Collected ₹${collectedAmt})` +
-    (sale.customer ? ` — ${sale.customer}` : "") +
-    (sale.phone ? ` — ${sale.phone}` : "");
-
-  /* IMPORTANT: amount = 0
-     👉 Credit amount మళ్ళీ Profit / Stock లోనే count అవుతుంది */
-  window.addCollectionEntry("Sale (Credit cleared)", fullDetails, 0);
-
-  /* FULL REALTIME REFRESH */
-  renderPendingCollections();
-  renderCollection();
-  window.renderSales?.();
-  window.renderAnalytics?.();
-  window.updateUniversalBar?.();
-  window.updateSummaryCards?.();
+  // NOTE:
+  // ❌ ఇకపై ఇక్కడ pending-collect-btn ఏదీ handle చేయం.
+  // Credit → Paid → Profit update → Collection entry
+  // ఇవన్నీ sales.js / service.js లోనె జరుగుతాయి.
 });
 
 /* ===========================================================
    INIT
 =========================================================== */
 window.addEventListener("load", () => {
-  renderPendingCollections();
+  renderPendingCollections();   // Info-only message
   renderCollection();
   window.updateUniversalBar?.();
   window.renderAnalytics?.();
