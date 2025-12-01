@@ -1,169 +1,62 @@
-/* ==========================================================
-   KharchaSaathi – Apple Glass UI
-   Premium macOS Style Design System
-========================================================== */
+/* ===========================
+   BASE.CSS — CLEAN FOUNDATION
+   No colors, no overrides.
+   Pure reset + typography.
+=========================== */
 
-/* RESET */
 *,
 *::before,
 *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-html, body {
-    margin: 0;
-    padding: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-/* -------------------------------
-   1. Apple Color Tokens
---------------------------------- */
-
-:root {
-    /* Apple Neutral Greys */
-    --a-bg: #f5f5f7; /* Light */
-    --a-bg-dark: #1c1c1e; /* Dark mode base */
-    --a-elev-1: rgba(255,255,255,0.60);
-    --a-elev-2: rgba(255,255,255,0.35);
-    --a-elev-3: rgba(255,255,255,0.18);
-
-    --a-border-soft: rgba(0,0,0,0.08);
-    --a-border-strong: rgba(0,0,0,0.18);
-
-    /* Accent */
-    --a-accent: #0A84FF; /* Apple Blue */
-    --a-accent-dark: #0066CC;
-
-    /* Text */
-    --a-text-main: #1c1c1e;
-    --a-text-soft: #6e6e73;
-    --a-text-muted: #8e8e93;
-    --a-text-light: #f2f2f7;
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
-
-/* DARK MODE TOKENS */
-body.dark-mode {
-    --a-bg: #000000;
-    --a-elev-1: rgba(80,80,80,0.40);
-    --a-elev-2: rgba(60,60,60,0.30);
-    --a-elev-3: rgba(40,40,40,0.25);
-
-    --a-border-soft: rgba(255,255,255,0.08);
-    --a-border-strong: rgba(255,255,255,0.15);
-
-    --a-text-main: #f2f2f7;
-    --a-text-soft: #9e9e9e;
-    --a-text-muted: #7e7e7e;
-}
-
-/* -------------------------------
-   2. Body Background + Typography
---------------------------------- */
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
-    background: var(--a-bg);
-    color: var(--a-text-main);
-    -webkit-font-smoothing: antialiased;
-
-    /* Apple signature diagonal gradient */
-    background: linear-gradient(145deg, #ffffff, #ececf0);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.45;
+  overflow-x: hidden;
+  padding: 0;
+  margin: 0;
 }
 
-body.dark-mode {
-    background: linear-gradient(145deg, #1c1c1e, #000000);
+img,
+svg {
+  max-width: 100%;
+  height: auto;
 }
 
-/* -------------------------------
-   3. Apple Frosted Glass Cards
---------------------------------- */
-
-.card,
-.panel,
-.ks-card {
-    background: var(--a-elev-1);
-    border-radius: 18px;
-    border: 1px solid var(--a-border-soft);
-    backdrop-filter: saturate(180%) blur(22px);
-    -webkit-backdrop-filter: saturate(180%) blur(22px);
-    padding: 14px 16px;
-    box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+button {
+  border: none;
+  cursor: pointer;
+  background: none;
+  font-family: inherit;
 }
 
-body.dark-mode .card,
-body.dark-mode .panel {
-    background: rgba(40,40,40,0.45);
-    backdrop-filter: blur(14px);
+input,
+select,
+textarea {
+  font-family: inherit;
+  outline: none;
+  border: none;
 }
-
-/* -------------------------------
-   4. Apple Navigation Pills (Tabs)
---------------------------------- */
-
-.ks-tab-pill {
-    background: rgba(255,255,255,0.5);
-    border: 1px solid var(--a-border-soft);
-    border-radius: 14px;
-    padding: 7px 14px;
-    color: var(--a-text-soft);
-    transition: 0.2s;
-}
-
-.ks-tab-pill.active {
-    background: var(--a-accent);
-    color: white;
-    border-color: var(--a-accent-dark);
-    box-shadow: 0 4px 12px rgba(10,132,255,0.4);
-}
-
-/* -------------------------------
-   5. Apple Buttons
---------------------------------- */
-
-.btn-primary {
-    background: var(--a-accent);
-    border-radius: 12px;
-    padding: 8px 16px;
-    color: white;
-    border: none;
-    box-shadow: 0 4px 10px rgba(10,132,255,0.25);
-    transition: 0.2s;
-}
-.btn-primary:active {
-    background: var(--a-accent-dark);
-    transform: scale(0.97);
-}
-
-/* Ghost button */
-.btn-ghost {
-    background: rgba(255,255,255,0.6);
-    border-radius: 12px;
-    padding: 6px 14px;
-    color: var(--a-text-soft);
-}
-
-/* -------------------------------
-   6. Apple Table Style
---------------------------------- */
 
 table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
+  width: 100%;
+  border-collapse: collapse;
 }
 
-thead {
-    background: rgba(240,240,240,0.7);
-    backdrop-filter: blur(14px);
+ul,
+ol {
+  list-style: none;
+  padding-left: 0;
 }
 
-td, th {
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--a-border-soft);
-}
-
-/* Hover glow */
-tbody tr:hover {
-    background: rgba(10,132,255,0.08);
+:focus {
+  outline: none;
 }
