@@ -1,28 +1,33 @@
-/* ============================
-   table.css
-   Corporate Excel-style tables
-=============================== */
+/* ============================================================
+   table.css — CORPORATE EXCEL-STYLE TABLES (AURORA SAFE VERSION)
+   Fully compatible with base.css, components.css & style.css
+============================================================ */
 
+/* MAIN TABLE */
 table {
   width: 100%;
-  border-collapse: collapse;      /* full grid */
+  border-collapse: collapse;
   font-size: 13px;
-  background: #ffffff;
+  background: var(--ks-bg-card);
   border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(15,23,42,0.06);
+  box-shadow: var(--ks-shadow-soft);
 }
 
-/* wrap table in container if needed */
 .section table {
   margin-top: 8px;
 }
 
 /* HEADER */
 table thead {
-  background: linear-gradient(90deg, #1e88e5, #42a5f5);
+  background: linear-gradient(
+    90deg,
+    var(--ks-accent),
+    var(--ks-accent-soft)
+  );
   color: #ffffff;
 }
+
 table thead th {
   padding: 8px 10px;
   font-weight: 600;
@@ -30,50 +35,62 @@ table thead th {
   border-right: 1px solid rgba(255,255,255,0.35);
   border-bottom: 1px solid rgba(0,0,0,0.08);
 }
+
 table thead th:last-child {
   border-right: none;
 }
 
 /* BODY */
 table tbody tr {
-  background: #ffffff;
+  background: var(--ks-bg-card);
 }
+
 table tbody td {
   padding: 7px 10px;
-  border-right: 1px solid var(--border-soft);
-  border-bottom: 1px solid var(--border-soft);
+  border-right: 1px solid var(--ks-border-soft);
+  border-bottom: 1px solid var(--ks-border-soft);
   vertical-align: middle;
 }
+
 table tbody tr:last-child td {
   border-bottom: none;
 }
+
 table tbody td:last-child {
   border-right: none;
 }
 
-/* footer */
+/* FOOTER */
 table tfoot td {
   padding: 7px 10px;
-  border-top: 1px solid var(--border-soft);
+  border-top: 1px solid var(--ks-border-soft);
   font-weight: 600;
+  background: var(--ks-bg-soft);
 }
 
-/* zebra & hover */
+/* ZEBRA STRIPES */
 table tbody tr:nth-child(even) {
-  background: #f7f9ff;
-}
-table tbody tr:hover {
-  background: #e9f1ff;
+  background: var(--ks-bg-soft);
 }
 
-/* ACTION BUTTONS INSIDE TABLES */
+/* HOVER */
+table tbody tr:hover {
+  background: rgba(37,99,235,0.08);
+}
+body.dark table tbody tr:hover {
+  background: rgba(56,189,248,0.10);
+}
+
+/* ACTION BUTTONS INSIDE TABLE */
 table .small-btn {
   border-radius: 999px;
   font-size: 11px;
   padding: 4px 10px !important;
 }
 
-/* MOBILE: card-like rows with labels */
+/* ============================================================
+   MOBILE RESPONSIVE — CARD STYLE ROWS
+============================================================ */
 @media (max-width: 600px) {
 
   table {
@@ -93,15 +110,16 @@ table .small-btn {
     display: block;
     margin: 8px 10px;
     border-radius: 14px;
-    border: 1px solid var(--border-soft);
-    box-shadow: 0 6px 16px rgba(15,23,42,0.06);
+    border: 1px solid var(--ks-border-soft);
+    box-shadow: var(--ks-shadow-soft);
+    background: var(--ks-bg-card);
   }
 
   table tbody td {
     display: flex;
     justify-content: space-between;
     border: none;
-    border-bottom: 1px dashed var(--border-soft);
+    border-bottom: 1px dashed var(--ks-border-soft);
   }
 
   table tbody tr td:last-child {
@@ -111,7 +129,7 @@ table .small-btn {
   table tbody td::before {
     content: attr(data-label);
     font-weight: 600;
-    color: var(--text-soft);
-    margin-right: 10px;
+    color: var(--ks-text-soft);
+    margin-right: 12px;
   }
 }
