@@ -1,4 +1,11 @@
-/* expenses.js — FINAL v9.1 (esc fix + full core.js compatibility) */
+/* ============================================================
+   expenses.js — FINAL v9.2 (Cloud Sync + esc fix + core.js compatible)
+   ------------------------------------------------------------
+   ✔ saveExpenses() + cloudSync() added everywhere
+   ✔ toDisplay / toInternalIfNeeded support
+   ✔ Fully online-mode safe
+=========================================================== */
+
 (function(){
   const qsLocal = s => document.querySelector(s);
 
@@ -35,11 +42,16 @@
     if(qsLocal("#expTotal")) qsLocal("#expTotal").textContent = total;
   }
 
+  /* ------------------------------------------------------------
+      ADD EXPENSE
+  ------------------------------------------------------------ */
   window.addExpenseEntry = function(){
-    const date = qsLocal("#expDate")?.value || (window.todayDate ? window.todayDate() : new Date().toISOString().split("T")[0]);
+    const date = qsLocal("#expDate")?.value 
+              || (window.todayDate ? window.todayDate() : new Date().toISOString().split("T")[0]);
+
     const category = (qsLocal("#expCat")?.value || "").trim();
-    const amount = Number(qsLocal("#expAmount")?.value || 0);
-    const note = (qsLocal("#expNote")?.value || "").trim();
+    const amount   = Number(qsLocal("#expAmount")?.value || 0);
+    const note     = (qsLocal("#expNote")?.value || "").trim();
 
     if(!category || amount <= 0) return alert("Enter category and amount!");
 
@@ -54,8 +66,12 @@
     window.expenses = Array.isArray(window.expenses) ? window.expenses : [];
     window.expenses.push(row);
 
+    /* LOCAL SAVE */
     if(typeof window.saveExpenses === "function") window.saveExpenses();
     else try { localStorage.setItem("expenses-data", JSON.stringify(window.expenses)); } catch {}
+
+    /* CLOUD SYNC FIX ADDED */
+    if(typeof window.cloudSync === "function") window.cloudSync("expenses-data", window.expenses);
 
     try{ renderExpenses(); }catch{}
     try{ renderAnalytics?.(); }catch{}
@@ -67,9 +83,16 @@
     qsLocal("#expNote").value = "";
   };
 
+  /* ------------------------------------------------------------
+      DELETE EXPENSE
+  ------------------------------------------------------------ */
   window.deleteExpense = function(id){
     window.expenses = (window.expenses || []).filter(e => e.id !== id);
+
     if(typeof window.saveExpenses === "function") window.saveExpenses();
+
+    /* CLOUD SYNC FIX ADDED */
+    if(typeof window.cloudSync === "function") window.cloudSync("expenses-data", window.expenses);
 
     try{ renderExpenses(); }catch{}
     try{ renderAnalytics?.(); }catch{}
@@ -77,16 +100,28 @@
     try{ updateUniversalBar?.(); }catch{}
   };
 
-  qsLocal("#addExpenseBtn")?.addEventListener("click", ()=> window.addExpenseEntry());
-
+  /* ------------------------------------------------------------
+      CLEAR ALL
+  ------------------------------------------------------------ */
   qsLocal("#clearExpensesBtn")?.addEventListener("click", ()=>{
     if(!confirm("Clear ALL expenses?")) return;
+
     window.expenses = [];
+
     if(typeof window.saveExpenses === "function") window.saveExpenses();
+
+    /* CLOUD SYNC FIX ADDED */
+    if(typeof window.cloudSync === "function") window.cloudSync("expenses-data", window.expenses);
+
     renderExpenses();
     try{ renderAnalytics?.(); }catch{}
     try{ updateSummaryCards?.(); }catch{}
   });
+
+  /* ------------------------------------------------------------
+      INIT
+  ------------------------------------------------------------ */
+  qsLocal("#addExpenseBtn")?.addEventListener("click", ()=> window.addExpenseEntry());
 
   window.addEventListener("load", ()=>{
     renderExpenses();
