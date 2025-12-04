@@ -1,118 +1,99 @@
 /* ==========================================================
-   LOGIN UTILS (ONLINE MODE ONLY) — Firebase Authentication
-   FINAL VERSION v5
+   login-utils.js — FINAL v10 (Ultra-Stable)
    ----------------------------------------------------------
-   ✔ Email + Password login
-   ✔ Signup
-   ✔ Logout
-   ✔ Password Reset
-   ✔ Current User Helper
-   ----------------------------------------------------------
-   Requires: firebase.js (Firebase initialized)
+   ✔ Uses firebase.js wrappers (fsLogin, fsSignUp, fsLogout)
+   ✔ No conflicts with firebase.js auth listener
+   ✔ No duplicate redirects
+   ✔ No double email writes
+   ✔ Only provides clean helper functions for UI
 ========================================================== */
 
 /* ----------------------------------------------------------
-   CURRENT USER
+   CURRENT USER (safe)
 ---------------------------------------------------------- */
-function getFirebaseUser() {
-  return firebase.auth().currentUser || null;
-}
-window.getFirebaseUser = getFirebaseUser;
+window.getFirebaseUser = function () {
+  try {
+    return firebase.auth().currentUser || null;
+  } catch {
+    return null;
+  }
+};
 
 /* ----------------------------------------------------------
-   LOGIN (Email + Password)
+   LOGIN (Uses firebase.js → fsLogin)
 ---------------------------------------------------------- */
-async function loginUser(email, password) {
+window.loginUser = async function (email, password) {
   try {
-    if (!email || !password) throw new Error("Missing email or password.");
+    if (!email || !password)
+      throw new Error("Enter email & password");
 
-    await firebase.auth().signInWithEmailAndPassword(email, password);
-
-    // store email for UI topbar
-    localStorage.setItem("ks-user-email", email);
+    const res = await window.fsLogin(email, password);
 
     return { success: true };
   } catch (err) {
     return { success: false, error: err.message };
   }
-}
-window.loginUser = loginUser;
+};
 
 /* ----------------------------------------------------------
-   SIGNUP (Create Account)
+   SIGNUP (Uses firebase.js → fsSignUp)
 ---------------------------------------------------------- */
-async function signupUser(email, password) {
+window.signupUser = async function (email, password) {
   try {
-    if (!email || !password) throw new Error("Missing email or password.");
+    if (!email || !password)
+      throw new Error("Enter email & password");
 
-    await firebase.auth().createUserWithEmailAndPassword(email, password);
-
-    localStorage.setItem("ks-user-email", email);
+    const res = await window.fsSignUp(email, password);
 
     return { success: true };
   } catch (err) {
     return { success: false, error: err.message };
   }
-}
-window.signupUser = signupUser;
+};
 
 /* ----------------------------------------------------------
-   PASSWORD RESET
+   PASSWORD RESET (Uses firebase.js → fsSendPasswordReset)
 ---------------------------------------------------------- */
-async function resetPassword(email) {
+window.resetPassword = async function (email) {
   try {
-    if (!email) throw new Error("Email required.");
+    if (!email) throw new Error("Email required");
 
-    await firebase.auth().sendPasswordResetEmail(email);
+    await window.fsSendPasswordReset(email);
 
     return { success: true };
   } catch (err) {
     return { success: false, error: err.message };
   }
-}
-window.resetPassword = resetPassword;
+};
 
 /* ----------------------------------------------------------
-   LOGOUT
+   LOGOUT (Uses firebase.js → fsLogout with redirect)
 ---------------------------------------------------------- */
-async function logoutUser() {
+window.logoutUser = async function () {
   try {
-    await firebase.auth().signOut();
-
-    // local cleanup
-    localStorage.removeItem("ks-user-email");
-
+    await window.fsLogout();   // firebase.js handles redirect → login.html
     return { success: true };
   } catch (err) {
     return { success: false, error: err.message };
   }
-}
-window.logoutUser = logoutUser;
+};
 
 /* ----------------------------------------------------------
-   IS LOGGED IN? (Sync with Firebase)
+   IS LOGGED IN? (Realtime-safe)
 ---------------------------------------------------------- */
-function isLoggedIn() {
-  const u = firebase.auth().currentUser;
-  return !!u;
-}
-window.isLoggedIn = isLoggedIn;
+window.isLoggedIn = function () {
+  try {
+    return !!firebase.auth().currentUser;
+  } catch {
+    return false;
+  }
+};
 
 /* ----------------------------------------------------------
-   AUTH STATE LISTENER (Auto redirect helpers)
+   LIGHT AUTH LISTENER (No redirects — firebase.js handles that)
 ---------------------------------------------------------- */
 firebase.auth().onAuthStateChanged(user => {
   try {
-    if (user) {
-      localStorage.setItem("ks-user-email", user.email || "");
-    } else {
-      localStorage.removeItem("ks-user-email");
-    }
-
-    if (typeof updateEmailTag === "function") {
-      updateEmailTag();
-    }
-  } catch (e) {
-    console.warn("Auth state listener error:", e);
-  }
+    if (typeof updateEmailTag === "function") updateEmailTag();
+  } catch {}
 });
