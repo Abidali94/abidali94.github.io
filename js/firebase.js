@@ -122,3 +122,8 @@ window.cloudSaveDebounced = function (collection, data) {
 };
 
 console.log("firebase.js READY");
+// Password reset handler
+window.fsSendPasswordReset = async function(email) {
+  if (!auth) throw new Error("Auth not ready");
+  return await auth.sendPasswordResetEmail(email);
+};
