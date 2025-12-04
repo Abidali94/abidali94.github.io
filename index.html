@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>KharchaSaathi</title>
 
 <!-- FONT -->
@@ -10,10 +10,16 @@
 
 <style>
 :root{
-  --blue:#0A66C2;     /* Commercial App Blue */
+  --blue:#0A66C2;
   --light-bg:#f4f6f9;
   --card-bg:#ffffff;
   --dark:#111;
+
+  --shadow-light:0 3px 12px rgba(0,0,0,0.08);
+  --shadow-light-hover:0 5px 16px rgba(0,0,0,0.12);
+
+  --shadow-dark:0 3px 10px rgba(255,255,255,0.06);
+  --shadow-dark-hover:0 5px 14px rgba(255,255,255,0.12);
 }
 
 /* RESET */
@@ -22,6 +28,7 @@ body{
   padding:0;
   background:var(--light-bg);
   font-family:'Poppins',sans-serif;
+  transition:background .25s, color .25s;
 }
 
 /* HEADER */
@@ -35,12 +42,14 @@ body{
   position:sticky;
   top:0;
   z-index:99;
+  transition:.25s;
 }
 
 .header-title{
   font-size:24px;
   font-weight:700;
   color:#000;
+  transition:.25s;
 }
 
 /* Theme Button */
@@ -51,18 +60,9 @@ body{
   font-size:18px;
   cursor:pointer;
   background:#eee;
+  transition:.25s;
 }
-</style>
-</head>
 
-<body>
-
-<!-- HEADER (NO LOGO) -->
-<div class="header">
-  <div class="header-title">KharchaSaathi</div>
-  <button id="themeBtn" class="theme-btn">🌙</button>
-</div>
-<style>
 /* SECTION TITLE */
 .section-title{
   font-size:22px;
@@ -86,14 +86,14 @@ body{
   border-radius:16px;
   text-decoration:none;
   color:#000;
-  box-shadow:0 3px 12px rgba(0,0,0,0.08);
-  transition:.2s;
+  box-shadow:var(--shadow-light);
+  transition:.25s;
   display:block;
 }
 
 .tool-card:hover{
   transform:translateY(-5px);
-  box-shadow:0 5px 16px rgba(0,0,0,0.12);
+  box-shadow:var(--shadow-light-hover);
 }
 
 .tool-title{
@@ -106,18 +106,8 @@ body{
   color:#555;
   margin-top:6px;
 }
-</style>
 
-<!-- BUSINESS TOOLS -->
-<div class="section-title">📦 Business Tools</div>
-
-<div class="tools-grid">
-  <a href="tools/business-dashboard.html" class="tool-card">
-      <div class="tool-title">Business Manager</div>
-      <div class="tool-desc">Stock • Sales • Service • Credit • Analytics</div>
-  </a>
-</div>
-<style>
+/* COMING BOX */
 .coming-box{
   margin:22px 18px;
   padding:15px;
@@ -128,6 +118,7 @@ body{
   color:#0A3E80;
 }
 
+/* FOOTER */
 .footer{
   text-align:center;
   padding:25px 0;
@@ -135,16 +126,76 @@ body{
   color:#777;
   font-size:13px;
 }
-</style>
 
+/* ================= DARK MODE ================= */
+body.dark{
+  background:#0e0e0e;
+  color:#fff;
+}
+
+/* Header dark */
+body.dark .header{
+  background:#1a1a1a;
+  color:#fff;
+}
+body.dark .header-title{
+  color:#fff !important;
+}
+
+/* Cards */
+body.dark .tool-card{
+  background:#1a1a1a;
+  color:#fff;
+  box-shadow:var(--shadow-dark);
+}
+body.dark .tool-card:hover{
+  box-shadow:var(--shadow-dark-hover);
+}
+
+/* Coming box */
+body.dark .coming-box{
+  background:#222;
+  color:#ddd;
+  border-left:4px solid #888;
+}
+
+/* Footer */
+body.dark .footer{
+  color:#aaa;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-title">KharchaSaathi</div>
+  <button id="themeBtn" class="theme-btn">🌙</button>
+</div>
+
+<!-- BUSINESS TOOLS -->
+<div class="section-title">📦 Business Tools</div>
+
+<div class="tools-grid">
+  <a href="tools/business-dashboard.html" class="tool-card">
+    <div class="tool-title">Business Manager</div>
+    <div class="tool-desc">Stock • Sales • Service • Credit • Analytics</div>
+  </a>
+</div>
+
+<!-- Coming Soon -->
 <div class="coming-box">
   🚀 <b>More Big Business Tools Coming Soon</b><br>
   Auto Backup • Sync • Multi Shop • PDF Reports • Bulk Upload • WhatsApp Invoice • More…
 </div>
 
+<!-- FOOTER -->
 <footer class="footer">
   © 2025 KharchaSaathi • All Rights Reserved
 </footer>
+
+<!-- THEME SCRIPT -->
 <script>
 const btn = document.getElementById("themeBtn");
 
@@ -154,50 +205,13 @@ if(localStorage.getItem("ks-theme") === "dark"){
   btn.textContent = "☀️";
 }
 
-// Toggle Theme
+// Toggle theme
 btn.addEventListener("click", ()=>{
   const mode = document.body.classList.toggle("dark");
   localStorage.setItem("ks-theme", mode ? "dark" : "light");
   btn.textContent = mode ? "☀️" : "🌙";
 });
 </script>
-
-<style>
-body.dark{
-  background:#0e0e0e;
-  color:#fff;
-}
-
-body.dark .header{
-  background:#1a1a1a;
-  color:#fff;
-}
-
-/* FIX: Header Title Visible in Dark Mode */
-body.dark .header-title{
-  color:#fff !important;
-}
-
-body.dark .tool-card{
-  background:#1a1a1a;
-  color:#fff;
-  box-shadow:0 3px 10px rgba(255,255,255,0.06);
-}
-
-body.dark .tool-card:hover{
-  box-shadow:0 5px 14px rgba(255,255,255,0.12);
-}
-
-body.dark .coming-box{
-  background:#222;
-  color:#ddd;
-  border-left:4px solid #888;
-}
-
-body.dark .footer{
-  color:#aaa;
-}
-</style>
 
 </body>
 </html>
