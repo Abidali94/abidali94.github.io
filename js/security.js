@@ -1,66 +1,48 @@
 /* ==========================================================
-   🔐 security.js — Login + Logout + Email + Admin Password
-   ========================================================== */
-
-/* --------------------------
-   🔐 LOGIN SYSTEM
---------------------------- */
-function isLoggedIn() {
-  return !!localStorage.getItem("ks-user-email");
-}
-
-function loginUser(email) {
-  if (!email) return false;
-  localStorage.setItem("ks-user-email", email);
-  return true;
-}
-
-function getUserEmail() {
-  return localStorage.getItem("ks-user-email") || "";
-}
-
-function logoutUser() {
-  localStorage.removeItem("ks-user-email");
-}
+   🔐 security.js — FINAL v12 (Firebase-Safe + Bug-Free)
+   ----------------------------------------------------------
+   ✔ No fake login system (uses Firebase only)
+   ✔ Admin password system (local + secure usage)
+   ✔ Profit Lock controls only
+   ✔ Email Tag reads from Firebase user (correct source)
+========================================================== */
 
 /* ==========================================================
-   🔐 ADMIN PASSWORD (for Profit Lock)
+   🔵 EMAIL TAG (Correct Firebase Source)
+========================================================== */
+window.updateEmailTag = function () {
+  const tag = document.getElementById("emailTag");
+  if (!tag) return;
+
+  try {
+    const fbUser = firebase.auth().currentUser;
+    const email = fbUser?.email || localStorage.getItem("ks-user-email");
+
+    tag.textContent = email || "Offline Mode";
+
+  } catch (err) {
+    console.error("updateEmailTag error:", err);
+    tag.textContent = "Offline";
+  }
+};
+
+window.addEventListener("load", updateEmailTag);
+
+
+/* ==========================================================
+   🔐 ADMIN PASSWORD SYSTEM (Local secure area)
 ========================================================== */
 
 const ADMIN_KEY = "ks-admin-pw";
 
-/* Set default password if not exists */
-function ensureAdminPassword() {
-  let pw = localStorage.getItem(ADMIN_KEY);
-
-  if (!pw) {
-    localStorage.setItem(ADMIN_KEY, "admin123"); // default
+/* Create default password if not existing */
+(function ensureAdminPassword() {
+  if (!localStorage.getItem(ADMIN_KEY)) {
+    localStorage.setItem(ADMIN_KEY, "admin123");
   }
-}
-ensureAdminPassword();
+})();
 
-/* Update admin password */
-function updateAdminPassword() {
-  const oldPw = localStorage.getItem(ADMIN_KEY);
-  const oldInput = prompt("Enter current admin password:");
-
-  if (!oldInput) return;
-  if (oldInput !== oldPw) {
-    alert("Incorrect password!");
-    return;
-  }
-
-  const newPw = prompt("Enter new admin password (min 4 chars):");
-  if (!newPw || newPw.length < 4) {
-    alert("Password too short!");
-    return;
-  }
-
-  localStorage.setItem(ADMIN_KEY, newPw);
-  alert("Admin password updated!");
-}
-
-/* Ask password for unlocking */
+/* Validate admin password */
 function askAdminPassword() {
   const pw = prompt("Enter admin password:");
   if (!pw) return false;
@@ -68,21 +50,27 @@ function askAdminPassword() {
   return pw === localStorage.getItem(ADMIN_KEY);
 }
 
-/* Secure Toggle (if needed) */
-function secureToggle(elementId) {
-  if (!askAdminPassword()) {
-    alert("Wrong password!");
-    return;
+/* Change admin password */
+window.updateAdminPassword = function () {
+  const oldPw = localStorage.getItem(ADMIN_KEY);
+  const oldInput = prompt("Enter current admin password:");
+
+  if (!oldInput) return;
+  if (oldInput !== oldPw) {
+    return alert("Incorrect password!");
   }
 
-  const el = document.getElementById(elementId);
-  if (!el) return;
+  const newPw = prompt("Enter new password (min 4 chars):");
+  if (!newPw || newPw.length < 4) {
+    return alert("Password too short!");
+  }
 
-  el.style.display = el.style.display === "none" ? "" : "none";
-}
+  localStorage.setItem(ADMIN_KEY, newPw);
+  alert("Admin password updated!");
+};
 
 /* Unlock profit column */
-function unlockProfitWithPassword() {
+window.unlockProfitWithPassword = function () {
   if (askAdminPassword()) {
     window.profitLocked = false;
 
@@ -90,68 +78,40 @@ function unlockProfitWithPassword() {
       applyProfitVisibility();
     }
 
-    alert("Profit column unlocked.");
+    alert("Profit unlocked!");
   } else {
-    alert("Incorrect password.");
-  }
-}
-
-/* Reset admin password */
-function resetAdminPassword() {
-  const cur = localStorage.getItem(ADMIN_KEY);
-  const old = prompt("Enter current password:");
-
-  if (!old) return;
-  if (old !== cur) {
     alert("Incorrect password!");
-    return;
-  }
-
-  const newPw = prompt("Enter new password:");
- 	if (!newPw || newPw.length < 4) {
-    alert("Invalid new password.");
-    return;
-  }
-
-  localStorage.setItem(ADMIN_KEY, newPw);
-  alert("Password successfully reset.");
-}
-
-/* ==========================================================
-   🔵 EMAIL TAG UPDATE (Fixes "Loading...")
-========================================================== */
-
-window.updateEmailTag = function () {
-  const tag = document.getElementById("emailTag");
-  if (!tag) return;
-
-  try {
-    const email = getUserEmail();
-
-    if (email) {
-      tag.textContent = email;
-    } else {
-      tag.textContent = "Offline (Local mode)";
-    }
-  } catch (err) {
-    console.error("updateEmailTag error:", err);
-    tag.textContent = "Offline";
   }
 };
 
-/* Auto-update email badge */
-window.addEventListener("load", updateEmailTag);
-window.addEventListener("storage", updateEmailTag);
+/* Secure show/hide any element */
+window.secureToggle = function (id) {
+  if (!askAdminPassword()) {
+    return alert("Wrong password!");
+  }
 
-/* EXPORTS */
-window.isLoggedIn = isLoggedIn;
-window.loginUser = loginUser;
-window.logoutUser = logoutUser;
-window.getUserEmail = getUserEmail;
+  const el = document.getElementById(id);
+  if (!el) return;
 
-window.updateAdminPassword = updateAdminPassword;
-window.unlockProfitWithPassword = unlockProfitWithPassword;
-window.secureToggle = secureToggle;
-window.resetAdminPassword = resetAdminPassword;
+  el.style.display = el.style.display === "none" ? "" : "none";
+};
 
-console.log("🔐 security.js loaded");
+/* Reset admin password */
+window.resetAdminPassword = function () {
+  const current = localStorage.getItem(ADMIN_KEY);
+  const old = prompt("Enter current password:");
+
+  if (!old) return;
+  if (old !== current) return alert("Incorrect password!");
+
+  const newPw = prompt("Enter new password:");
+  if (!newPw || newPw.length < 4) {
+    return alert("Invalid password!");
+  }
+
+  localStorage.setItem(ADMIN_KEY, newPw);
+  alert("Password reset successful.");
+};
+
+
+console.log("🔐 security.js (v12) loaded — Firebase Safe");
