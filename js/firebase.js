@@ -1,10 +1,9 @@
 /* ===========================================================
-   firebase.js — FINAL V13 (ONLINE ONLY + LOGIN GUARD + FIXED LOGOUT)
-   ✔ Firebase Auth + Firestore
-   ✔ Works with core.js cloudPullAllIfAvailable()
-   ✔ Saves ks-user-email after login
-   ✔ Protects Business pages (auto-redirect to login)
-   ✔ Logout ALWAYS redirects to login.html (fixed)
+   firebase.js — FINAL V14 (Ultra-Stable + No Conflicts)
+   ✔ Login / Signup / Reset
+   ✔ Auto Redirect Guards
+   ✔ Cloud Sync (Load + Save + Debounced)
+   ✔ Works on Mobile Paths & Desktop Paths
 =========================================================== */
 
 console.log("%c🔥 firebase.js loaded", "color:#ff9800;font-weight:bold;");
@@ -23,13 +22,13 @@ const firebaseConfig = {
 };
 
 /* -----------------------------------------------------------
-   INITIALIZE
+   INITIALIZE (Safe Init)
 ----------------------------------------------------------- */
 let db = null;
 let auth = null;
 
 try {
-  firebase.initializeApp(firebaseConfig);
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
   db   = firebase.firestore();
   auth = firebase.auth();
   console.log("%c☁️ Firebase connected!", "color:#4caf50;font-weight:bold;");
@@ -38,26 +37,33 @@ try {
 }
 
 /* -----------------------------------------------------------
-   PATH HELPERS
+   PATH HELPERS (Mobile + Desktop Safe)
 ----------------------------------------------------------- */
 function currentPath() {
-  return window.location.pathname || "";
+  return window.location.pathname.replace(/\\/g, "/");
 }
 
-const PROTECTED_PATHS = [
-  "/tools/business-dashboard.html"
+function ends(path, name) {
+  return path.toLowerCase().endsWith(name.toLowerCase());
+}
+
+/* All protected screens */
+const PROTECTED = [
+  "business-dashboard.html"
 ];
 
+/* Public auth screens */
 const AUTH_PAGES = [
-  "/login.html",
-  "/signup.html",
-  "/reset.html"
+  "login.html",
+  "signup.html",
+  "reset-password.html"
 ];
 
 /* -----------------------------------------------------------
    LOCAL EMAIL HELPERS
 ----------------------------------------------------------- */
 function setLocalEmail(email) {
+  if (!email) return;
   try { localStorage.setItem("ks-user-email", email); } catch {}
 }
 
@@ -68,61 +74,34 @@ function clearLocalEmail() {
 /* ===========================================================
    AUTH FUNCTIONS
 =========================================================== */
-
-async function _doSignIn(email, password) {
-  if (!auth) throw new Error("Auth not ready");
-
+window.fsLogin = async function (email, password) {
   const cred = await auth.signInWithEmailAndPassword(email, password);
-
-  if (cred.user?.email) setLocalEmail(cred.user.email);
-
+  setLocalEmail(cred.user?.email);
   return cred;
-}
-
-window.fsLogin  = _doSignIn;
-window.fsSignIn = _doSignIn;
+};
 
 window.fsSignUp = async function (email, password) {
   const cred = await auth.createUserWithEmailAndPassword(email, password);
-
   try { await cred.user.sendEmailVerification(); } catch {}
-
-  if (cred.user?.email) setLocalEmail(cred.user.email);
-
+  setLocalEmail(cred.user?.email);
   return cred;
 };
 
-/*  
-   ✔ LOGOUT FIXED (always redirects to login)
-*/
+/* LOGOUT (Always Safe) */
 window.fsLogout = async function () {
-  try { 
-    await auth.signOut(); 
-  } catch (e) {
-    console.error("Logout error:", e);
-  }
-
+  try { await auth.signOut(); } catch (e) {}
   clearLocalEmail();
-
-  // HARD REDIRECT → 100% guaranteed logout
   window.location.href = "/login.html";
 };
 
+/* Reset */
 window.fsSendPasswordReset = email => auth.sendPasswordResetEmail(email);
 
-window.fsCheckAuth = function () {
-  return new Promise(resolve => {
-    const off = auth.onAuthStateChanged(u => {
-      off();
-      resolve(u);
-    });
-  });
-};
-
+/* Current Firebase User */
 window.getFirebaseUser = () => auth?.currentUser || null;
 
 /* ===========================================================
-   AUTH STATE LISTENER — LOGIN GUARD
+   AUTH STATE LISTENER — PROTECTOR
 =========================================================== */
 if (auth) {
   auth.onAuthStateChanged(async user => {
@@ -134,13 +113,13 @@ if (auth) {
 
       console.log("%c🔐 Logged in:", "color:#03a9f4;font-weight:bold;", email);
 
-      // Sync data after login
+      // Load cloud data
       if (typeof cloudPullAllIfAvailable === "function") {
         try { await cloudPullAllIfAvailable(); } catch {}
       }
 
-      // If user is on login/signup page → redirect to dashboard
-      if (AUTH_PAGES.some(p => path.endsWith(p))) {
+      // If still on login/signup → send to dashboard
+      if (AUTH_PAGES.some(p => ends(path, p))) {
         window.location.replace("/tools/business-dashboard.html");
       }
 
@@ -148,8 +127,8 @@ if (auth) {
       clearLocalEmail();
       console.log("%c🔓 Logged out", "color:#f44336;font-weight:bold;");
 
-      // If user tries to access protected page → go to login
-      if (PROTECTED_PATHS.some(p => path.endsWith(p))) {
+      // Protect private areas
+      if (PROTECTED.some(p => ends(path, p))) {
         window.location.replace("/login.html");
       }
     }
@@ -160,31 +139,31 @@ if (auth) {
    FIRESTORE HELPERS
 =========================================================== */
 function getCloudUser() {
-  return auth?.currentUser?.email || localStorage.getItem("ks-user-email") || null;
+  return (
+    auth?.currentUser?.email ||
+    localStorage.getItem("ks-user-email") ||
+    null
+  );
 }
 
+/* SAVE TO CLOUD */
 window.cloudSave = async function (collection, data) {
   const user = getCloudUser();
-  if (!user) return console.warn("cloudSave skipped: no user");
+  if (!user) return console.warn("cloudSave skipped (no user)");
 
   try {
     await db.collection(collection)
-            .doc(user)
-            .set({ items: data }, { merge: true });
+      .doc(user)
+      .set({ items: data }, { merge: true });
 
-    console.log(`☁️ Saved: ${collection} → ${user}`);
-
-    setTimeout(() => {
-      if (typeof cloudPullAllIfAvailable === "function") {
-        try { cloudPullAllIfAvailable(); } catch {}
-      }
-    }, 300);
+    console.log(`☁️ Saved → ${collection}`);
 
   } catch (e) {
     console.error("❌ Cloud Save error:", e);
   }
 };
 
+/* LOAD FROM CLOUD */
 window.cloudLoad = async function (collection) {
   const user = getCloudUser();
   if (!user) return [];
@@ -194,23 +173,26 @@ window.cloudLoad = async function (collection) {
     if (!snap.exists) return [];
     const data = snap.data() || {};
     return Array.isArray(data.items) ? data.items : [];
-
   } catch (e) {
     console.error("❌ Cloud Load error:", e);
     return [];
   }
 };
 
-/* ---------------- DEBOUNCED SAVE ---------------- */
-let _timers = {};
+/* ===========================================================
+   DEBOUNCED SAVE (Prevents Infinite Loop)
+=========================================================== */
+let _csTimers = {};
+
 window.cloudSaveDebounced = function (collection, data) {
-  if (_timers[collection]) clearTimeout(_timers[collection]);
-  _timers[collection] = setTimeout(() => {
-    window.cloudSave(collection, data);
-  }, 400);
+  if (_csTimers[collection]) clearTimeout(_csTimers[collection]);
+
+  _csTimers[collection] = setTimeout(() => {
+    cloudSave(collection, data);
+  }, 300);
 };
 
 /* ===========================================================
    READY
 =========================================================== */
-console.log("%c⚙️ firebase.js READY ✔ (ONLINE ONLY)", "color:#03a9f4;font-weight:bold;");
+console.log("%c⚙️ firebase.js READY ✔", "color:#03a9f4;font-weight:bold;");
