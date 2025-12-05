@@ -165,62 +165,68 @@
 })();
 </script>
 <script>
-(function(){
+(function() {
+  document.addEventListener("DOMContentLoaded", () => {
+    
+    // CLOCK
+    function updateClock(){
+      const d=new Date();
+      qs("#clockTime").textContent = d.toLocaleTimeString();
+      qs("#clockDate").textContent = d.toLocaleDateString();
+    }
+    setInterval(updateClock,1000); updateClock();
 
-  // CLOCK
-  function updateClock(){
-    const d=new Date();
-    qs("#clockTime").textContent = d.toLocaleTimeString();
-    qs("#clockDate").textContent = d.toLocaleDateString();
-  }
-  setInterval(updateClock,1000); updateClock();
+    // THEME
+    const btn = qs("#themeBtn");
+    const saved = localStorage.getItem("ks-theme");
+    if(saved==='dark'){ document.body.classList.add("dark"); btn.textContent="☀️"; }
 
-  // THEME
-  const btn = qs("#themeBtn");
-  const saved = localStorage.getItem("ks-theme");
-  if(saved==='dark'){ document.body.classList.add("dark"); btn.textContent="☀️"; }
+    btn.addEventListener("click", ()=>{
+      const dark = document.body.classList.toggle("dark");
+      localStorage.setItem("ks-theme", dark?'dark':'light');
+      btn.textContent = dark ? "☀️" : "🌙";
+    });
 
-  btn.addEventListener("click", ()=>{
-    const dark = document.body.classList.toggle("dark");
-    localStorage.setItem("ks-theme", dark?'dark':'light');
-    btn.textContent = dark ? "☀️" : "🌙";
+    // LOGOUT
+    qs("#logoutBtn").addEventListener("click", async ()=>{
+      if (typeof fsLogout === "function") { await fsLogout(); return; }
+      localStorage.removeItem("ks-user-email");
+      location.href="/login.html";
+    });
+
+    // TAB SWITCHING — FIXED
+    document.addEventListener("click", e => {
+      const t = e.target.closest(".tab");
+      if(!t) return;
+      const id=t.dataset.tab;
+
+      qsa(".tab").forEach(x=>x.classList.remove("active"));
+      t.classList.add("active");
+
+      qsa(".section").forEach(s=>s.classList.remove("active"));
+      const sec = document.getElementById(id);
+      if (sec) sec.classList.add("active");
+
+      try{ window.renderStock?.(); }catch{}
+      try{ window.renderSales?.(); }catch{}
+      try{ window.renderWanting?.(); }catch{}
+      try{ window.renderExpenses?.(); }catch{}
+      try{ window.renderServiceTables?.(); }catch{}
+      try{ window.renderCollection?.(); }catch{}
+      try{ window.renderAnalytics?.(); }catch{}
+      try{ window.updateUniversalBar?.(); }catch{}
+    });
+
+    // COLLECT BUTTON
+    document.addEventListener("click", e => {
+      const c = e.target.closest(".collect-btn");
+      if(!c) return;
+      const type=c.dataset.collect;
+      try { window.handleCollect?.(type); }
+      catch(err){ console.error("collect failed", err); }
+    });
+
   });
-
-  // LOGOUT
-  qs("#logoutBtn").addEventListener("click", async ()=>{
-    if (typeof fsLogout === "function") { await fsLogout(); return; }
-    localStorage.removeItem("ks-user-email");
-    location.href="/login.html";
-  });
-
-  // TAB SWITCHING
-  document.addEventListener("click", e => {
-    const t = e.target.closest(".tab");
-    if(!t) return;
-    const id=t.dataset.tab;
-    qsa(".tab").forEach(x=>x.classList.remove("active"));
-    t.classList.add("active");
-    qsa(".section").forEach(s=>s.classList.remove("active"));
-    qs("#"+id).classList.add("active");
-
-    window.renderStock?.();
-    window.renderSales?.();
-    window.renderWanting?.();
-    window.renderExpenses?.();
-    window.renderServiceTables?.();
-    window.renderCollection?.();
-    window.renderAnalytics?.();
-    window.updateUniversalBar?.();
-  });
-
-  // COLLECT BUTTON HANDLER
-  document.addEventListener("click", e => {
-    const c = e.target.closest(".collect-btn");
-    if(!c) return;
-    const type=c.dataset.collect;
-    window.handleCollect?.(type);
-  });
-
 })();
 </script>
 
