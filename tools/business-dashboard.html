@@ -1,4 +1,3 @@
-<!-- Part 1: business-dashboard.html -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -9,51 +8,69 @@
   <link rel="icon" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
 
-  <!-- external CSS (kept) -->
+  <!-- external CSS -->
   <link rel="stylesheet" href="/css/base.css" />
   <link rel="stylesheet" href="/css/layout.css" />
   <link rel="stylesheet" href="/css/components.css" />
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="stylesheet" href="/css/table.css" />
 
-  <!-- Inline critical theme CSS (kept minimal) -->
   <style>
-    /* critical small theme vars (kept safe) */
-    :root { --ks-accent:#2563eb; --ks-accent-soft:#3b82f6; --ks-bg-card:#fff; --ks-border-soft:#e2e8f0; --ks-text-main:#0f172a; --ks-radius-pill:999px; }
-    body{ margin:0; font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:radial-gradient(circle at top,#eef2ff 0,#e5e7eb 40%,#e2e8f0 100%); color:var(--ks-text-main); min-height:100vh; -webkit-font-smoothing:antialiased;}
-    .topbar{ position:sticky; top:0; z-index:50; display:flex; justify-content:space-between; align-items:center; padding:10px 18px; background: rgba(255,255,255,.92); border-bottom:1px solid var(--ks-border-soft); }
-    .topbar h1{ margin:0; font-size:20px; display:flex; gap:10px; align-items:center; text-transform:uppercase; font-weight:700; }
-    .topbar-logo{ width:32px;height:32px;border-radius:999px; display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#22c55e,#2563eb); color:#fff; font-weight:700;}
-    .tabs{ display:flex; gap:10px; padding:10px; overflow-x:auto; border-bottom:1px solid var(--ks-border-soft); }
-    .tab{ padding:9px 18px; border-radius:999px; cursor:pointer; color:#6b7280; font-weight:600; }
-    .tab.active{ background:linear-gradient(135deg,var(--ks-accent-soft),var(--ks-accent)); color:#fff; }
-    .section{ display:none; padding:16px; max-width:1160px; margin:0 auto; }
-    .section.active{ display:block; }
+    :root {
+      --ks-accent:#2563eb;
+      --ks-accent-soft:#3b82f6;
+      --ks-bg-card:#fff;
+      --ks-border-soft:#e2e8f0;
+      --ks-text-main:#0f172a;
+      --ks-radius-pill:999px;
+    }
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:var(--ks-gradient-bg);
+      color:var(--ks-text-main);
+      min-height:100vh;
+    }
+    .topbar{
+      position:sticky; top:0; z-index:50;
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 18px;
+      background: rgba(255,255,255,.92);
+      border-bottom:1px solid var(--ks-border-soft);
+    }
+    .topbar h1{ margin:0; font-size:20px; display:flex; gap:10px; align-items:center; font-weight:700; }
+    .topbar-logo{ width:32px;height:32px;border-radius:999px; display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#22c55e,#2563eb); color:#fff; }
   </style>
 </head>
 <body>
-<script>const qs=s=>document.querySelector(s), qsa=s=>Array.from(document.querySelectorAll(s));</script>
+
+<script>
+  const qs = s => document.querySelector(s);
+  const qsa = s => Array.from(document.querySelectorAll(s));
+</script>
 
 <div class="topbar">
   <h1><div class="topbar-logo">₹</div>KHARCHASAATHI</h1>
+
   <div style="display:flex;gap:10px;align-items:center;">
     <span id="emailTag">Checking login…</span>
     <div style="text-align:right;font-size:12px;">
       <div id="clockTime">--:--:--</div>
       <div id="clockDate">--</div>
     </div>
-    <button id="themeBtn" class="theme-btn">🌙</button>
+    <button id="themeBtn" class="small-btn">🌙</button>
     <a class="small-btn" href="/index.html">🏠 Home</a>
-    <button id="logoutBtn" class="small-btn btn-danger">🔓 Logout</button>
+    <button id="logoutBtn" class="small-btn danger-btn">🔓 Logout</button>
   </div>
 </div>
-
-<!-- universal bar -->
+<!-- UNIVERSAL BAR -->
 <div id="universalBar" style="padding:12px 14px;border-bottom:1px solid var(--ks-border-soft);background:linear-gradient(to bottom,#eef2ff,#e5f3ff 55%,transparent);">
   <div style="max-width:1160px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+    
+    <!-- ⭐ NET PROFIT -->
     <div class="card" style="position:relative;padding:12px;">
       <button class="collect-btn" data-collect="net">₹ Collect</button>
-      <div class="uni-title">Net Profit (Sale+Service − Expenses)</div>
+      <div class="uni-title">Net Profit (Sale + Service − Expense)</div>
       <div class="uni-value" id="unNetProfit">₹0</div>
       <div class="uni-sub">
         <span>Sale:</span><span id="unSaleProfit">₹0</span>
@@ -61,14 +78,35 @@
         <span>Exp:</span><span id="unExpenses">₹0</span>
       </div>
     </div>
-    <div class="card"><div class="uni-title">Stock Investment (Sold Items)</div><div class="uni-value" id="unStockInv">₹0</div></div>
-    <div class="card"><div class="uni-title">Service Investment (Completed)</div><div class="uni-value" id="unServiceInv">₹0</div></div>
-    <div class="card"><div class="uni-title">Pending Credit Sales</div><div class="uni-value" id="unCreditSales">₹0</div></div>
+
+    <!-- ⭐ STOCK INVESTMENT -->
+    <div class="card" style="position:relative;padding:12px;">
+      <button class="collect-btn" data-collect="stock">₹ Collect</button>
+      <div class="uni-title">Stock Investment (Sold Items)</div>
+      <div class="uni-value" id="unStockInv">₹0</div>
+    </div>
+
+    <!-- ⭐ SERVICE INVESTMENT -->
+    <div class="card" style="position:relative;padding:12px;">
+      <button class="collect-btn" data-collect="service">₹ Collect</button>
+      <div class="uni-title">Service Investment (Completed)</div>
+      <div class="uni-value" id="unServiceInv">₹0</div>
+    </div>
+
+    <!-- ⭐ CREDIT -->
+    <div class="card">
+      <div class="uni-title">Pending Credit</div>
+      <div class="uni-value" id="unCreditSales">₹0</div>
+    </div>
+
   </div>
 </div>
 
-<div id="tabSummaryBar" style="text-align:center;padding:8px;margin:10px auto;max-width:1160px;border-radius:999px;background:#e6f4ea;color:#064e3b;">Profit: +₹0</div>
+<div id="tabSummaryBar" style="text-align:center;padding:8px;margin:10px auto;max-width:1160px;border-radius:999px;background:#e6f4ea;color:#064e3b;">
+  Profit: +₹0
+</div>
 
+<!-- TABS -->
 <div class="tabs" role="tablist">
   <div class="tab active" data-tab="types">📁 Types</div>
   <div class="tab" data-tab="stock">📦 Stock</div>
@@ -81,7 +119,7 @@
   <div class="tab" data-tab="collection">🪙 Collection</div>
 </div>
 
-<!-- Sections skeleton — content filled in Part 4 modules, but include base placeholders so no undefined DOM -->
+<!-- SECTIONS -->
 <section id="types" class="section active"></section>
 <section id="stock" class="section"></section>
 <section id="sales" class="section"></section>
@@ -91,14 +129,13 @@
 <section id="creditHistory" class="section"></section>
 <section id="dashboard" class="section"></section>
 <section id="collection" class="section"></section>
-
-<!-- libs: Chart.js + Firebase (compat) -->
+<!-- LIBRARIES -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
 
-<!-- AUTO LOADER (ensures correct order; firebase first) -->
+<!-- AUTO SCRIPT LOADER -->
 <script>
 (function(){
   if (window.__ks_loader_injected) return;
@@ -106,7 +143,7 @@
 
   const v = Date.now();
   const files = [
-    "/js/firebase.js",       // must come before core & auth helpers
+    "/js/firebase.js",
     "/js/core.js",
     "/js/types.js",
     "/js/stock.js",
@@ -127,71 +164,63 @@
   });
 })();
 </script>
-
-<!-- small inline bootstrap behaviors -->
 <script>
 (function(){
-  // clock
-  function updateClock(){ const d=new Date(); document.getElementById("clockTime").textContent = d.toLocaleTimeString(); document.getElementById("clockDate").textContent = d.toLocaleDateString(); }
+
+  // CLOCK
+  function updateClock(){
+    const d=new Date();
+    qs("#clockTime").textContent = d.toLocaleTimeString();
+    qs("#clockDate").textContent = d.toLocaleDateString();
+  }
   setInterval(updateClock,1000); updateClock();
 
-  // theme
-  const btn = document.getElementById("themeBtn");
-  try{
-    const saved = localStorage.getItem("ks-theme");
-    if(saved==='dark') document.body.classList.add("dark");
-    if(btn) btn.addEventListener("click", ()=>{ const dark = document.body.classList.toggle("dark"); localStorage.setItem("ks-theme", dark?'dark':'light'); btn.textContent = dark ? '☀️' : '🌙'; });
-  }catch(e){console.warn(e);}
+  // THEME
+  const btn = qs("#themeBtn");
+  const saved = localStorage.getItem("ks-theme");
+  if(saved==='dark'){ document.body.classList.add("dark"); btn.textContent="☀️"; }
 
-  // logout (delegates to firebase logout if available)
-  document.getElementById("logoutBtn").addEventListener("click", async ()=>{
-    try {
-      if (typeof window.fsLogout === "function") { await window.fsLogout(); return; }
-      // fallback (shouldn't be used in online-only mode)
-      localStorage.removeItem("ks-user-email");
-      location.href = "/login.html";
-    } catch(e){ console.error("Logout failed", e); localStorage.removeItem("ks-user-email"); location.href="/login.html"; }
+  btn.addEventListener("click", ()=>{
+    const dark = document.body.classList.toggle("dark");
+    localStorage.setItem("ks-theme", dark?'dark':'light');
+    btn.textContent = dark ? "☀️" : "🌙";
   });
 
-  // tab switching
+  // LOGOUT
+  qs("#logoutBtn").addEventListener("click", async ()=>{
+    if (typeof fsLogout === "function") { await fsLogout(); return; }
+    localStorage.removeItem("ks-user-email");
+    location.href="/login.html";
+  });
+
+  // TAB SWITCHING
   document.addEventListener("click", e => {
     const t = e.target.closest(".tab");
     if(!t) return;
-    const id = t.dataset.tab;
+    const id=t.dataset.tab;
     qsa(".tab").forEach(x=>x.classList.remove("active"));
     t.classList.add("active");
     qsa(".section").forEach(s=>s.classList.remove("active"));
-    const sec = document.getElementById(id);
-    if(sec) sec.classList.add("active");
-    // safe render hooks
-    try{ window.renderStock?.(); }catch{}
-    try{ window.renderSales?.(); }catch{}
-    try{ window.renderWanting?.(); }catch{}
-    try{ window.renderExpenses?.(); }catch{}
-    try{ window.renderServiceTables?.(); }catch{}
-    try{ window.renderCollection?.(); }catch{}
-    try{ window.renderAnalytics?.(); }catch{}
+    qs("#"+id).classList.add("active");
+
+    window.renderStock?.();
+    window.renderSales?.();
+    window.renderWanting?.();
+    window.renderExpenses?.();
+    window.renderServiceTables?.();
+    window.renderCollection?.();
+    window.renderAnalytics?.();
+    window.updateUniversalBar?.();
   });
 
-  // collect button delegation
+  // COLLECT BUTTON HANDLER
   document.addEventListener("click", e => {
     const c = e.target.closest(".collect-btn");
     if(!c) return;
-    const type = c.dataset.collect;
-    try {
-      if (typeof window.handleCollect === "function") window.handleCollect(type);
-      else if (typeof window.onCollect === "function") {
-        // default: read numeric value from universal bar
-        const map = { net: "unNetProfit", stock: "unStockInv", service: "unServiceInv" };
-        const el = document.getElementById(map[type]);
-        const raw = el ? (el.textContent||"").replace(/[₹,]/g,"").trim() : "0";
-        const amount = Number(raw) || 0;
-        window.onCollect(type, { amount, details: `${type} collect` });
-      } else {
-        alert("Collect handler missing");
-      }
-    } catch(err){ console.error("collect error", err); alert("Collect failed"); }
+    const type=c.dataset.collect;
+    window.handleCollect?.(type);
   });
+
 })();
 </script>
 
