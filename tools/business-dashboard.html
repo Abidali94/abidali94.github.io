@@ -16,30 +16,127 @@
   <link rel="stylesheet" href="/css/table.css" />
 
   <style>
-    :root {
-      --ks-accent:#2563eb;
-      --ks-accent-soft:#3b82f6;
-      --ks-bg-card:#fff;
-      --ks-border-soft:#e2e8f0;
-      --ks-text-main:#0f172a;
-      --ks-radius-pill:999px;
-    }
-    body{
-      margin:0;
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      background:var(--ks-gradient-bg);
-      color:var(--ks-text-main);
-      min-height:100vh;
-    }
+    /* ===================== TOPBAR FIX (DARK SAFE) ===================== */
     .topbar{
       position:sticky; top:0; z-index:50;
       display:flex; justify-content:space-between; align-items:center;
       padding:10px 18px;
-      background: rgba(255,255,255,.92);
+      background:var(--ks-bg-card);              /* FIX */
       border-bottom:1px solid var(--ks-border-soft);
+      backdrop-filter:blur(12px);
+    }
+    body.dark .topbar{
+      background:var(--ks-bg-card);              /* FIX */
+      color:var(--ks-text-main);                 /* FIX */
     }
     .topbar h1{ margin:0; font-size:20px; display:flex; gap:10px; align-items:center; font-weight:700; }
-    .topbar-logo{ width:32px;height:32px;border-radius:999px; display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#22c55e,#2563eb); color:#fff; }
+    .topbar-logo{
+      width:32px;height:32px;border-radius:999px;
+      display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,var(--ks-accent-green),var(--ks-accent));
+      color:#fff;
+    }
+
+    /* ===================== UNIVERSAL BAR FIX ===================== */
+    #universalBar{
+      padding:12px 14px;
+      border-bottom:1px solid var(--ks-border-soft);
+      background:linear-gradient(to bottom,var(--ks-bg-soft) 40%,transparent);
+    }
+    body.dark #universalBar{
+      background:linear-gradient(to bottom,var(--ks-bg-soft) 30%,transparent);
+    }
+
+    .uni-title{
+      font-size:13px;
+      opacity:.75;
+      margin-bottom:4px;
+    }
+    .uni-value{
+      font-size:22px;
+      font-weight:700;
+      margin-bottom:6px;
+    }
+    .uni-sub{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      font-size:12px;
+      opacity:.85;
+    }
+
+    .collect-btn{
+      position:absolute;
+      right:10px;
+      bottom:10px;
+      padding:5px 12px;
+      border-radius:999px;
+      border:1px solid var(--ks-accent);
+      background:var(--ks-bg-soft);
+      color:var(--ks-accent);
+      font-size:11px;
+    }
+    body.dark .collect-btn{
+      background:var(--ks-bg-card);
+      color:var(--ks-accent-soft);
+    }
+
+    /* ===================== SUMMARY BAR (DARK SAFE) ===================== */
+    #tabSummaryBar{
+      text-align:center;
+      padding:8px;
+      margin:10px auto;
+      max-width:1160px;
+      border-radius:999px;
+      background:var(--ks-bg-soft);
+      color:var(--ks-accent-green);
+      font-weight:600;
+    }
+    body.dark #tabSummaryBar{
+      background:var(--ks-bg-soft);
+      color:var(--ks-accent-green);
+    }
+
+    /* ===================== SECTION STYLE ===================== */
+    .section{
+      display:none;
+      padding:16px 14px 28px;
+      max-width:1160px;
+      margin:0 auto;
+    }
+    .section.active{ display:block; }
+
+    /* ===================== TAB FIX ===================== */
+    .tabs{
+      display:flex;
+      gap:10px;
+      overflow-x:auto;
+      padding:10px;
+    }
+    .tab{
+      padding:9px 18px;
+      border-radius:999px;
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+      white-space:nowrap;
+      background:var(--ks-bg-card);
+      color:var(--ks-text-soft);
+      border:1px solid var(--ks-border-soft);
+    }
+    .tab.active{
+      background:var(--ks-accent);
+      color:#fff;
+    }
+    body.dark .tab{
+      background:var(--ks-bg-card);
+      color:var(--ks-text-soft);
+    }
+    body.dark .tab.active{
+      background:var(--ks-accent-soft);
+      color:#fff;
+    }
+
   </style>
 </head>
 <body>
@@ -49,6 +146,7 @@
   const qsa = s => Array.from(document.querySelectorAll(s));
 </script>
 
+<!-- ===================== TOPBAR ===================== -->
 <div class="topbar">
   <h1><div class="topbar-logo">₹</div>KHARCHASAATHI</h1>
 
@@ -63,12 +161,13 @@
     <button id="logoutBtn" class="small-btn danger-btn">🔓 Logout</button>
   </div>
 </div>
-<!-- UNIVERSAL BAR -->
-<div id="universalBar" style="padding:12px 14px;border-bottom:1px solid var(--ks-border-soft);background:linear-gradient(to bottom,#eef2ff,#e5f3ff 55%,transparent);">
+
+<!-- ===================== UNIVERSAL BAR ===================== -->
+<div id="universalBar">
   <div style="max-width:1160px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
     
     <!-- ⭐ NET PROFIT -->
-    <div class="card" style="position:relative;padding:12px;">
+    <div class="card" style="position:relative;">
       <button class="collect-btn" data-collect="net">₹ Collect</button>
       <div class="uni-title">Net Profit (Sale + Service − Expense)</div>
       <div class="uni-value" id="unNetProfit">₹0</div>
@@ -80,14 +179,14 @@
     </div>
 
     <!-- ⭐ STOCK INVESTMENT -->
-    <div class="card" style="position:relative;padding:12px;">
+    <div class="card" style="position:relative;">
       <button class="collect-btn" data-collect="stock">₹ Collect</button>
       <div class="uni-title">Stock Investment (Sold Items)</div>
       <div class="uni-value" id="unStockInv">₹0</div>
     </div>
 
     <!-- ⭐ SERVICE INVESTMENT -->
-    <div class="card" style="position:relative;padding:12px;">
+    <div class="card" style="position:relative;">
       <button class="collect-btn" data-collect="service">₹ Collect</button>
       <div class="uni-title">Service Investment (Completed)</div>
       <div class="uni-value" id="unServiceInv">₹0</div>
@@ -102,11 +201,10 @@
   </div>
 </div>
 
-<div id="tabSummaryBar" style="text-align:center;padding:8px;margin:10px auto;max-width:1160px;border-radius:999px;background:#e6f4ea;color:#064e3b;">
-  Profit: +₹0
-</div>
+<!-- ===================== SUMMARY BAR ===================== -->
+<div id="tabSummaryBar">Profit: +₹0</div>
 
-<!-- TABS -->
+<!-- ===================== TABS ===================== -->
 <div class="tabs" role="tablist">
   <div class="tab active" data-tab="types">📁 Types</div>
   <div class="tab" data-tab="stock">📦 Stock</div>
@@ -119,8 +217,8 @@
   <div class="tab" data-tab="collection">🪙 Collection</div>
 </div>
 
-<!-- SECTIONS -->
-<section id="types" class="section active"></section>
+<!-- ===================== SECTIONS ===================== -->
+<section id="types" class="section"></section>
 <section id="stock" class="section"></section>
 <section id="sales" class="section"></section>
 <section id="wanting" class="section"></section>
@@ -129,13 +227,14 @@
 <section id="creditHistory" class="section"></section>
 <section id="dashboard" class="section"></section>
 <section id="collection" class="section"></section>
-<!-- LIBRARIES -->
+
+<!-- ===================== LIBS ===================== -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
 
-<!-- AUTO SCRIPT LOADER -->
+<!-- ===================== SCRIPT LOADER ===================== -->
 <script>
 (function(){
   if (window.__ks_loader_injected) return;
@@ -164,6 +263,8 @@
   });
 })();
 </script>
+
+<!-- ===================== RUNTIME UI ===================== -->
 <script>
 (function() {
   document.addEventListener("DOMContentLoaded", () => {
@@ -194,24 +295,23 @@
       location.href="/login.html";
     });
 
-    // TAB SWITCHING — ULTRA FAST
-document.addEventListener("click", e => {
-  const t = e.target.closest(".tab");
-  if(!t) return;
-  const id=t.dataset.tab;
+    // TAB SWITCH
+    document.addEventListener("click", e => {
+      const t = e.target.closest(".tab");
+      if(!t) return;
+      const id=t.dataset.tab;
 
-  qsa(".tab").forEach(x=>x.classList.remove("active"));
-  t.classList.add("active");
+      qsa(".tab").forEach(x=>x.classList.remove("active"));
+      t.classList.add("active");
 
-  qsa(".section").forEach(s=>s.classList.remove("active"));
-  const sec = document.getElementById(id);
-  if (sec) sec.classList.add("active");
+      qsa(".section").forEach(s=>s.classList.remove("active"));
+      const sec = document.getElementById(id);
+      if (sec) sec.classList.add("active");
 
-  // only update UI numbers (very fast)
-  try{ window.updateUniversalBar?.(); }catch{}
-});
+      try{ window.updateUniversalBar?.(); }catch{}
+    });
 
-    // COLLECT BUTTON
+    // COLLECT
     document.addEventListener("click", e => {
       const c = e.target.closest(".collect-btn");
       if(!c) return;
