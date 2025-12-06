@@ -194,28 +194,22 @@
       location.href="/login.html";
     });
 
-    // TAB SWITCHING — FIXED
-    document.addEventListener("click", e => {
-      const t = e.target.closest(".tab");
-      if(!t) return;
-      const id=t.dataset.tab;
+    // TAB SWITCHING — ULTRA FAST
+document.addEventListener("click", e => {
+  const t = e.target.closest(".tab");
+  if(!t) return;
+  const id=t.dataset.tab;
 
-      qsa(".tab").forEach(x=>x.classList.remove("active"));
-      t.classList.add("active");
+  qsa(".tab").forEach(x=>x.classList.remove("active"));
+  t.classList.add("active");
 
-      qsa(".section").forEach(s=>s.classList.remove("active"));
-      const sec = document.getElementById(id);
-      if (sec) sec.classList.add("active");
+  qsa(".section").forEach(s=>s.classList.remove("active"));
+  const sec = document.getElementById(id);
+  if (sec) sec.classList.add("active");
 
-      try{ window.renderStock?.(); }catch{}
-      try{ window.renderSales?.(); }catch{}
-      try{ window.renderWanting?.(); }catch{}
-      try{ window.renderExpenses?.(); }catch{}
-      try{ window.renderServiceTables?.(); }catch{}
-      try{ window.renderCollection?.(); }catch{}
-      try{ window.renderAnalytics?.(); }catch{}
-      try{ window.updateUniversalBar?.(); }catch{}
-    });
+  // only update UI numbers (very fast)
+  try{ window.updateUniversalBar?.(); }catch{}
+});
 
     // COLLECT BUTTON
     document.addEventListener("click", e => {
