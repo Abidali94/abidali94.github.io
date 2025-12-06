@@ -1,18 +1,27 @@
 // =======================================================
-// KharchaSaathi — Service Worker v4 (Final Safe Edition)
-// - Fix: CCACHE_NAME bug
-// - Only essential assets cached
-// - Auto-update, no stale dashboard files
+// KharchaSaathi — Service Worker v5 (Ultra Stable)
+// -------------------------------------------------------
+// ✔ CCACHE_NAME bug removed
+// ✔ Essential assets cached only
+// ✔ Auto-update
+// ✔ Firebase/API never cached
+// ✔ Offline fallback
 // =======================================================
 
-const CACHE_NAME = "ks-cache-v4";
+const CACHE_NAME = "ks-cache-v5";
 
-// Cache ONLY core public files (safe to store offline)
+// -------------------------------------------------------
+// REAL icons (auto-safe approach)
+// Because users may have different favicon path.
+// We check both paths, whichever exists will cache.
+// -------------------------------------------------------
 const CORE_ASSETS = [
   "/",
   "/index.html",
   "/manifest.json",
-  "/assets/favicon.png"
+  "/favicon.png",             // Primary
+  "/icons/icon-192.png",      // PWA icon
+  "/icons/icon-512.png"       // PWA icon
 ];
 
 // -------------------------------------------------------
@@ -20,11 +29,20 @@ const CORE_ASSETS = [
 // -------------------------------------------------------
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log("[SW] Installing & caching core assets…");
-      return cache.addAll(CORE_ASSETS);
+    caches.open(CACHE_NAME).then(async (cache) => {
+      console.log("[SW] Installing…");
+
+      for (const asset of CORE_ASSETS) {
+        try {
+          const res = await fetch(asset, { cache: "no-store" });
+          if (res && res.ok) cache.put(asset, res.clone());
+        } catch (err) {
+          console.warn("[SW] Asset missing (ignored):", asset);
+        }
+      }
     })
   );
+
   self.skipWaiting(); // Activate immediately
 });
 
@@ -35,9 +53,10 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
+        keys.filter(key => key !== CACHE_NAME).map(key => {
+          console.log("[SW] Removing old cache:", key);
+          return caches.delete(key);
+        })
       )
     )
   );
@@ -46,34 +65,47 @@ self.addEventListener("activate", (event) => {
 });
 
 // -------------------------------------------------------
-// FETCH — Cache-first but update in background
+// FETCH — Cache-first, background refresh
 // -------------------------------------------------------
 self.addEventListener("fetch", (event) => {
   const req = event.request;
 
-  // Only GET requests should be cached
+  // Only GET requests handled
   if (req.method !== "GET") return;
 
-  // Never cache Firebase or API requests
   const url = req.url;
-  if (url.includes("firestore") || url.includes("firebase")) {
-    return; // Always use network
+
+  // NEVER cache firebase or dynamic APIs
+  if (
+    url.includes("firestore") ||
+    url.includes("firebase") ||
+    url.includes("googleapis") ||
+    url.includes("/account") ||
+    url.includes("/sync")
+  ) {
+    return; // must hit network only
   }
 
   event.respondWith(
     caches.match(req).then((cached) => {
       const networkFetch = fetch(req)
         .then((res) => {
-          if (res && res.status === 200) {
+          if (res && res.ok) {
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(req, res.clone());
             });
           }
           return res;
         })
-        .catch(() => cached || new Response("Offline", { status: 503 }));
+        .catch(() => {
+          // If offline & no cache → fallback message
+          if (cached) return cached;
+          return new Response("Offline — no cached copy available", {
+            status: 503,
+            headers: { "Content-Type": "text/plain" },
+          });
+        });
 
-      // Fast return cached, update in background
       return cached || networkFetch;
     })
   );
