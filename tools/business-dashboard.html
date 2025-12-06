@@ -127,3 +127,114 @@
 <section id="stock" class="section">
   <h3>📦 Current Stock</h3>
   … (stock limit, add product row, filters etc) …
+  <div id="stockInvBox" …>📦 Stock Investment (Before Sale): <span id="stockInvValue">₹0</span></div>
+
+  <table id="stockTable">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Product</th>
+        <th>Qty</th>
+        <th>Sold</th>
+        <th>Remain</th>
+        <th>Alert</th>
+        <th>Limit</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<!-- =============== SALES =============== -->
+<section id="sales" class="section">
+  <h3>💰 Sales & Profit</h3>
+
+  <div class="row-inline"> … filters … </div>
+
+  <table id="salesTable">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Product</th>
+        <th>Qty</th>
+        <th>Price</th>
+        <th>Total</th>
+        <th>Profit</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot>
+      <tr>
+        <td colspan="5" style="text-align:right">Total:</td>
+        <td id="salesTotal">0</td>
+        <td id="profitTotal">0</td>
+        <td></td>
+      </tr>
+    </tfoot>
+  </table>
+</section>
+  <!-- =============== WANTING =============== -->
+<section id="wanting" class="section">
+  … wanting form + wanting table …
+</section>
+
+<!-- =============== SERVICE =============== -->
+<section id="service" class="section">
+  … job add form …
+  … pending table …
+  … completed table …
+  <canvas id="svcPie"></canvas>
+</section>
+
+<!-- =============== EXPENSES =============== -->
+<section id="expenses" class="section">
+  … expense add form …
+  … expense table …
+</section>
+
+<!-- =============== CREDIT HISTORY SECTION =============== -->
+<section id="creditHistory" class="section">
+  … sales pending + collected tables …
+  … service pending + collected tables …
+</section>
+  <!-- =============== DASHBOARD =============== -->
+<section id="dashboard" class="section">
+  … today cards …
+  … smart total cards …
+  <canvas id="cleanPie"></canvas>
+</section>
+
+<!-- =============== COLLECTION TAB =============== -->
+<section id="collection" class="section">
+  … summary cards …
+  <table id="collectionHistory"></table>
+</section>
+
+<!-- =============== LIBRARIES =============== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
+
+<script>
+  (function(){
+     const v = Date.now();
+     const js = [
+        "/js/core.js","/js/firebase.js","/js/types.js","/js/stock.js",
+        "/js/sales.js","/js/wanting.js","/js/expenses.js","/js/analytics.js",
+        "/js/service.js","/js/collection.js","/js/universalBar.js","/js/security.js"
+     ];
+     js.forEach(f => { document.write(`<script src="${f}?v=${v}"><\/script>`); });
+  })();
+</script>
+
+<script> … theme switch … </script>
+<script> … logout … </script>
+<script> … renderCreditHistory … </script>
+
+</body>
+</html>
