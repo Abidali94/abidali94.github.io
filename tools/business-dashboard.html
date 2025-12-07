@@ -645,7 +645,7 @@
   <div class="tab" data-tab="wanting">🛒 Wanting</div>
   <div class="tab" data-tab="service">🛠 Service</div>
   <div class="tab" data-tab="expenses">💸 Expenses</div>
-  <div class="tab" data-tab="creditHistory">🧾 Credit History</div>
+ 
   <div class="tab" data-tab="dashboard">📊 Dashboard</div>
   <div class="tab" data-tab="collection">🪙 Collection</div>
 </div>
@@ -921,84 +921,7 @@
   </table>
 </section>
 
-<!-- =============== CREDIT HISTORY SECTION =============== -->
-<section id="creditHistory" class="section">
-  <h3>🧾 Credit History (Sales + Service)</h3>
 
-  <div class="credit-grid">
-    <!-- SALES CREDIT PANEL -->
-    <div class="credit-card">
-      <div class="credit-header">
-        <div>
-          <div class="credit-title">Sales Credit</div>
-          <small class="credit-sub">Pending &amp; Collected from Sales</small>
-        </div>
-      </div>
-
-      <h4 class="credit-subtitle">Pending Credit (Sales)</h4>
-      <table id="creditSalesPending">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Customer / Product</th>
-            <th>Amount</th>
-            <th>Goto</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-
-      <h4 class="credit-subtitle" style="margin-top:14px;">Collected Credit (Sales)</h4>
-      <table id="creditSalesCollected">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Customer / Product</th>
-            <th>Collected</th>
-            <th>Goto</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <!-- SERVICE CREDIT PANEL -->
-    <div class="credit-card">
-      <div class="credit-header">
-        <div>
-          <div class="credit-title">Service Credit</div>
-          <small class="credit-sub">Pending &amp; Collected from Service Jobs</small>
-        </div>
-      </div>
-
-      <h4 class="credit-subtitle">Pending Credit (Service)</h4>
-      <table id="creditServicePending">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Customer / Job</th>
-            <th>Amount</th>
-            <th>Goto</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-
-      <h4 class="credit-subtitle" style="margin-top:14px;">Collected Credit (Service)</h4>
-      <table id="creditServiceCollected">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Customer / Job</th>
-            <th>Collected</th>
-            <th>Goto</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-</section>
 
 <!-- =============== DASHBOARD (TODAY + TOTAL) =============== -->
 <section id="dashboard" class="section">
@@ -1330,90 +1253,6 @@ function renderCreditHistory() {
     const remaining   = Number(j.remaining || 0);
     const creditFlag  = String(j.creditStatus || "").toLowerCase();
 
-    if (creditFlag === "credit" || (status === "completed" && remaining > 0)) {
-      svcPending.push({
-        date: j.date_out || j.date_in,
-        customer: j.customer || "",
-        phone: j.phone || "",
-        item: j.item || "",
-        model: j.model || "",
-        pending: remaining
-      });
-    } else if (creditFlag === "collected") {
-      const collected = Number(j.creditCollectedAmount || 0);
-      svcCollected.push({
-        date: j.creditCollectedOn || j.date_out || j.date_in,
-        customer: j.customer || "",
-        phone: j.phone || "",
-        item: j.item || "",
-        model: j.model || "",
-        collected
-      });
-    }
-  });
-
-  if (!svcPending.length) {
-    svcPendBody.innerHTML =
-      `<tr><td colspan="4" style="text-align:center;opacity:.6;">No pending service credits</td></tr>`;
-  } else {
-    svcPendBody.innerHTML = svcPending.map(r => `
-      <tr>
-        <td data-label="Date">${window.toDisplay ? toDisplay(r.date) : r.date}</td>
-        <td data-label="Customer / Job">
-          ${esc(r.customer || "-")}<br>
-          <small>${esc(r.item)} ${esc(r.model)}</small>
-          ${r.phone ? `<br><small>📞 ${esc(r.phone)}</small>` : ""}
-        </td>
-        <td data-label="Amount">₹${r.pending}</td>
-        <td data-label="Goto">
-          <button class="btn-link" onclick="gotoServiceFromCredit()">Service</button>
-        </td>
-      </tr>
-    `).join("");
-  }
-
-  if (!svcCollected.length) {
-    svcCollBody.innerHTML =
-      `<tr><td colspan="4" style="text-align:center;opacity:.6;">No collected service credits yet</td></tr>`;
-  } else {
-    svcCollBody.innerHTML = svcCollected.map(r => `
-      <tr>
-        <td data-label="Date">${window.toDisplay ? toDisplay(r.date) : r.date}</td>
-        <td data-label="Customer / Job">
-          ${esc(r.customer || "-")}<br>
-          <small>${esc(r.item)} ${esc(r.model)}</small>
-          ${r.phone ? `<br><small>📞 ${esc(r.phone)}</small>` : ""}
-        </td>
-        <td data-label="Collected">
-          <span class="status-paid">Collected ₹${r.collected}</span>
-        </td>
-        <td data-label="Goto">
-          <button class="btn-link" onclick="gotoServiceFromCredit()">Service</button>
-        </td>
-      </tr>
-    `).join("");
-  }
-}
-
-window.renderCreditHistory = renderCreditHistory;
-
-function gotoSaleFromCredit(date) {
-  const dateInput = document.getElementById("saleDate");
-  if (dateInput) {
-    dateInput.value = date;
-  }
-  switchTab("sales");
-  try { renderSales?.(); } catch {}
-}
-
-function gotoServiceFromCredit() {
-  switchTab("service");
-}
-
-window.addEventListener("load", () => {
-  try { renderCreditHistory(); } catch {}
-});
-</script>
   <script>
 function clearEverything() {
   if (!confirm("⚠️ Delete ALL business records?")) return;
