@@ -1,33 +1,20 @@
 /* ==========================================================
-   stock.js — ONLINE REALTIME VERSION (v6.1)
+   stock.js — ONLINE REALTIME VERSION (v5.0 WITH HISTORY)
+   ✔ Fully online (core.js + firebase.js compatible)
+   ✔ Cloud sync instant
+   ✔ Full purchase history (date + qty + cost)
+   ✔ Popup history view
 ========================================================== */
 
+/* -----------------------------
+   Helpers
+----------------------------- */
 const $  = s => document.querySelector(s);
 const num = v => isNaN(Number(v)) ? 0 : Number(v);
 const toDisp = d => (typeof window.toDisplay === "function" ? toDisplay(d) : d);
 
 /* ==========================================================
-   NORMALIZE ALL STOCK HISTORY (RUN ONLY AFTER LOAD)
-========================================================== */
-function normalizeStockHistory() {
-  (window.stock || []).forEach(p => {
-    if (!Array.isArray(p.history) || !p.history.length) {
-      if (num(p.qty) > 0 && num(p.cost) > 0) {
-        const dt = toInternalIfNeeded(p.date || todayDate());
-        p.history = [{
-          date: dt,
-          qty : num(p.qty),
-          cost: num(p.cost)
-        }];
-      }
-    }
-  });
-
-  window.saveStock?.();
-}
-
-/* ==========================================================
-   SAVE STOCK
+   SAVE STOCK (LOCAL + CLOUD)
 ========================================================== */
 window.saveStock = function () {
   try {
@@ -40,7 +27,7 @@ window.saveStock = function () {
 };
 
 /* ==========================================================
-   ADD STOCK (WITH HISTORY)
+   ADD STOCK  (WITH HISTORY)
 ========================================================== */
 $("#addStockBtn")?.addEventListener("click", () => {
   let date = $("#pdate").value || todayDate();
@@ -62,6 +49,7 @@ $("#addStockBtn")?.addEventListener("click", () => {
   );
 
   if (!p) {
+    // NEW product
     window.stock.push({
       id: uid("stk"),
       type,
@@ -71,14 +59,15 @@ $("#addStockBtn")?.addEventListener("click", () => {
       sold: 0,
       cost,
       limit: num($("#globalLimit").value || 2),
-      history: [{ date, qty, cost }]
+      history: [{ date, qty, cost }]     // 📌 HISTORY BLOCK
     });
-
   } else {
+    // EXISTING product — update qty + cost and append history
     p.qty += qty;
     p.cost = cost;
+
     if (!Array.isArray(p.history)) p.history = [];
-    p.history.push({ date, qty, cost });
+    p.history.push({ date, qty, cost });   // 📌 HISTORY BLOCK
   }
 
   window.saveStock();
@@ -112,11 +101,12 @@ function showStockHistory(id) {
 
   const avg = totalQty ? (totalCost / totalQty).toFixed(2) : 0;
 
-  msg += `\nTotal Purchased Qty: ${totalQty}`;
+  msg += `\nTotal Qty: ${totalQty}`;
   msg += `\nAverage Cost: ₹${avg}`;
 
   alert(msg);
 }
+
 window.showStockHistory = showStockHistory;
 
 /* ==========================================================
@@ -124,8 +114,10 @@ window.showStockHistory = showStockHistory;
 ========================================================== */
 $("#clearStockBtn")?.addEventListener("click", () => {
   if (!confirm("Delete ALL stock?")) return;
+
   window.stock = [];
   window.saveStock();
+
   renderStock();
   window.updateUniversalBar?.();
 });
@@ -136,12 +128,13 @@ $("#clearStockBtn")?.addEventListener("click", () => {
 $("#setLimitBtn")?.addEventListener("click", () => {
   const limit = num($("#globalLimit").value || 2);
   window.stock.forEach(p => p.limit = limit);
+
   window.saveStock();
   renderStock();
 });
 
 /* ==========================================================
-   STOCK QUICK SALE
+   STOCK QUICK SALE (Cash / Credit)
 ========================================================== */
 function stockQuickSale(i, mode) {
   const p = window.stock[i];
@@ -167,9 +160,11 @@ function stockQuickSale(i, mode) {
   const total  = qty * price;
   const profit = total - qty * cost;
 
+  /* Update sold qty */
   p.sold += qty;
   window.saveStock();
 
+  /* Add sale entry */
   window.sales.push({
     id: uid("sale"),
     date: todayDate(),
@@ -188,6 +183,7 @@ function stockQuickSale(i, mode) {
 
   window.saveSales?.();
 
+  /* Auto Wanting */
   if (p.sold >= p.qty && window.autoAddWanting) {
     window.autoAddWanting(p.type, p.name, "Finished");
   }
@@ -237,6 +233,7 @@ function renderStock() {
         <td>${alert}</td>
         <td>${p.limit}</td>
         <td>
+          <!-- 👇 **NEW HISTORY BUTTON** -->
           <button class="small-btn"
                   style="background:#555;color:#fff;"
                   onclick="showStockHistory('${p.id}')">📜</button>
@@ -266,10 +263,15 @@ function updateStockInvestment() {
 }
 
 /* ==========================================================
+   EVENTS
+========================================================== */
+$("#productSearch")?.addEventListener("input", renderStock);
+$("#filterType")?.addEventListener("change", renderStock);
+
+/* ==========================================================
    INIT
 ========================================================== */
 window.addEventListener("load", () => {
-  normalizeStockHistory();  // ⭐ only once
   renderStock();
   updateStockInvestment();
   window.updateUniversalBar?.();
