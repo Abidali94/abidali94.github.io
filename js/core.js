@@ -1,6 +1,6 @@
 /* ===========================================================
-   📌 core.js — Master Engine (ONLINE ONLY — FINAL V13)
-   ⭐ With Net Offset System for Collected Profit
+   📌 core.js — Master Engine (ONLINE ONLY — FINAL V15)
+   ⭐ Net + Stock + Service investment offsets (PERMANENT)
 =========================================================== */
 
 /* ---------- STORAGE KEYS ---------- */
@@ -13,10 +13,13 @@ const KEY_SERVICES     = "service-data";
 const KEY_COLLECTIONS  = "ks-collections";
 const KEY_LIMIT        = "default-limit";
 const KEY_USER_EMAIL   = "ks-user-email";
-/* ⭐ NEW — Net Profit Collected Offset Key (LOCAL ONLY) */
-const KEY_NET_COLLECTED = "ks-net-collected";
 
-/* ---------- CLOUD COLLECTION NAMES (Firestore Collections) ---------- */
+/* ⭐ NEW — permanent offsets */
+const KEY_NET_COLLECTED     = "ks-net-collected";
+const KEY_STOCK_COLLECTED   = "ks-stock-collected";
+const KEY_SERVICE_COLLECTED = "ks-service-collected";
+
+/* ---------- CLOUD COLLECTION NAMES ---------- */
 const CLOUD_COLLECTIONS = {
   [KEY_TYPES]:       "types",
   [KEY_STOCK]:       "stock",
@@ -31,65 +34,37 @@ const CLOUD_COLLECTIONS = {
    SAFE HELPERS
 =========================================================== */
 function safeParse(raw) {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+  try { return JSON.parse(raw); } catch { return []; }
 }
-
 function toArray(v) {
   return Array.isArray(v) ? v : [];
 }
 
 /* ===========================================================
    DATE HELPERS
-   Internal: YYYY-MM-DD   Display: DD-MM-YYYY
 =========================================================== */
 function toDisplay(d) {
-  if (!d) return "";
-  if (typeof d !== "string") return d;
-
-  if (d.includes("-")) {
-    const p = d.split("-");
-    if (p.length === 3) {
-      const [a, b, c] = p;
-      if (a.length === 4) {
-        return `${c}-${b}-${a}`; // YYYY-MM-DD → DD-MM-YYYY
-      }
-    }
-  }
+  if (!d || typeof d !== "string") return d;
+  const p = d.split("-");
+  if (p.length === 3 && p[0].length === 4)
+    return `${p[2]}-${p[1]}-${p[0]}`;
   return d;
 }
 
 function toInternal(d) {
-  if (!d) return "";
-  if (typeof d !== "string") return d;
-  if (!d.includes("-")) return d;
-
+  if (!d || typeof d !== "string") return d;
   const p = d.split("-");
-  if (p.length !== 3) return d;
-
-  // DD-MM-YYYY → YYYY-MM-DD
-  if (p[0].length === 2 && p[2].length === 4) {
-    const [dd, m, y] = p;
-    return `${y}-${m}-${dd}`;
-  }
-
+  if (p.length === 3 && p[0].length === 2 && p[2].length === 4)
+    return `${p[2]}-${p[1]}-${p[0]}`;
   return d;
 }
 
 function toInternalIfNeeded(d) {
-  if (!d) return "";
-  if (typeof d !== "string") return d;
-
+  if (!d || typeof d !== "string") return d;
   const p = d.split("-");
   if (p.length !== 3) return d;
-
-  if (p[0].length === 4) return d;                // already YYYY-MM-DD
-  if (p[0].length === 2 && p[2].length === 4)     // DD-MM-YYYY
-    return toInternal(d);
-
+  if (p[0].length === 4) return d;
+  if (p[0].length === 2 && p[2].length === 4) return toInternal(d);
   return d;
 }
 
@@ -103,7 +78,7 @@ window.toInternalIfNeeded = toInternalIfNeeded;
 function todayDate() {
   const d = new Date();
   d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().split("T")[0]; // YYYY-MM-DD
+  return d.toISOString().split("T")[0];
 }
 window.todayDate = todayDate;
 
@@ -114,17 +89,13 @@ window.uid = uid;
 
 function esc(t) {
   return String(t || "").replace(/[&<>"']/g, m => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
+    "&": "&amp;","<": "&lt;",">": "&gt;",'"': "&quot;","'": "&#39;"
   }[m]));
 }
 window.esc = esc;
 
 /* ===========================================================
-   LOAD ALL MODULE DATA (LOCAL CACHE)
+   LOAD LOCAL DATA (IMPORTANT)
 =========================================================== */
 window.types       = toArray(safeParse(localStorage.getItem(KEY_TYPES)));
 window.stock       = toArray(safeParse(localStorage.getItem(KEY_STOCK)));
@@ -134,10 +105,12 @@ window.expenses    = toArray(safeParse(localStorage.getItem(KEY_EXPENSES)));
 window.services    = toArray(safeParse(localStorage.getItem(KEY_SERVICES)));
 window.collections = toArray(safeParse(localStorage.getItem(KEY_COLLECTIONS)));
 
-/* ⭐ NEW — Load collected net offset (number) */
-window.collectedNetTotal = Number(localStorage.getItem(KEY_NET_COLLECTED) || 0);
+/* ⭐ NEW — LOAD OFFSETS (VERY IMPORTANT) */
+window.collectedNetTotal     = Number(localStorage.getItem(KEY_NET_COLLECTED)     || 0);
+window.collectedStockTotal   = Number(localStorage.getItem(KEY_STOCK_COLLECTED)   || 0);
+window.collectedServiceTotal = Number(localStorage.getItem(KEY_SERVICE_COLLECTED) || 0);
 
-/* Ensure always arrays */
+/* Ensure arrays */
 function ensureArrays() {
   if (!Array.isArray(window.types))       window.types = [];
   if (!Array.isArray(window.stock))       window.stock = [];
@@ -150,33 +123,20 @@ function ensureArrays() {
 ensureArrays();
 
 /* ===========================================================
-   NORMALIZE DATES (convert everything to YYYY-MM-DD)
+   NORMALIZE DATES
 =========================================================== */
 function normalizeAllDates() {
-
   if (window.stock)
-    window.stock = window.stock.map(s => ({
-      ...s,
-      date: toInternalIfNeeded(s.date)
-    }));
+    window.stock = window.stock.map(s => ({...s, date: toInternalIfNeeded(s.date)}));
 
   if (window.sales)
-    window.sales = window.sales.map(s => ({
-      ...s,
-      date: toInternalIfNeeded(s.date)
-    }));
+    window.sales = window.sales.map(s => ({...s, date: toInternalIfNeeded(s.date)}));
 
   if (window.expenses)
-    window.expenses = window.expenses.map(e => ({
-      ...e,
-      date: toInternalIfNeeded(e.date)
-    }));
+    window.expenses = window.expenses.map(e => ({...e, date: toInternalIfNeeded(e.date)}));
 
   if (window.wanting)
-    window.wanting = window.wanting.map(w => ({
-      ...w,
-      date: toInternalIfNeeded(w.date)
-    }));
+    window.wanting = window.wanting.map(w => ({...w, date: toInternalIfNeeded(w.date)}));
 
   if (window.services)
     window.services = window.services.map(j => ({
@@ -186,32 +146,31 @@ function normalizeAllDates() {
     }));
 
   if (window.collections)
-    window.collections = window.collections.map(c => ({
-      ...c,
-      date: toInternalIfNeeded(c.date)
-    }));
+    window.collections = window.collections.map(c => ({...c, date: toInternalIfNeeded(c.date)}));
 }
-
 normalizeAllDates();
 /* ===========================================================
    SAVE HELPERS (LOCAL + CLOUD)
 =========================================================== */
 function _localSave(k, v) {
-  try {
-    localStorage.setItem(k, JSON.stringify(v));
-  } catch {}
+  try { localStorage.setItem(k, JSON.stringify(v)); } catch {}
 }
 
-/* ⭐ NEW — SAVE NET COLLECTED OFFSET (NUMBER) */
+/* ⭐ SAVE OFFSETS (PERMANENT NUMBERS) */
 function saveCollectedNetTotal() {
-  try {
-    localStorage.setItem(
-      KEY_NET_COLLECTED,
-      String(window.collectedNetTotal || 0)
-    );
-  } catch {}
+  try { localStorage.setItem(KEY_NET_COLLECTED, String(window.collectedNetTotal || 0)); } catch {}
 }
 window.saveCollectedNetTotal = saveCollectedNetTotal;
+
+function saveCollectedStockTotal() {
+  try { localStorage.setItem(KEY_STOCK_COLLECTED, String(window.collectedStockTotal || 0)); } catch {}
+}
+window.saveCollectedStockTotal = saveCollectedStockTotal;
+
+function saveCollectedServiceTotal() {
+  try { localStorage.setItem(KEY_SERVICE_COLLECTED, String(window.collectedServiceTotal || 0)); } catch {}
+}
+window.saveCollectedServiceTotal = saveCollectedServiceTotal;
 
 /* ---------- STANDARD SAVE WRAPPERS ---------- */
 function saveTypes() {
@@ -375,7 +334,6 @@ function addExpense({ date, category, amount, note }) {
   cloudSync(KEY_EXPENSES, expenses);
 }
 window.addExpense = addExpense;
-
 /* ===========================================================
    NET PROFIT (Dynamic Calculator with Net Offset)
 =========================================================== */
@@ -403,7 +361,7 @@ window.getTotalNetProfit = function () {
     exp += Number(e.amount || 0);
   });
 
-  // ⭐ Minus already collected NET offset
+  // ⭐ Minus already collected NET offset (PERMANENT)
   const collectedOffset = Number(window.collectedNetTotal || 0);
 
   return (salesProfit + serviceProfit - exp) - collectedOffset;
@@ -428,9 +386,11 @@ window.updateTabSummaryBar = function () {
     bar.textContent = `Loss: -₹${Math.abs(net)}`;
   }
 };
+
 /* ===========================================================
-   PART D — CLOUD PULL + STORAGE SYNC + INVESTMENTS + EMAIL TAG
+   PART D — CLOUD PULL + STORAGE SYNC + EMAIL TAG
 =========================================================== */
+
 /* ===========================================================
    UNIVERSAL CLOUD SAVE WRAPPER  (REQUIRED)
 =========================================================== */
@@ -489,7 +449,7 @@ async function cloudPullAllIfAvailable() {
     }
   } catch {}
 
-  // 2) Local login (security.js)
+  // 2) Local login
   if (!email && window.getUserEmail) {
     email = getUserEmail() || "";
   }
@@ -561,10 +521,10 @@ window.cloudPullAllIfAvailable = cloudPullAllIfAvailable;
 ----------------------------------------------------------- */
 window.addEventListener("load", () => {
   setTimeout(() => {
-    try { cloudPullAllIfAvailable(); }   catch {}
-    try { updateEmailTag(); }            catch {}
-    try { updateTabSummaryBar?.(); }     catch {}
-    try { updateUniversalBar?.(); }      catch {}
+    try { cloudPullAllIfAvailable(); } catch {}
+    try { updateEmailTag(); }          catch {}
+    try { updateTabSummaryBar?.(); }   catch {}
+    try { updateUniversalBar?.(); }    catch {}
   }, 300);
 });
 /* -----------------------------------------------------------
@@ -578,7 +538,10 @@ window.addEventListener("storage", () => {
   window.expenses    = toArray(safeParse(localStorage.getItem(KEY_EXPENSES)));
   window.services    = toArray(safeParse(localStorage.getItem(KEY_SERVICES)));
   window.collections = toArray(safeParse(localStorage.getItem(KEY_COLLECTIONS)));
-  window.collectedNetTotal = Number(localStorage.getItem(KEY_NET_COLLECTED) || 0);
+
+  /* ⭐ IMPORTANT — re-load collected NET offset also */
+  window.collectedNetTotal =
+    Number(localStorage.getItem(KEY_NET_COLLECTED) || 0);
 
   ensureArrays();
   normalizeAllDates();
@@ -586,6 +549,7 @@ window.addEventListener("storage", () => {
   try { renderTypes?.(); }             catch {}
   try { renderStock?.(); }             catch {}
   try { renderSales?.(); }             catch {}
+  try { refreshSaleTypeSelector?.(); } catch {}
   try { renderWanting?.(); }           catch {}
   try { renderExpenses?.(); }          catch {}
   try { renderServiceTables?.(); }     catch {}
@@ -602,7 +566,7 @@ window.addEventListener("storage", () => {
    UNIVERSAL INVESTMENT HELPERS
 ----------------------------------------------------------- */
 
-// 1) TOTAL STOCK INVESTMENT (before sale)
+/* 1) TOTAL STOCK INVESTMENT (before sale) */
 window.getStockInvestmentCollected = function () {
   let total = 0;
   (stock || []).forEach(p => {
@@ -617,7 +581,7 @@ window.getStockInvestmentCollected = function () {
   return total;
 };
 
-// 2) STOCK INVESTMENT (sold qty × cost only)
+/* 2) STOCK INVESTMENT (sold qty × cost only) */
 window.getStockInvestmentAfterSale = function () {
   let total = 0;
   (stock || []).forEach(p => {
@@ -628,7 +592,7 @@ window.getStockInvestmentAfterSale = function () {
   return total;
 };
 
-// 3) SALES INVESTMENT (sold qty × cost)
+/* 3) SALES INVESTMENT (sold qty × cost) */
 window.getSalesInvestmentCollected = function () {
   return (sales || []).reduce(
     (t, s) => t + Number(s.qty || 0) * Number(s.cost || 0),
@@ -636,21 +600,21 @@ window.getSalesInvestmentCollected = function () {
   );
 };
 
-// 4) SALES PROFIT (paid only)
+/* 4) SALES PROFIT (paid only) */
 window.getSalesProfitCollected = function () {
   return (sales || [])
     .filter(s => (String(s.status || "").toLowerCase() !== "credit"))
     .reduce((t, s) => t + Number(s.profit || 0), 0);
 };
 
-// 5) SERVICE INVESTMENT (Completed only)
+/* 5) SERVICE INVESTMENT (Completed only) */
 window.getServiceInvestmentCollected = function () {
   return (services || [])
     .filter(s => String(s.status || "").toLowerCase() === "completed")
     .reduce((t, s) => t + Number(s.invest || 0), 0);
 };
 
-// 6) SERVICE PROFIT (Completed only)
+/* 6) SERVICE PROFIT (Completed only) */
 window.getServiceProfitCollected = function () {
   return (services || [])
     .filter(s => String(s.status || "").toLowerCase() === "completed")
