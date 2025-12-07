@@ -1122,5 +1122,18 @@ document.getElementById("logoutBtn")?.addEventListener("click", async () => {
   }
 });
 </script>
+  <script>
+window.addEventListener("load", () => {
+  function lateRefresh() {
+    if (!window.__allScriptsLoaded) return setTimeout(lateRefresh, 100);
+    try { renderAnalytics?.(); } catch {}
+    try { renderCollection?.(); } catch {}
+    try { renderExpenses?.(); } catch {}
+    try { updateSummaryCards?.(); } catch {}
+    try { updateUniversalBar?.(); } catch {}
+  }
+  lateRefresh();
+});
+</script>
 </body>
 </html>
