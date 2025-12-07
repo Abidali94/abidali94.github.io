@@ -810,6 +810,16 @@
   </button>
 
   <h4 style="margin-top:14px">Completed / History</h4>
+<div style="margin:6px 0 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+  <label>View:</label>
+  <select id="svcView"
+    style="padding:6px 8px;border-radius:10px;border:1px solid var(--ks-border-soft);background:var(--ks-bg-card);color:var(--ks-text-main);">
+    <option value="all">All jobs</option>
+    <option value="cash">Cash service</option>
+    <option value="credit-pending">Credit (pending)</option>
+    <option value="credit-paid">Credit paid history</option>
+  </select>
+</div>
   <table id="svcHistoryTable">
     <thead>
       <tr>
