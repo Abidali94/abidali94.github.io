@@ -1,5 +1,5 @@
 /* ==========================================================
-   stock.js — ONLINE REALTIME VERSION (v6.0 WITH FIXED HISTORY)
+   stock.js — ONLINE REALTIME VERSION (v7.0 CLOUD SAFE + FIXED HISTORY)
 ========================================================== */
 
 const $  = s => document.querySelector(s);
@@ -7,11 +7,17 @@ const num = v => isNaN(Number(v)) ? 0 : Number(v);
 const toDisp = d => (typeof window.toDisplay === "function" ? toDisplay(d) : d);
 
 /* ==========================================================
-   NORMALIZE ALL STOCK HISTORY (ON LOAD)
+   SAFE NORMALIZE HISTORY (AFTER CLOUD LOAD ONLY)
 ========================================================== */
 function normalizeStockHistory() {
+
+  // Ensure stock is ARRAY (important)
+  window.stock = Array.isArray(window.stock)
+    ? window.stock
+    : toArray(safeParse(localStorage.getItem("stock-data")));
+
   (window.stock || []).forEach(p => {
-    // If no history but qty exists → convert to proper history
+    // If no history but qty/cost exists → repair
     if (!Array.isArray(p.history) || !p.history.length) {
       if (num(p.qty) > 0 && num(p.cost) > 0) {
         const dt = toInternalIfNeeded(p.date || todayDate());
@@ -23,12 +29,12 @@ function normalizeStockHistory() {
       }
     }
   });
+
   window.saveStock?.();
 }
-normalizeStockHistory();
 
 /* ==========================================================
-   SAVE STOCK
+   SAVE STOCK (LOCAL + CLOUD)
 ========================================================== */
 window.saveStock = function () {
   try {
@@ -57,11 +63,13 @@ $("#addStockBtn")?.addEventListener("click", () => {
     return;
   }
 
+  // Find existing product
   const p = (window.stock || []).find(
     x => x.type === type && x.name.toLowerCase() === name.toLowerCase()
   );
 
   if (!p) {
+    // NEW product
     window.stock.push({
       id: uid("stk"),
       type,
@@ -73,8 +81,8 @@ $("#addStockBtn")?.addEventListener("click", () => {
       limit: num($("#globalLimit").value || 2),
       history: [{ date, qty, cost }]
     });
-
   } else {
+    // EXISTING product — update qty + cost and append history
     p.qty += qty;
     p.cost = cost;
 
@@ -82,7 +90,6 @@ $("#addStockBtn")?.addEventListener("click", () => {
     p.history.push({ date, qty, cost });
   }
 
-  normalizeStockHistory();   // ⭐ auto repair
   window.saveStock();
   renderStock();
   window.updateUniversalBar?.();
@@ -274,11 +281,13 @@ $("#productSearch")?.addEventListener("input", renderStock);
 $("#filterType")?.addEventListener("change", renderStock);
 
 /* ==========================================================
-   INIT
+   INIT (AFTER CLOUD SYNC)
 ========================================================== */
 window.addEventListener("load", () => {
-  normalizeStockHistory();
-  renderStock();
-  updateStockInvestment();
-  window.updateUniversalBar?.();
+  setTimeout(() => {
+    normalizeStockHistory();
+    renderStock();
+    updateStockInvestment();
+    window.updateUniversalBar?.();
+  }, 600); // ⭐ wait for cloudPullAllIfAvailable()
 });
