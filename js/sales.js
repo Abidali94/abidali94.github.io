@@ -1,10 +1,10 @@
 /* ===========================================================
-   sales.js — BUSINESS VERSION (v16 FINAL)
+   sales.js — BUSINESS VERSION (v16)
    ✔ Sales + Credit unified
    ✔ Credit profit added only after collection
+   ✔ fromCredit flag → “Credit paid history” filter
    ✔ Collection history entry for paid credit
    ✔ UniversalBar, Dashboard, Analytics LIVE refresh
-   ✔ FIX: Type dropdown auto refresh ALWAYS
 =========================================================== */
 
 /* ------------------------------
@@ -25,39 +25,45 @@ function refreshSaleTypeSelector() {
   if (!sel) return;
 
   sel.innerHTML = `<option value="all">All Types</option>`;
-
   (window.types || []).forEach(t => {
     sel.innerHTML += `<option value="${t.name}">${t.name}</option>`;
   });
 }
-window.refreshSaleTypeSelector = refreshSaleTypeSelector;
 
 /* ===========================================================
    ADD SALE ENTRY
-   ⭐ CREDIT: profit NOT counted now
+   ⭐ PAID → profit now
+   ⭐ CREDIT → profit 0 (later when collected)
 =========================================================== */
 function addSaleEntry({ date, type, product, qty, price, status, customer, phone }) {
 
-  qty = Number(qty);
-  price = Number(price);
+  qty    = Number(qty);
+  price  = Number(price);
   status = status || "Paid";
 
   if (!type || !product || qty <= 0 || price <= 0) return;
 
   const p = (window.stock || []).find(x => x.type === type && x.name === product);
-  if (!p) { alert("Product not found in stock."); return; }
+  if (!p) {
+    alert("Product not found in stock.");
+    return;
+  }
 
   const remain = Number(p.qty) - Number(p.sold);
-  if (remain < qty) { alert("Not enough stock!"); return; }
+  if (remain < qty) {
+    alert("Not enough stock!");
+    return;
+  }
 
-  const cost = Number(p.cost);
-  const total = qty * price;
-  let profit = 0;
+  const cost   = Number(p.cost);
+  const total  = qty * price;
+  let   profit = 0;
 
-  /* ⭐ if PAID → profit now, if CREDIT → profit later */
-  if ((status.toLowerCase()) === "paid") {
+  // ⭐ PAID అయినప్పుడు మాత్రమే వెంటనే profit
+  if (status.toLowerCase() === "paid") {
     profit = total - qty * cost;
   } else {
+    // CREDIT → later when collected
     profit = 0;
   }
 
@@ -69,6 +75,9 @@ function addSaleEntry({ date, type, product, qty, price, status, customer, phone
 
   /* -------------------------
       NEW SALE RECORD
+      fromCredit:
+        - కొత్త sale add అయినప్పుడు false
+        - credit clear అయినప్పుడు true అవుతుంది
   ------------------------- */
   window.sales.push({
     id: uid("sale"),
@@ -81,9 +90,10 @@ function addSaleEntry({ date, type, product, qty, price, status, customer, phone
     total,
     profit,
     cost,
-    status,
+    status,               // "Paid" / "Credit"
     customer: customer || "",
-    phone: phone || ""
+    phone:    phone    || "",
+    fromCredit: false    // later true when credit cleared
   });
 
   window.saveSales?.();
@@ -98,8 +108,6 @@ function addSaleEntry({ date, type, product, qty, price, status, customer, phone
   window.updateSummaryCards?.();
   window.updateUniversalBar?.();
 }
-
-window.addSaleEntry = addSaleEntry;
 
 /* ===========================================================
    CREDIT → PAID
@@ -121,7 +129,7 @@ function collectCreditSale(id) {
     `Rate: ₹${s.price}`,
     `Total: ₹${s.total}`,
     s.customer ? `Customer: ${s.customer}` : "",
-    s.phone ? `Phone: ${s.phone}` : ""
+    s.phone    ? `Phone: ${s.phone}`       : ""
   ].filter(Boolean);
 
   if (!confirm(msg.join("\n") + "\n\nMark as PAID & Collect?")) return;
@@ -130,6 +138,7 @@ function collectCreditSale(id) {
      UPDATE STATUS
   ------------------------- */
   s.status = "Paid";
+  s.fromCredit = true;  // ⭐ ఈ row ఇప్పుడు "Credit paid history" లో కనిపిస్తుంది
 
   /* -------------------------
      NOW profit becomes valid
@@ -147,7 +156,7 @@ function collectCreditSale(id) {
     `${s.product} — Qty ${s.qty} × ₹${s.price} = ₹${s.total}` +
     ` (Credit Cleared)` +
     (s.customer ? ` — ${s.customer}` : "") +
-    (s.phone ? ` — ${s.phone}` : "");
+    (s.phone    ? ` — ${s.phone}`    : "");
 
   window.addCollectionEntry("Sale (Credit cleared)", details, collected);
 
@@ -167,7 +176,7 @@ function collectCreditSale(id) {
 window.collectCreditSale = collectCreditSale;
 
 /* ===========================================================
-   RENDER SALES TABLE
+   RENDER SALES TABLE  + VIEW FILTER
 =========================================================== */
 function renderSales() {
   const tbody = document.querySelector("#salesTable tbody");
@@ -175,13 +184,37 @@ function renderSales() {
 
   const filterType = document.getElementById("saleType")?.value || "all";
   const filterDate = document.getElementById("saleDate")?.value || "";
+  const view       = document.getElementById("saleView")?.value || "all";
 
   let list = [...(window.sales || [])];
 
+  // TYPE filter
   if (filterType !== "all") list = list.filter(s => s.type === filterType);
+
+  // DATE filter
   if (filterDate) list = list.filter(s => s.date === filterDate);
 
-  let totalSum = 0;
+  // VIEW filter
+  list = list.filter(s => {
+    const status = String(s.status || "").toLowerCase();
+    const fromCredit = Boolean(s.fromCredit);
+
+    if (view === "cash") {
+      // Cash = Paid & not from credit
+      return status === "paid" && !fromCredit;
+    }
+    if (view === "credit-pending") {
+      // Pending credit
+      return status === "credit";
+    }
+    if (view === "credit-paid") {
+      // Credit paid history
+      return status === "paid" && fromCredit;
+    }
+    return true; // all
+  });
+
+  let totalSum  = 0;
   let profitSum = 0;
 
   tbody.innerHTML = list
@@ -189,7 +222,7 @@ function renderSales() {
       const t = Number(s.total);
       totalSum += t;
 
-      /* ⭐ Profit ONLY if PAID */
+      // ⭐ Profit ONLY if PAID (cash లేదా credit-paid)
       if ((s.status || "").toLowerCase() === "paid") {
         profitSum += Number(s.profit || 0);
       }
@@ -221,12 +254,24 @@ function renderSales() {
     })
     .join("");
 
-  document.getElementById("salesTotal").textContent = totalSum;
+  document.getElementById("salesTotal").textContent  = totalSum;
   document.getElementById("profitTotal").textContent = profitSum;
 
   window.updateUniversalBar?.();
 }
 window.renderSales = renderSales;
+
+/* ===========================================================
+   FILTER BUTTON (just re-render)
+=========================================================== */
+document.getElementById("filterSalesBtn")?.addEventListener("click", () => {
+  renderSales();
+});
+
+/* VIEW change → instant filter */
+document.getElementById("saleView")?.addEventListener("change", () => {
+  renderSales();
+});
 
 /* ===========================================================
    CLEAR SALES (PAID + CREDIT)
@@ -243,13 +288,4 @@ document.getElementById("clearSalesBtn")?.addEventListener("click", () => {
   window.renderAnalytics?.();
   window.updateSummaryCards?.();
   window.updateUniversalBar?.();
-});
-
-/* ===========================================================
-   ⭐ VERY IMPORTANT — INITIALIZATION FIX
-   (Dropdown must fill when page loads)
-=========================================================== */
-window.addEventListener("load", () => {
-  refreshSaleTypeSelector();   // ⭐ FIX: always load types
-  renderSales();
 });
