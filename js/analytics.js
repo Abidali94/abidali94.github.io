@@ -1,12 +1,12 @@
 // ======================================================
-//  analytics.js — FINAL V8 (Pie Size + Dashboard Fix)
+//  analytics.js — BUSINESS v21 (Accurate Credit Control)
 // ======================================================
 
 let cleanPieChart = null;
 
-/* --------------------------------
-   TODAY + TOTAL ANALYTICS DATA
----------------------------------- */
+/* ======================================================
+      GET TODAY ANALYTICS
+====================================================== */
 window.getAnalyticsData = function () {
 
   const today = (typeof todayDate === "function")
@@ -17,36 +17,34 @@ window.getAnalyticsData = function () {
   const expenses = window.expenses || [];
   const services = window.services || [];
 
-  let todaySales    = 0;
-  let creditSales   = 0;
+  let todaySales    = 0;   // TODAY paid sales
+  let creditSales   = 0;   // TODAY credit (pending)
   let todayExpenses = 0;
-  let grossProfit   = 0;
+  let grossProfit   = 0;   // TODAY profit PAID only
 
-  // ---- TODAY SALES ----
+  /* TODAY SALES */
   sales.forEach(s => {
-    if (!s.date || s.date !== today) return;
-    const total = Number(
-      s.total || s.amount ||
-      (Number(s.qty || 0) * Number(s.price || 0))
-    );
+    if (s.date !== today) return;
+
+    const total = Number(s.total || 0);
     const status = String(s.status || "").toLowerCase();
 
     if (status === "credit") {
-      creditSales += total;
+      creditSales += total;   // pending
     } else {
       todaySales += total;
       grossProfit += Number(s.profit || 0);
     }
   });
 
-  // ---- TODAY SERVICE PROFIT ----
+  /* TODAY SERVICE PROFIT */
   services.forEach(j => {
-    if (j.date_out === today) {
+    if (j.date_out === today && j.status === "Completed") {
       grossProfit += Number(j.profit || 0);
     }
   });
 
-  // ---- TODAY EXPENSES ----
+  /* TODAY EXPENSES */
   expenses.forEach(e => {
     if (e.date === today) {
       todayExpenses += Number(e.amount || 0);
@@ -64,57 +62,66 @@ window.getAnalyticsData = function () {
   };
 };
 
-/* --------------------------------
-   GLOBAL TOTAL SUMMARY NUMBERS
----------------------------------- */
+/* ======================================================
+      GLOBAL TOTAL SUMMARY
+====================================================== */
 window.getSummaryTotals = function () {
   const sales    = window.sales    || [];
   const expenses = window.expenses || [];
   const services = window.services || [];
 
-  let salesProfit   = 0;
-  let serviceProfit = 0;
-  let creditTotal   = 0;
+  let salesProfit      = 0;   // real profit
+  let serviceProfit    = 0;   // real profit
+  let creditTotal      = 0;   // pending credit (sale + service)
+  let stockAfterCost   = 0;   // sold stock investment
+  let serviceAfterCost = 0;   // completed service invest
 
-  // SALES PROFIT + CREDIT
+  /* =====================
+        SALES LOOP
+     ===================== */
   sales.forEach(s => {
     const status = String(s.status || "").toLowerCase();
-    const total  = Number(
-      s.total || s.amount ||
-      (Number(s.qty || 0) * Number(s.price || 0))
-    );
+    const cost   = Number(s.qty || 0) * Number(s.cost || 0);
+    const total  = Number(s.total || 0);
 
     if (status === "credit") {
-      creditTotal += total;
+      creditTotal += total;          // still pending
     } else {
       salesProfit += Number(s.profit || 0);
+      stockAfterCost += cost;        // investment after sale
     }
   });
 
-  // SERVICE PROFIT
+  /* =====================
+        SERVICES LOOP
+     ===================== */
   services.forEach(j => {
-    serviceProfit += Number(j.profit || 0);
+    const st = j.status;
+
+    if (st === "Completed") {
+      serviceProfit    += Number(j.profit || 0);     // real profit
+      serviceAfterCost += Number(j.invest || 0);     // service investment
+    }
+
+    if (st === "Credit") {
+      /* pending amount is stored inside job.remaining */
+      creditTotal += Number(j.remaining || 0);
+    }
   });
 
+  /* TOTAL PROFIT */
   const totalProfit = salesProfit + serviceProfit;
 
-  // EXPENSES
+  /* EXPENSES */
   const totalExpenses = expenses.reduce(
     (sum, e) => sum + Number(e.amount || 0), 0
   );
 
+  /* NET PROFIT */
   const netProfit = totalProfit - totalExpenses;
 
-  // INVESTMENT (after sale + service)
-  let stockAfter = 0;
-  let serviceInv = 0;
-
-  if (typeof window.getStockInvestmentAfterSale === "function") {
-    stockAfter = Number(window.getStockInvestmentAfterSale() || 0);
-  }
-  if (typeof window.getServiceInvestmentCollected === "function") {
-    serviceInv = Number(window.getServiceInvestmentCollected() || 0);
-  }
+  /* TOTAL INVESTMENT (SOLD ITEMS + COMPLETED SERVICE) */
+  const totalInvestment = stockAfterCost + serviceAfterCost;
 
   return {
     salesProfit,
@@ -123,14 +130,15 @@ window.getSummaryTotals = function () {
     totalExpenses,
     netProfit,
     creditTotal,
-    stockAfter,
-    serviceInv
+    stockAfterCost,
+    serviceAfterCost,
+    totalInvestment
   };
 };
 
-/* --------------------------------
-   SMART DASHBOARD (TOTALS TAB)
----------------------------------- */
+/* ======================================================
+      MAIN DASHBOARD RENDER
+====================================================== */
 window.renderAnalytics = function () {
 
   const {
@@ -139,27 +147,28 @@ window.renderAnalytics = function () {
     totalProfit,
     totalExpenses,
     creditTotal,
-    stockAfter,
-    serviceInv
+    totalInvestment
   } = window.getSummaryTotals();
 
-  // ---- SMART DASHBOARD ----
-  const dashProfit   = qs("#dashProfit");
-  const dashExpenses = qs("#dashExpenses");
-  const dashCredit   = qs("#dashCredit");
-  const dashInv      = qs("#dashInv");
+  /* SMART DASHBOARD NUMBERS */
+  if (qs("#dashProfit"))
+    qs("#dashProfit").textContent = "₹" + Math.round(totalProfit);
 
-  if (dashProfit)   dashProfit.textContent   = "₹" + Math.round(totalProfit);
-  if (dashExpenses) dashExpenses.textContent = "₹" + Math.round(totalExpenses);
-  if (dashCredit)   dashCredit.textContent   = "₹" + Math.round(creditTotal);
-  if (dashInv)      dashInv.textContent      = "₹" + Math.round(stockAfter + serviceInv);
+  if (qs("#dashExpenses"))
+    qs("#dashExpenses").textContent = "₹" + Math.round(totalExpenses);
 
-  // ---- UNIVERSAL BAR ----
-  if (typeof window.updateUniversalBar === "function") {
-    window.updateUniversalBar();
-  }
+  if (qs("#dashCredit"))
+    qs("#dashCredit").textContent = "₹" + Math.round(creditTotal);
 
-  // ---- PIE CHART ----
+  if (qs("#dashInv"))
+    qs("#dashInv").textContent = "₹" + Math.round(totalInvestment);
+
+  /* UNIVERSAL BAR AUTO UPDATE */
+  try { window.updateUniversalBar?.(); } catch {}
+
+  /* =====================
+        PIE CHART
+     ===================== */
   const ctx = qs("#cleanPie");
   if (!ctx || typeof Chart === "undefined") return;
 
@@ -174,41 +183,44 @@ window.renderAnalytics = function () {
           Number(totalProfit || 0),
           Number(totalExpenses || 0),
           Number(creditTotal || 0),
-          Number(stockAfter + serviceInv || 0)
+          Number(totalInvestment || 0)
         ],
         backgroundColor: ["#2e7d32","#c62828","#1565c0","#fbc02d"]
       }]
     },
     options: {
       responsive: true,
-      legend: { position: "bottom" }
+      plugins: { legend: { position: "bottom" } }
     }
   });
 };
 
-/* --------------------------------
-   TODAY SUMMARY CARDS
----------------------------------- */
+/* ======================================================
+         TODAY CARDS
+====================================================== */
 window.updateSummaryCards = function () {
   const data = window.getAnalyticsData();
 
-  const tSales   = qs("#todaySales");
-  const tCredit  = qs("#todayCredit");
-  const tExp     = qs("#todayExpenses");
-  const tGross   = qs("#todayGross");
-  const tNet     = qs("#todayNet");
+  if (qs("#todaySales"))
+    qs("#todaySales").textContent = "₹" + Math.round(data.todaySales);
 
-  if (tSales)  tSales.textContent  = "₹" + Math.round(data.todaySales);
-  if (tCredit) tCredit.textContent = "₹" + Math.round(data.creditSales);
-  if (tExp)    tExp.textContent    = "₹" + Math.round(data.todayExpenses);
-  if (tGross)  tGross.textContent  = "₹" + Math.round(data.grossProfit);
-  if (tNet)    tNet.textContent    = "₹" + Math.round(data.netProfit);
+  if (qs("#todayCredit"))
+    qs("#todayCredit").textContent = "₹" + Math.round(data.creditSales);
+
+  if (qs("#todayExpenses"))
+    qs("#todayExpenses").textContent = "₹" + Math.round(data.todayExpenses);
+
+  if (qs("#todayGross"))
+    qs("#todayGross").textContent = "₹" + Math.round(data.grossProfit);
+
+  if (qs("#todayNet"))
+    qs("#todayNet").textContent = "₹" + Math.round(data.netProfit);
 };
 
-/* --------------------------------
-   AUTO RENDER
----------------------------------- */
+/* ======================================================
+         INIT
+====================================================== */
 window.addEventListener("load", () => {
-  try { renderAnalytics(); }      catch (e) {}
-  try { updateSummaryCards(); }   catch (e) {}
+  try { renderAnalytics(); }      catch {}
+  try { updateSummaryCards(); }   catch {}
 });
