@@ -1009,24 +1009,32 @@
 <script>
 window.addEventListener("load", () => {
   const v = Date.now();
+
   const files = [
-  "/js/core.js",
-  "/js/firebase.js",
-  "/js/types.js",
-  "/js/stock.js",
-  "/js/sales.js",
-  "/js/service.js",        // ⭐ SERVICE BEFORE EXPENSES
-  "/js/wanting.js",
-  "/js/expenses.js",       // ⭐ EXPENSES BEFORE COLLECTION
-  "/js/collection.js",     // ⭐ COLLECTION BEFORE ANALYTICS
-  "/js/analytics.js",      // ⭐ ANALYTICS BEFORE UNIVERSAL BAR
-  "/js/universalBar.js",   // ⭐ BAR LAST
-  "/js/security.js"
-];
-  files.forEach(f => {
-    const s = document.createElement("script");
-    s.src = `${f}?v=${v}`;
-    document.body.appendChild(s);
+    "/js/core.js",
+    "/js/firebase.js",
+    "/js/types.js",
+    "/js/stock.js",
+    "/js/sales.js",
+    "/js/service.js",
+    "/js/wanting.js",
+    "/js/expenses.js",
+    "/js/collection.js",
+    "/js/analytics.js",
+    "/js/universalBar.js",
+    "/js/security.js"
+  ];
+
+  files.reduce((p, file) => {
+    return p.then(() => new Promise(res => {
+      const s = document.createElement("script");
+      s.src = `${file}?v=${v}`;
+      s.onload = () => res();
+      document.body.appendChild(s);
+    }));
+  }, Promise.resolve()).then(() => {
+    console.log("ALL SCRIPTS LOADED!");
+    window.__allScriptsLoaded = true;
   });
 });
 </script>
