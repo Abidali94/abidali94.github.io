@@ -1,14 +1,7 @@
 /* ==========================================================
-   stock.js — ONLINE REALTIME VERSION (v5.0 WITH HISTORY)
-   ✔ Fully online (core.js + firebase.js compatible)
-   ✔ Cloud sync instant
-   ✔ Full purchase history (date + qty + cost)
-   ✔ Popup history view
+   stock.js — ONLINE REALTIME VERSION (v6 FINAL)
 ========================================================== */
 
-/* -----------------------------
-   Helpers
------------------------------ */
 const $  = s => document.querySelector(s);
 const num = v => isNaN(Number(v)) ? 0 : Number(v);
 const toDisp = d => (typeof window.toDisplay === "function" ? toDisplay(d) : d);
@@ -59,20 +52,26 @@ $("#addStockBtn")?.addEventListener("click", () => {
       sold: 0,
       cost,
       limit: num($("#globalLimit").value || 2),
-      history: [{ date, qty, cost }]     // 📌 HISTORY BLOCK
+      history: [{ date, qty, cost }]
     });
+
   } else {
     // EXISTING product — update qty + cost and append history
     p.qty += qty;
     p.cost = cost;
 
     if (!Array.isArray(p.history)) p.history = [];
-    p.history.push({ date, qty, cost });   // 📌 HISTORY BLOCK
+    p.history.push({ date, qty, cost });
   }
 
   window.saveStock();
   renderStock();
   window.updateUniversalBar?.();
+
+  /* ⭐ CLEAR INPUTS AFTER ADD */
+  $("#pname").value = "";
+  $("#pqty").value = "";
+  $("#pcost").value = "";
 });
 
 /* ==========================================================
@@ -101,12 +100,12 @@ function showStockHistory(id) {
 
   const avg = totalQty ? (totalCost / totalQty).toFixed(2) : 0;
 
-  msg += `\nTotal Qty: ${totalQty}`;
+  /* ⭐ LABEL FIX HERE */
+  msg += `\nTotal Purchased Qty: ${totalQty}`;
   msg += `\nAverage Cost: ₹${avg}`;
 
   alert(msg);
 }
-
 window.showStockHistory = showStockHistory;
 
 /* ==========================================================
@@ -160,11 +159,9 @@ function stockQuickSale(i, mode) {
   const total  = qty * price;
   const profit = total - qty * cost;
 
-  /* Update sold qty */
   p.sold += qty;
   window.saveStock();
 
-  /* Add sale entry */
   window.sales.push({
     id: uid("sale"),
     date: todayDate(),
@@ -183,7 +180,6 @@ function stockQuickSale(i, mode) {
 
   window.saveSales?.();
 
-  /* Auto Wanting */
   if (p.sold >= p.qty && window.autoAddWanting) {
     window.autoAddWanting(p.type, p.name, "Finished");
   }
