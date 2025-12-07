@@ -1,10 +1,11 @@
 /* ===========================================================
-   🛠 service.js — BUSINESS FINAL V31 + CLEAR ALL
+   🛠 service.js — BUSINESS FINAL V32
    ✔ Pending + Cash + Credit Pending + Credit Paid History
    ✔ Profit activates only after collection
    ✔ Clear allowed only for Cash / Credit-Paid
-   ✔ Service Pie (Pending / Completed / Failed) — 3 slices
-   ✔ ⭐ Clear All Jobs button fixed
+   ✔ Clear All Jobs (Pending + History)
+   ✔ Service Pie (Pending / Completed / Failed)
+   ✔ ⭐ OPEN BUTTON FIXED (openJob added)
 =========================================================== */
 
 (function () {
@@ -220,6 +221,23 @@
   }
 
   /* ======================================================
+       OPEN JOB FIX ⭐⭐
+  ====================================================== */
+  function openJob(id) {
+    const job = ensureServices().find(j => j.id === id);
+    if (!job) {
+      alert("Job not found!");
+      return;
+    }
+
+    alert(
+      `Job ${job.jobId}\n` +
+      `Customer: ${job.customer}\nPhone: ${job.phone}\nItem: ${job.item}\nModel: ${job.model}\nProblem: ${job.problem}\n\n` +
+      `Advance: ₹${job.advance}\nInvest: ₹${job.invest}\nPaid: ₹${job.paid}\nRemaining: ₹${job.remaining}\nProfit: ₹${job.profit}\nStatus: ${job.status}`
+    );
+  }
+
+  /* ======================================================
        HISTORY FILTER
   ====================================================== */
   function filterHistory(all) {
@@ -245,7 +263,7 @@
   }
 
   /* ======================================================
-       CLEAR HISTORY BUTTON (only cash / credit-paid)
+       CLEAR DISPLAYED HISTORY
   ====================================================== */
   window.clearServiceHistory = function () {
     const view = qs("#svcView")?.value || "all";
@@ -258,15 +276,14 @@
     if (!confirm("Clear ALL displayed records?")) return;
 
     window.services = window.services.filter(j => {
-
       const completed = (j.status === "Completed" && j.remaining === 0);
 
       if (view === "cash") {
-        return !(completed && j.paid === j.profit); // approx pure cash completed
+        return !(completed && j.paid === j.profit);
       }
 
       if (view === "credit-paid") {
-        return !(completed && j.paid > j.advance); // cleared credit
+        return !(completed && j.paid > j.advance);
       }
 
       return true;
@@ -277,7 +294,7 @@
   };
 
   /* ======================================================
-       ⭐ CLEAR ALL JOBS BUTTON (Pending + History)
+       CLEAR ALL JOBS BUTTON
   ====================================================== */
   window.clearAllServiceJobs = function () {
     if (!confirm("⚠️ Delete ALL Service Jobs?\n\nPending + Completed + Credit\n\nAre you sure?")) {
@@ -289,8 +306,7 @@
   };
 
   /* ======================================================
-       SERVICE PIE — 3 SLICES (Pending / Completed / Failed)
-       👉 Completed == status "Completed" OR "Credit"
+       PIE CHART
   ====================================================== */
   function renderSvcPie() {
     const canvas = qs("#svcPie");
@@ -314,11 +330,7 @@
         labels: ["Pending", "Completed", "Failed/Returned"],
         datasets: [{
           data,
-          backgroundColor: [
-            "#facc15", // Pending - yellow
-            "#22c55e", // Completed - green
-            "#ef4444"  // Failed - red
-          ],
+          backgroundColor: ["#facc15", "#22c55e", "#ef4444"],
           borderWidth: 1
         }]
       }
@@ -326,7 +338,7 @@
   }
 
   /* ======================================================
-       RENDER TABLES + TOP CARDS
+       RENDER TABLES + CARDS
   ====================================================== */
   function renderServiceTables() {
     const pendBody = qs("#svcTable tbody");
@@ -387,7 +399,7 @@
       }).join("") ||
       `<tr><td colspan="9" style="text-align:center;opacity:.6;">No history</td></tr>`;
 
-    /* ---------- TOP CARDS ---------- */
+    /* ---------- CARDS ---------- */
     const pendingCount = pending.length;
     const completedCount = list.filter(j =>
       j.status === "Completed" || j.status === "Credit"
@@ -403,17 +415,12 @@
     if (qs("#svcTotalProfit"))
       qs("#svcTotalProfit").textContent = "₹" + totalRepairProfit;
 
-    /* ⭐ SHOW/HIDE CLEAR DISPLAYED HISTORY BUTTON */
+    /* Show/hide clear */
     if (clearBtn) {
       const v = qs("#svcView")?.value || "all";
-      if (v === "cash" || v === "credit-paid") {
-        clearBtn.style.display = "";
-      } else {
-        clearBtn.style.display = "none";
-      }
+      clearBtn.style.display = (v === "cash" || v === "credit-paid") ? "" : "none";
     }
 
-    /* PIE */
     renderSvcPie();
   }
 
@@ -430,11 +437,8 @@
 
   qs("#svcView")?.addEventListener("change", renderServiceTables);
   qs("#clearSvcHistoryBtn")?.addEventListener("click", clearServiceHistory);
-
-  // ⭐ Clear All Jobs button
   qs("#clearServiceBtn")?.addEventListener("click", clearAllServiceJobs);
 
-  // ⭐ Add job button + Enter shortcut
   qs("#addServiceBtn")?.addEventListener("click", addServiceJob);
   qs("#svcAdvance")?.addEventListener("keydown", e => {
     if (e.key === "Enter") addServiceJob();
@@ -444,10 +448,13 @@
     renderServiceTables();
   });
 
-  /* EXPORTS */
+  /* ======================================================
+       EXPORTS ⭐
+  ====================================================== */
   window.renderServiceTables = renderServiceTables;
-  window.markCompleted      = markCompleted;
-  window.addServiceJob      = addServiceJob;
+  window.markCompleted       = markCompleted;
+  window.addServiceJob       = addServiceJob;
   window.clearAllServiceJobs = clearAllServiceJobs;
+  window.openJob             = openJob;
 
 })();
