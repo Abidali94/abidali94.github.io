@@ -1,9 +1,10 @@
 /* ===========================================================
-   sales.js — BUSINESS VERSION (v15 FINAL)
+   sales.js — BUSINESS VERSION (v16 FINAL)
    ✔ Sales + Credit unified
    ✔ Credit profit added only after collection
    ✔ Collection history entry for paid credit
    ✔ UniversalBar, Dashboard, Analytics LIVE refresh
+   ✔ FIX: Type dropdown auto refresh ALWAYS
 =========================================================== */
 
 /* ------------------------------
@@ -24,10 +25,12 @@ function refreshSaleTypeSelector() {
   if (!sel) return;
 
   sel.innerHTML = `<option value="all">All Types</option>`;
+
   (window.types || []).forEach(t => {
     sel.innerHTML += `<option value="${t.name}">${t.name}</option>`;
   });
 }
+window.refreshSaleTypeSelector = refreshSaleTypeSelector;
 
 /* ===========================================================
    ADD SALE ENTRY
@@ -95,6 +98,8 @@ function addSaleEntry({ date, type, product, qty, price, status, customer, phone
   window.updateSummaryCards?.();
   window.updateUniversalBar?.();
 }
+
+window.addSaleEntry = addSaleEntry;
 
 /* ===========================================================
    CREDIT → PAID
@@ -238,4 +243,13 @@ document.getElementById("clearSalesBtn")?.addEventListener("click", () => {
   window.renderAnalytics?.();
   window.updateSummaryCards?.();
   window.updateUniversalBar?.();
+});
+
+/* ===========================================================
+   ⭐ VERY IMPORTANT — INITIALIZATION FIX
+   (Dropdown must fill when page loads)
+=========================================================== */
+window.addEventListener("load", () => {
+  refreshSaleTypeSelector();   // ⭐ FIX: always load types
+  renderSales();
 });
