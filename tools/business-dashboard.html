@@ -1015,12 +1015,12 @@ window.addEventListener("load", () => {
   "/js/types.js",
   "/js/stock.js",
   "/js/sales.js",
+  "/js/service.js",        // ⭐ SERVICE BEFORE EXPENSES
   "/js/wanting.js",
-  "/js/expenses.js",
-  "/js/analytics.js",
-  "/js/service.js",
-  "/js/collection.js",
-  "/js/universalBar.js",
+  "/js/expenses.js",       // ⭐ EXPENSES BEFORE COLLECTION
+  "/js/collection.js",     // ⭐ COLLECTION BEFORE ANALYTICS
+  "/js/analytics.js",      // ⭐ ANALYTICS BEFORE UNIVERSAL BAR
+  "/js/universalBar.js",   // ⭐ BAR LAST
   "/js/security.js"
 ];
   files.forEach(f => {
