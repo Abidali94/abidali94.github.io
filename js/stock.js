@@ -1,32 +1,17 @@
 /* ==========================================================
-   stock.js — ONLINE REALTIME VERSION (v4.0)
+   stock.js — ONLINE REALTIME VERSION (v5.0 WITH HISTORY)
    ✔ Fully online (core.js + firebase.js compatible)
-   ✔ Cloud sync instant (cloudSaveDebounced)
-   ✔ Sales.js live sync
-   ✔ Collection, UniversalBar instant update
+   ✔ Cloud sync instant
+   ✔ Full purchase history (date + qty + cost)
+   ✔ Popup history view
 ========================================================== */
 
 /* -----------------------------
    Helpers
 ----------------------------- */
 const $  = s => document.querySelector(s);
-const $all = s => Array.from(document.querySelectorAll(s));
-
 const num = v => isNaN(Number(v)) ? 0 : Number(v);
-
-function getCurrentTime12hr() {
-  return new Date().toLocaleTimeString("en-IN", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-/* ==========================================================
-   STOCK DATA (Loaded by core.js – DO NOT OVERWRITE)
-========================================================== */
-/*  ⚠️ Do NOT: window.stock = JSON.parse(...)
-    core.js already loads stock + cloud sync
-*/
+const toDisp = d => (typeof window.toDisplay === "function" ? toDisplay(d) : d);
 
 /* ==========================================================
    SAVE STOCK (LOCAL + CLOUD)
@@ -42,10 +27,12 @@ window.saveStock = function () {
 };
 
 /* ==========================================================
-   ADD STOCK
+   ADD STOCK  (WITH HISTORY)
 ========================================================== */
 $("#addStockBtn")?.addEventListener("click", () => {
-  const date = $("#pdate").value || todayDate();
+  let date = $("#pdate").value || todayDate();
+  date = toInternalIfNeeded(date);
+
   const type = $("#ptype").value.trim();
   const name = $("#pname").value.trim();
   const qty  = num($("#pqty").value);
@@ -56,21 +43,71 @@ $("#addStockBtn")?.addEventListener("click", () => {
     return;
   }
 
-  window.stock.push({
-    id: uid("stk"),
-    date,
-    type,
-    name,
-    qty,
-    sold: 0,
-    cost,
-    limit: num($("#globalLimit").value || 2)
-  });
+  // Find existing product
+  const p = (window.stock || []).find(
+    x => x.type === type && x.name.toLowerCase() === name.toLowerCase()
+  );
+
+  if (!p) {
+    // NEW product
+    window.stock.push({
+      id: uid("stk"),
+      type,
+      name,
+      date,
+      qty,
+      sold: 0,
+      cost,
+      limit: num($("#globalLimit").value || 2),
+      history: [{ date, qty, cost }]     // 📌 HISTORY BLOCK
+    });
+  } else {
+    // EXISTING product — update qty + cost and append history
+    p.qty += qty;
+    p.cost = cost;
+
+    if (!Array.isArray(p.history)) p.history = [];
+    p.history.push({ date, qty, cost });   // 📌 HISTORY BLOCK
+  }
 
   window.saveStock();
   renderStock();
   window.updateUniversalBar?.();
 });
+
+/* ==========================================================
+   SHOW PURCHASE HISTORY (POPUP)
+========================================================== */
+function showStockHistory(id) {
+  const p = (window.stock || []).find(x => x.id === id);
+  if (!p || !p.history || !p.history.length) {
+    alert("No history available.");
+    return;
+  }
+
+  let msg = `Purchase History — ${p.name}\n\n`;
+  let totalCost = 0, totalQty = 0;
+
+  p.history.forEach(h => {
+    const q  = num(h.qty);
+    const c  = num(h.cost);
+    const dt = h.date ? toDisp(h.date) : "-";
+
+    totalCost += q * c;
+    totalQty  += q;
+
+    msg += `${dt} — ${q} qty × ₹${c} = ₹${q * c}\n`;
+  });
+
+  const avg = totalQty ? (totalCost / totalQty).toFixed(2) : 0;
+
+  msg += `\nTotal Qty: ${totalQty}`;
+  msg += `\nAverage Cost: ₹${avg}`;
+
+  alert(msg);
+}
+
+window.showStockHistory = showStockHistory;
 
 /* ==========================================================
    CLEAR ALL STOCK
@@ -112,27 +149,26 @@ function stockQuickSale(i, mode) {
   const price = num(prompt("Enter Selling Price ₹:"));
   if (!price || price <= 0) return;
 
-  let customer = "";
-  let phone = "";
+  let customer = "", phone = "";
 
   if (mode === "Credit") {
     customer = prompt("Customer Name:") || "";
-    phone = prompt("Phone Number:") || "";
+    phone    = prompt("Phone Number:") || "";
   }
 
-  const cost = num(p.cost);
-  const total = qty * price;
+  const cost   = num(p.cost);
+  const total  = qty * price;
   const profit = total - qty * cost;
 
   /* Update sold qty */
   p.sold += qty;
   window.saveStock();
 
-  /* Add sale entry (sales.js handles sync) */
+  /* Add sale entry */
   window.sales.push({
     id: uid("sale"),
     date: todayDate(),
-    time: getCurrentTime12hr(),
+    time: (new Date()).toLocaleTimeString("en-IN", {hour: "2-digit", minute: "2-digit"}),
     type: p.type,
     product: p.name,
     qty,
@@ -152,15 +188,11 @@ function stockQuickSale(i, mode) {
     window.autoAddWanting(p.type, p.name, "Finished");
   }
 
-  /* 🔥 FULL REALTIME UPDATE */
   renderStock();
   window.renderSales?.();
-  renderPendingCollections?.();
-  renderCollection?.();
+  window.renderCollection?.();
   window.updateUniversalBar?.();
 }
-
-/* expose */
 window.stockQuickSale = stockQuickSale;
 
 /* ==========================================================
@@ -171,7 +203,7 @@ function renderStock() {
   if (!tbody) return;
 
   const filterType = $("#filterType")?.value || "all";
-  const searchTxt = ($("#productSearch")?.value || "").toLowerCase();
+  const searchTxt  = ($("#productSearch")?.value || "").toLowerCase();
 
   let data = window.stock || [];
 
@@ -188,11 +220,11 @@ function renderStock() {
 
   tbody.innerHTML = data.map((p, i) => {
     const remain = num(p.qty) - num(p.sold);
-    const alert = remain <= p.limit ? "⚠️" : "";
+    const alert  = remain <= p.limit ? "⚠️" : "";
 
     return `
       <tr>
-        <td>${p.date}</td>
+        <td>${toDisp(p.date)}</td>
         <td>${p.type}</td>
         <td>${p.name}</td>
         <td>${p.qty}</td>
@@ -201,7 +233,13 @@ function renderStock() {
         <td>${alert}</td>
         <td>${p.limit}</td>
         <td>
+          <!-- 👇 **NEW HISTORY BUTTON** -->
+          <button class="small-btn"
+                  style="background:#555;color:#fff;"
+                  onclick="showStockHistory('${p.id}')">📜</button>
+
           <button class="small-btn" onclick="stockQuickSale(${i}, 'Paid')">Cash</button>
+
           <button class="small-btn" onclick="stockQuickSale(${i}, 'Credit')"
             style="background:#facc15;color:black;">Credit</button>
         </td>
@@ -216,7 +254,7 @@ function renderStock() {
    STOCK INVESTMENT (Before sale)
 ========================================================== */
 function updateStockInvestment() {
-  const total = window.stock.reduce((sum, p) => {
+  const total = (window.stock || []).reduce((sum, p) => {
     const remain = num(p.qty) - num(p.sold);
     return sum + remain * num(p.cost);
   }, 0);
