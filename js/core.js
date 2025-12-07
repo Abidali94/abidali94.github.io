@@ -646,12 +646,13 @@ window.getStockInvestmentCollected = function () {
   return total;
 };
 
-// 2) AFTER SALE – remaining only
+// 2) STOCK INVESTMENT (sold qty × cost only)
 window.getStockInvestmentAfterSale = function () {
   let total = 0;
   (stock || []).forEach(p => {
-    const remain = Number(p.qty || 0) - Number(p.sold || 0);
-    if (remain > 0) total += remain * Number(p.cost || 0);
+    const sold = Number(p.sold || 0);
+    const cost = Number(p.cost || 0);
+    total += sold * cost;
   });
   return total;
 };
