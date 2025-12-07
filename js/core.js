@@ -458,6 +458,30 @@ window.updateTabSummaryBar = function () {
 /* ===========================================================
    PART D — CLOUD PULL + STORAGE SYNC + INVESTMENTS + EMAIL TAG
 =========================================================== */
+/* ===========================================================
+   UNIVERSAL CLOUD SAVE WRAPPER  (REQUIRED)
+=========================================================== */
+window.cloudSync = function(key, data) {
+  // If firebase/cloud is unavailable → silently skip
+  if (typeof cloudSaveDebounced !== "function") return;
+
+  // Firestore collection name mapping
+  const map = {
+    "item-types":      "types",
+    "stock-data":      "stock",
+    "sales-data":      "sales",
+    "wanting-data":    "wanting",
+    "expenses-data":   "expenses",
+    "service-data":    "services",
+    "ks-collections":  "collections"
+  };
+
+  const col = map[key];
+  if (!col) return;
+
+  cloudSaveDebounced(col, data || []);
+};
+
 
 /* -----------------------------------------------------------
    KEY → GLOBAL VAR NAME MAP
