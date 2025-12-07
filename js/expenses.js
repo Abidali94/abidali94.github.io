@@ -1,25 +1,63 @@
 /* ===========================================================
-   expenses.js — FINAL ONLINE VERSION v9.0
-   ✔ Fully compatible with core.js v4+ (cloud sync)
-   ✔ Instant UI refresh (no delay)
-   ✔ toDisplay(), toInternal() from core.js
-   ✔ Prevents invalid date formats
-   ✔ Updates: Dashboard + Summary + UniversalBar
+   expenses.js — FINAL AUTO-SAFE VERSION v10.1
+   ✔ Works even if HTML was missing earlier
+   ✔ Auto-creates #expensesTable and #expTotal if not found
+   ✔ Fully compatible with core.js cloud sync
 =========================================================== */
 
-/* -------------------------------------------------------
+const qs = s => document.querySelector(s);
+
+/* ===========================================================
+   ENSURE REQUIRED DOM EXISTS (AUTO CREATE)
+=========================================================== */
+function ensureExpenseDOM() {
+  let section = qs("#expenses");
+  if (!section) return;  // user may hide tab
+
+  /* ---------- Ensure EXPENSE TABLE ---------- */
+  let table = qs("#expensesTable");
+  if (!table) {
+    table = document.createElement("table");
+    table.id = "expensesTable";
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Category</th>
+          <th>Amount</th>
+          <th>Note</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    `;
+    section.appendChild(table);
+  }
+
+  /* ---------- Ensure TOTAL SPAN ---------- */
+  let totalBox = qs("#expTotal");
+  if (!totalBox) {
+    const box = document.createElement("div");
+    box.style.marginTop = "8px";
+    box.innerHTML = `
+      <b>Total: ₹<span id="expTotal">0</span></b>
+    `;
+    section.appendChild(box);
+  }
+}
+
+/* ===========================================================
    ➕ ADD EXPENSE ENTRY
-------------------------------------------------------- */
+=========================================================== */
 function addExpenseEntry() {
   let date = qs("#expDate")?.value || todayDate();
-  const category = qs("#expCat")?.value.trim();
+  const category = qs("#expCat")?.value?.trim();
   const amount = Number(qs("#expAmount")?.value || 0);
-  const note = qs("#expNote")?.value.trim();
+  const note = qs("#expNote")?.value?.trim();
 
   if (!category || amount <= 0)
     return alert("Enter category and amount!");
 
-  // Convert DD-MM-YYYY → YYYY-MM-DD safely
   date = toInternalIfNeeded(date);
 
   window.expenses = window.expenses || [];
@@ -32,24 +70,21 @@ function addExpenseEntry() {
     note
   });
 
-  // LOCAL + CLOUD SAVE
   if (window.saveExpenses) window.saveExpenses();
 
-  // UI REFRESH
   renderExpenses();
   renderAnalytics?.();
   updateSummaryCards?.();
   updateTabSummaryBar?.();
   updateUniversalBar?.();
 
-  // Clear fields
   qs("#expAmount").value = "";
   qs("#expNote").value = "";
 }
 
-/* -------------------------------------------------------
+/* ===========================================================
    ❌ DELETE EXPENSE ENTRY
-------------------------------------------------------- */
+=========================================================== */
 function deleteExpense(id) {
   window.expenses = (window.expenses || []).filter(e => e.id !== id);
 
@@ -63,11 +98,16 @@ function deleteExpense(id) {
 }
 window.deleteExpense = deleteExpense;
 
-/* -------------------------------------------------------
-   📊 RENDER EXPENSE TABLE
-------------------------------------------------------- */
+/* ===========================================================
+   📊 RENDER EXPENSE TABLE (AUTO DOM SAFE)
+=========================================================== */
 function renderExpenses() {
+  ensureExpenseDOM();
+
+  const table = qs("#expensesTable");
   const tbody = qs("#expensesTable tbody");
+  const totalBox = qs("#expTotal");
+
   if (!tbody) return;
 
   const list = window.expenses || [];
@@ -83,7 +123,6 @@ function renderExpenses() {
           <td data-label="Category">${esc(e.category)}</td>
           <td data-label="Amount">₹${esc(e.amount)}</td>
           <td data-label="Note">${esc(e.note || "-")}</td>
-
           <td data-label="Action">
             <button class="small-btn"
                     onclick="deleteExpense('${e.id}')"
@@ -96,13 +135,12 @@ function renderExpenses() {
     })
     .join("");
 
-  const totalBox = qs("#expTotal");
-  if (totalBox) totalBox.textContent = total;
+  if (totalBox) totalBox.textContent = total || 0;
 }
 
-/* -------------------------------------------------------
+/* ===========================================================
    🗑 CLEAR ALL EXPENSES
-------------------------------------------------------- */
+=========================================================== */
 qs("#clearExpensesBtn")?.addEventListener("click", () => {
   if (!confirm("Clear ALL expenses?")) return;
 
@@ -116,14 +154,14 @@ qs("#clearExpensesBtn")?.addEventListener("click", () => {
   updateUniversalBar?.();
 });
 
-/* -------------------------------------------------------
+/* ===========================================================
    ➕ ADD BUTTON
-------------------------------------------------------- */
+=========================================================== */
 qs("#addExpenseBtn")?.addEventListener("click", addExpenseEntry);
 
-/* -------------------------------------------------------
+/* ===========================================================
    🚀 INITIAL LOAD
-------------------------------------------------------- */
+=========================================================== */
 window.addEventListener("load", () => {
   renderExpenses();
   updateUniversalBar?.();
