@@ -1039,19 +1039,6 @@ window.addEventListener("load", () => {
 });
 </script>
 
-<!-- =============== COLLECT BUTTON CLICK HANDLER =============== -->
-<script>
-document.addEventListener("click", e => {
-  const btn = e.target.closest(".collect-btn");
-  if (!btn) return;
-  const type = btn.dataset.collect;
-  if (typeof window.handleCollect === "function") {
-    handleCollect(type);
-  } else {
-    alert("Collect handler missing: " + type);
-  }
-});
-</script>
 
 <!-- =============== TAB SWITCHER =============== -->
 <script>
