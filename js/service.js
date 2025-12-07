@@ -1,8 +1,9 @@
 /* ===========================================================
-   🛠 service.js — BUSINESS FINAL V27
+   🛠 service.js — BUSINESS FINAL V30
    ✔ Pending + Cash + Credit Pending + Credit Paid History
    ✔ Profit activates only after collection
-   ✔ Clear allowed only for Cash / Credit-Paid
+   ✔ Collection auto entry
+   ✔ Pie Chart working
 =========================================================== */
 
 (function () {
@@ -31,6 +32,7 @@
 
   function fullRefresh() {
     try { renderServiceTables(); }         catch {}
+    try { renderSvcPie(); }                catch {}
     try { window.renderAnalytics?.(); }    catch {}
     try { window.updateSummaryCards?.(); } catch {}
     try { window.updateUniversalBar?.(); } catch {}
@@ -89,7 +91,6 @@
       paid: 0,
       remaining: 0,
       profit: 0,
-      returnedAdvance: 0,
 
       status: "Pending"
     };
@@ -100,7 +101,7 @@
   }
 
   /* ======================================================
-        COMPLETE JOB (PAID or CREDIT)
+        COMPLETE JOB
   ====================================================== */
   function markCompleted(id, mode) {
     const job = ensureServices().find(j => j.id === id);
@@ -144,7 +145,6 @@
       }
 
     } else {
-      /** CREDIT MODE **/
       const pendingDue = full - alreadyGot;
 
       const ok = confirm(
@@ -173,13 +173,7 @@
     const job = ensureServices().find(j => j.id === id);
     if (!job) return;
 
-    if (job.status !== "Credit") {
-      alert("Not a credit job.");
-      return;
-    }
-
     const due = Number(job.remaining || 0);
-
     if (due <= 0) {
       alert("No pending credit.");
       return;
@@ -197,7 +191,8 @@
 
     job.paid      = job.paid + due;
     job.remaining = 0;
-    job.status    = "Completed";  // profit now valid
+    job.status    = "Completed";
+
     persistServices();
     fullRefresh();
 
@@ -241,8 +236,6 @@
 
   /* ======================================================
        CLEAR HISTORY BUTTON
-       ⭐ Only for cash / credit-paid
-       ❌ Never for credit-pending
   ====================================================== */
   window.clearServiceHistory = function () {
     const view = qs("#svcView")?.value || "all";
@@ -255,15 +248,14 @@
     if (!confirm("Clear ALL displayed records?")) return;
 
     window.services = window.services.filter(j => {
-
       const completed = (j.status === "Completed" && j.remaining === 0);
 
       if (view === "cash") {
-        return !(completed && j.paid === j.profit); // pure cash completed
+        return !(completed && j.paid === j.profit);
       }
 
       if (view === "credit-paid") {
-        return !(completed && j.paid > j.advance); // cleared credit
+        return !(completed && j.paid > j.advance);
       }
 
       return true;
@@ -279,7 +271,7 @@
   function renderServiceTables() {
     const pendBody = qs("#svcTable tbody");
     const histBody = qs("#svcHistoryTable tbody");
-    const clearBtn = qs("#clearSvcHistoryBtn");   // ⭐ HTML button
+    const clearBtn = qs("#clearSvcHistoryBtn");
     if (!pendBody || !histBody) return;
 
     const list = ensureServices();
@@ -299,7 +291,8 @@
           <td>${escSafe(j.problem)}</td>
           <td><span class="status-credit">Pending</span></td>
           <td>
-            <button class="small-btn svc-view" data-id="${j.id}">Open</button>
+            <button class="small-btn" onclick="markCompleted('${j.id}','paid')">Paid</button>
+            <button class="small-btn" onclick="markCompleted('${j.id}','credit')">Credit</button>
             <button class="small-btn svc-del" data-id="${j.id}" style="background:#b71c1c">🗑</button>
           </td>
         </tr>
@@ -335,7 +328,7 @@
       }).join("") ||
       `<tr><td colspan="9" style="text-align:center;opacity:.6;">No history</td></tr>`;
 
-    /* ⭐ SHOW/HIDE CLEAR BUTTON */
+    /* SHOW/HIDE CLEAR BTN */
     if (clearBtn) {
       const v = qs("#svcView")?.value || "all";
       if (v === "cash" || v === "credit-paid") {
@@ -347,24 +340,55 @@
   }
 
   /* ======================================================
+       PIE CHART
+  ====================================================== */
+  let svcPieInstance;
+
+  function renderSvcPie() {
+    const canvas = qs("#svcPie");
+    if (!canvas) return;
+
+    const list = ensureServices();
+
+    const cash = list.filter(j => j.status === "Completed" && j.remaining === 0).length;
+    const creditPending = list.filter(j => j.status === "Credit" && j.remaining > 0).length;
+    const creditPaid = list.filter(j => j.status === "Completed" && j.paid > j.advance).length;
+
+    const data = [cash, creditPending, creditPaid];
+
+    if (svcPieInstance) svcPieInstance.destroy();
+
+    svcPieInstance = new Chart(canvas, {
+      type: "pie",
+      data: {
+        labels: ["Cash", "Credit Pending", "Credit Paid"],
+        datasets: [{
+          data
+        }]
+      }
+    });
+  }
+
+  /* ======================================================
        EVENTS
   ====================================================== */
-  document.addEventListener("click", e => {
-    if (e.target.classList.contains("svc-view"))
-      openJob(e.target.dataset.id);
+  qs("#addServiceBtn")?.addEventListener("click", addServiceJob);
+  qs("#svcView")?.addEventListener("change", () => {
+    renderServiceTables();
+    renderSvcPie();
+  });
 
+  document.addEventListener("click", e => {
     if (e.target.classList.contains("svc-del"))
       deleteServiceJob(e.target.dataset.id);
   });
 
-  qs("#svcView")?.addEventListener("change", renderServiceTables);
-
-  qs("#clearSvcHistoryBtn")?.addEventListener("click", clearServiceHistory);
-
   window.addEventListener("load", () => {
     renderServiceTables();
+    renderSvcPie();
   });
 
   window.renderServiceTables = renderServiceTables;
+  window.renderSvcPie = renderSvcPie;
 
 })();
