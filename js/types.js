@@ -1,5 +1,5 @@
 /* ======================================================
-   🗂 types.js — Product Type Manager (FINAL ONLINE v8.0)
+   🗂 types.js — Product Type Manager (FINAL ONLINE v9.0)
    • Fully compatible with new core.js cloud system
    • Instant UI update (no refresh delay)
    • Prevents duplicate types
@@ -30,9 +30,15 @@ function addType() {
   // Save (Local + Cloud)
   if (window.saveTypes) window.saveTypes();
 
-  // Refresh UI
+  // Immediate UI refresh
   renderTypes();
   updateTypeDropdowns();
+
+  // ⭐ EXTRA GUARANTEED REFRESH (fixes post-clear issues)
+  setTimeout(() => {
+    renderTypes();
+    updateTypeDropdowns();
+  }, 100);
 
   input.value = "";
 }
@@ -46,8 +52,15 @@ function clearTypes() {
   window.types = [];
   if (window.saveTypes) window.saveTypes();
 
+  // Immediate refresh
   renderTypes();
   updateTypeDropdowns();
+
+  // ⭐ EXTRA GUARANTEED REFRESH (fixes new-type add after clear)
+  setTimeout(() => {
+    renderTypes();
+    updateTypeDropdowns();
+  }, 100);
 }
 
 /* ------------------------------------------------------
@@ -124,4 +137,10 @@ document.addEventListener("click", e => {
 window.addEventListener("load", () => {
   renderTypes();
   updateTypeDropdowns();
+
+  // ⭐ startup guaranteed sync
+  setTimeout(() => {
+    renderTypes();
+    updateTypeDropdowns();
+  }, 150);
 });
