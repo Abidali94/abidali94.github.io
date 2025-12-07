@@ -1,8 +1,9 @@
 /* ===========================================================
-   sales.js — REALTIME ONLINE VERSION (v14.0 FINAL)
-   ✔ Credit profit excluded until collection
-   ✔ Full sync with collection.js
-   ✔ UniversalBar, Dashboard, PieChart instant refresh
+   sales.js — BUSINESS VERSION (v15 FINAL)
+   ✔ Sales + Credit unified
+   ✔ Credit profit added only after collection
+   ✔ Collection history entry for paid credit
+   ✔ UniversalBar, Dashboard, Analytics LIVE refresh
 =========================================================== */
 
 /* ------------------------------
@@ -11,7 +12,7 @@
 function getCurrentTime12hr() {
   return new Date().toLocaleTimeString("en-IN", {
     hour: "2-digit",
-    minute: "2-digit",
+    minute: "2-digit"
   });
 }
 
@@ -30,27 +31,32 @@ function refreshSaleTypeSelector() {
 
 /* ===========================================================
    ADD SALE ENTRY
-   ⭐ CREDIT profit NOT added here
+   ⭐ CREDIT: profit NOT counted now
 =========================================================== */
 function addSaleEntry({ date, type, product, qty, price, status, customer, phone }) {
 
   qty = Number(qty);
   price = Number(price);
+  status = status || "Paid";
 
   if (!type || !product || qty <= 0 || price <= 0) return;
 
-  const p = (window.stock || []).find(
-    x => x.type === type && x.name === product
-  );
-
+  const p = (window.stock || []).find(x => x.type === type && x.name === product);
   if (!p) { alert("Product not found in stock."); return; }
 
   const remain = Number(p.qty) - Number(p.sold);
   if (remain < qty) { alert("Not enough stock!"); return; }
 
-  const cost  = Number(p.cost);
+  const cost = Number(p.cost);
   const total = qty * price;
-  const profit = total - qty * cost;
+  let profit = 0;
+
+  /* ⭐ if PAID → profit now, if CREDIT → profit later */
+  if ((status.toLowerCase()) === "paid") {
+    profit = total - qty * cost;
+  } else {
+    profit = 0;
+  }
 
   /* -------------------------
       STOCK UPDATE
@@ -59,8 +65,7 @@ function addSaleEntry({ date, type, product, qty, price, status, customer, phone
   window.saveStock?.();
 
   /* -------------------------
-      ADD SALE ENTRY
-      ⭐ Profit only counts when PAID
+      NEW SALE RECORD
   ------------------------- */
   window.sales.push({
     id: uid("sale"),
@@ -73,14 +78,16 @@ function addSaleEntry({ date, type, product, qty, price, status, customer, phone
     total,
     profit,
     cost,
-    status: status || "Paid",  // Paid / Credit
+    status,
     customer: customer || "",
     phone: phone || ""
   });
 
   window.saveSales?.();
 
-  /* FULL UI REFRESH */
+  /* -------------------------
+      FULL LIVE REFRESH
+  ------------------------- */
   renderSales?.();
   renderPendingCollections?.();
   renderCollection?.();
@@ -91,8 +98,7 @@ function addSaleEntry({ date, type, product, qty, price, status, customer, phone
 
 /* ===========================================================
    CREDIT → PAID
-   ⭐ Profit is added ONLY here.
-   ⭐ Pending must become 0 immediately.
+   ⭐ Profit & analytics added ONLY now
 =========================================================== */
 function collectCreditSale(id) {
   const s = window.sales.find(x => x.id === id);
@@ -103,46 +109,46 @@ function collectCreditSale(id) {
     return;
   }
 
+  /* CONFIRM */
   const msg = [
     `Product: ${s.product} (${s.type})`,
     `Qty: ${s.qty}`,
     `Rate: ₹${s.price}`,
     `Total: ₹${s.total}`,
-  ];
-
-  if (s.customer) msg.push("Customer: " + s.customer);
-  if (s.phone) msg.push("Phone: " + s.phone);
+    s.customer ? `Customer: ${s.customer}` : "",
+    s.phone ? `Phone: ${s.phone}` : ""
+  ].filter(Boolean);
 
   if (!confirm(msg.join("\n") + "\n\nMark as PAID & Collect?")) return;
 
-  /* ---------------------------------
+  /* -------------------------
      UPDATE STATUS
-  --------------------------------- */
+  ------------------------- */
   s.status = "Paid";
 
-  /* ---------------------------------
-     Profit is valid ONLY after collection
-  --------------------------------- */
+  /* -------------------------
+     NOW profit becomes valid
+  ------------------------- */
   s.profit = Number(s.total) - Number(s.qty * s.cost);
-
   window.saveSales?.();
 
-  /* ---------------------------------
-     Add collection history entry
-     👉 Amount = ZERO
-     👉 Details include (Collected ₹xxx)
-  --------------------------------- */
+  /* -------------------------
+     COLLECTION HISTORY ENTRY
+     ⭐ Amount = TOTAL collected
+  ------------------------- */
   const collected = s.total;
 
   const details =
     `${s.product} — Qty ${s.qty} × ₹${s.price} = ₹${s.total}` +
-    ` (Collected ₹${collected})` +
+    ` (Credit Cleared)` +
     (s.customer ? ` — ${s.customer}` : "") +
     (s.phone ? ` — ${s.phone}` : "");
 
-  window.addCollectionEntry("Sale (Credit cleared)", details, 0);
+  window.addCollectionEntry("Sale (Credit cleared)", details, collected);
 
-  /* FULL REALTIME REFRESH */
+  /* -------------------------
+     LIVE REFRESH EVERYTHING
+  ------------------------- */
   renderSales?.();
   renderPendingCollections?.();
   renderCollection?.();
@@ -178,9 +184,10 @@ function renderSales() {
       const t = Number(s.total);
       totalSum += t;
 
-      /* ⭐ Profit only from PAID sales */
-      if ((s.status || "").toLowerCase() === "paid")
+      /* ⭐ Profit ONLY if PAID */
+      if ((s.status || "").toLowerCase() === "paid") {
         profitSum += Number(s.profit || 0);
+      }
 
       const statusHTML =
         (s.status || "").toLowerCase() === "credit"
@@ -217,7 +224,7 @@ function renderSales() {
 window.renderSales = renderSales;
 
 /* ===========================================================
-   CLEAR SALES
+   CLEAR SALES (PAID + CREDIT)
 =========================================================== */
 document.getElementById("clearSalesBtn")?.addEventListener("click", () => {
   if (!confirm("Clear ALL sales?")) return;
