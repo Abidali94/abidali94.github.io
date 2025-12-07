@@ -1,10 +1,11 @@
 /* ===========================================================
-   sales.js — BUSINESS VERSION (v16)
+   sales.js — BUSINESS VERSION (v17)
    ✔ Sales + Credit unified
    ✔ Credit profit added only after collection
    ✔ fromCredit flag → “Credit paid history” filter
    ✔ Collection history entry for paid credit
    ✔ UniversalBar, Dashboard, Analytics LIVE refresh
+   ✔ NEW: Clear-All allowed only for CASH or CREDIT-PAID
 =========================================================== */
 
 /* ------------------------------
@@ -32,8 +33,6 @@ function refreshSaleTypeSelector() {
 
 /* ===========================================================
    ADD SALE ENTRY
-   ⭐ PAID → profit now
-   ⭐ CREDIT → profit 0 (later when collected)
 =========================================================== */
 function addSaleEntry({ date, type, product, qty, price, status, customer, phone }) {
 
@@ -59,26 +58,15 @@ function addSaleEntry({ date, type, product, qty, price, status, customer, phone
   const total  = qty * price;
   let   profit = 0;
 
-  // ⭐ PAID అయినప్పుడు మాత్రమే వెంటనే profit
   if (status.toLowerCase() === "paid") {
     profit = total - qty * cost;
-  } else {
-    // CREDIT → later when collected
-    profit = 0;
   }
 
-  /* -------------------------
-      STOCK UPDATE
-  ------------------------- */
+  /* STOCK UPDATE */
   p.sold = Number(p.sold) + qty;
   window.saveStock?.();
 
-  /* -------------------------
-      NEW SALE RECORD
-      fromCredit:
-        - కొత్త sale add అయినప్పుడు false
-        - credit clear అయినప్పుడు true అవుతుంది
-  ------------------------- */
+  /* NEW SALE RECORD */
   window.sales.push({
     id: uid("sale"),
     date: date || todayDate(),
@@ -90,17 +78,14 @@ function addSaleEntry({ date, type, product, qty, price, status, customer, phone
     total,
     profit,
     cost,
-    status,               // "Paid" / "Credit"
+    status,
     customer: customer || "",
     phone:    phone    || "",
-    fromCredit: false    // later true when credit cleared
+    fromCredit: false
   });
 
   window.saveSales?.();
 
-  /* -------------------------
-      FULL LIVE REFRESH
-  ------------------------- */
   renderSales?.();
   renderPendingCollections?.();
   renderCollection?.();
@@ -111,7 +96,6 @@ function addSaleEntry({ date, type, product, qty, price, status, customer, phone
 
 /* ===========================================================
    CREDIT → PAID
-   ⭐ Profit & analytics added ONLY now
 =========================================================== */
 function collectCreditSale(id) {
   const s = window.sales.find(x => x.id === id);
@@ -122,7 +106,6 @@ function collectCreditSale(id) {
     return;
   }
 
-  /* CONFIRM */
   const msg = [
     `Product: ${s.product} (${s.type})`,
     `Qty: ${s.qty}`,
@@ -134,22 +117,12 @@ function collectCreditSale(id) {
 
   if (!confirm(msg.join("\n") + "\n\nMark as PAID & Collect?")) return;
 
-  /* -------------------------
-     UPDATE STATUS
-  ------------------------- */
   s.status = "Paid";
-  s.fromCredit = true;  // ⭐ ఈ row ఇప్పుడు "Credit paid history" లో కనిపిస్తుంది
+  s.fromCredit = true;
 
-  /* -------------------------
-     NOW profit becomes valid
-  ------------------------- */
   s.profit = Number(s.total) - Number(s.qty * s.cost);
   window.saveSales?.();
 
-  /* -------------------------
-     COLLECTION HISTORY ENTRY
-     ⭐ Amount = TOTAL collected
-  ------------------------- */
   const collected = s.total;
 
   const details =
@@ -160,9 +133,6 @@ function collectCreditSale(id) {
 
   window.addCollectionEntry("Sale (Credit cleared)", details, collected);
 
-  /* -------------------------
-     LIVE REFRESH EVERYTHING
-  ------------------------- */
   renderSales?.();
   renderPendingCollections?.();
   renderCollection?.();
@@ -188,30 +158,24 @@ function renderSales() {
 
   let list = [...(window.sales || [])];
 
-  // TYPE filter
   if (filterType !== "all") list = list.filter(s => s.type === filterType);
 
-  // DATE filter
   if (filterDate) list = list.filter(s => s.date === filterDate);
 
-  // VIEW filter
   list = list.filter(s => {
     const status = String(s.status || "").toLowerCase();
     const fromCredit = Boolean(s.fromCredit);
 
     if (view === "cash") {
-      // Cash = Paid & not from credit
       return status === "paid" && !fromCredit;
     }
     if (view === "credit-pending") {
-      // Pending credit
       return status === "credit";
     }
     if (view === "credit-paid") {
-      // Credit paid history
       return status === "paid" && fromCredit;
     }
-    return true; // all
+    return true;
   });
 
   let totalSum  = 0;
@@ -222,7 +186,6 @@ function renderSales() {
       const t = Number(s.total);
       totalSum += t;
 
-      // ⭐ Profit ONLY if PAID (cash లేదా credit-paid)
       if ((s.status || "").toLowerCase() === "paid") {
         profitSum += Number(s.profit || 0);
       }
@@ -257,29 +220,58 @@ function renderSales() {
   document.getElementById("salesTotal").textContent  = totalSum;
   document.getElementById("profitTotal").textContent = profitSum;
 
+  /* ⭐ CLEAR BUTTON RULE */
+  const btn = document.getElementById("clearSalesBtn");
+  if (btn) {
+    if (view === "cash" || view === "credit-paid") {
+      btn.style.display = "";
+    } else {
+      btn.style.display = "none";
+    }
+  }
+
   window.updateUniversalBar?.();
 }
 window.renderSales = renderSales;
 
 /* ===========================================================
-   FILTER BUTTON (just re-render)
+   FILTER & VIEW EVENTS
 =========================================================== */
 document.getElementById("filterSalesBtn")?.addEventListener("click", () => {
   renderSales();
 });
-
-/* VIEW change → instant filter */
 document.getElementById("saleView")?.addEventListener("change", () => {
   renderSales();
 });
 
 /* ===========================================================
-   CLEAR SALES (PAID + CREDIT)
+   CLEAR SALES (ONLY CASH or CREDIT-PAID)
 =========================================================== */
 document.getElementById("clearSalesBtn")?.addEventListener("click", () => {
-  if (!confirm("Clear ALL sales?")) return;
+  const view = document.getElementById("saleView")?.value || "all";
 
-  window.sales = [];
+  if (!(view === "cash" || view === "credit-paid")) {
+    alert("❌ Cannot clear Credit Pending data!");
+    return;
+  }
+
+  if (!confirm("Clear ALL records in this view?")) return;
+
+  window.sales = window.sales.filter(s => {
+    const status = s.status.toLowerCase();
+    const fromCredit = Boolean(s.fromCredit);
+
+    if (view === "cash") {
+      return !(status === "paid" && !fromCredit);
+    }
+
+    if (view === "credit-paid") {
+      return !(status === "paid" && fromCredit);
+    }
+
+    return true;
+  });
+
   window.saveSales?.();
 
   renderSales();
