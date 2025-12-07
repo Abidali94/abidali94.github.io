@@ -1,37 +1,17 @@
 /* ==========================================================
-   stock.js — ONLINE REALTIME VERSION (v7.0 CLOUD SAFE + FIXED HISTORY)
+   stock.js — ONLINE REALTIME VERSION (v5.0 WITH HISTORY)
+   ✔ Fully online (core.js + firebase.js compatible)
+   ✔ Cloud sync instant
+   ✔ Full purchase history (date + qty + cost)
+   ✔ Popup history view
 ========================================================== */
 
+/* -----------------------------
+   Helpers
+----------------------------- */
 const $  = s => document.querySelector(s);
 const num = v => isNaN(Number(v)) ? 0 : Number(v);
 const toDisp = d => (typeof window.toDisplay === "function" ? toDisplay(d) : d);
-
-/* ==========================================================
-   SAFE NORMALIZE HISTORY (AFTER CLOUD LOAD ONLY)
-========================================================== */
-function normalizeStockHistory() {
-
-  // Ensure stock is ARRAY (important)
-  window.stock = Array.isArray(window.stock)
-    ? window.stock
-    : toArray(safeParse(localStorage.getItem("stock-data")));
-
-  (window.stock || []).forEach(p => {
-    // If no history but qty/cost exists → repair
-    if (!Array.isArray(p.history) || !p.history.length) {
-      if (num(p.qty) > 0 && num(p.cost) > 0) {
-        const dt = toInternalIfNeeded(p.date || todayDate());
-        p.history = [{
-          date: dt,
-          qty : num(p.qty),
-          cost: num(p.cost)
-        }];
-      }
-    }
-  });
-
-  window.saveStock?.();
-}
 
 /* ==========================================================
    SAVE STOCK (LOCAL + CLOUD)
@@ -79,7 +59,7 @@ $("#addStockBtn")?.addEventListener("click", () => {
       sold: 0,
       cost,
       limit: num($("#globalLimit").value || 2),
-      history: [{ date, qty, cost }]
+      history: [{ date, qty, cost }]     // 📌 HISTORY BLOCK
     });
   } else {
     // EXISTING product — update qty + cost and append history
@@ -87,7 +67,7 @@ $("#addStockBtn")?.addEventListener("click", () => {
     p.cost = cost;
 
     if (!Array.isArray(p.history)) p.history = [];
-    p.history.push({ date, qty, cost });
+    p.history.push({ date, qty, cost });   // 📌 HISTORY BLOCK
   }
 
   window.saveStock();
@@ -121,11 +101,12 @@ function showStockHistory(id) {
 
   const avg = totalQty ? (totalCost / totalQty).toFixed(2) : 0;
 
-  msg += `\nTotal Purchased Qty: ${totalQty}`;
+  msg += `\nTotal Qty: ${totalQty}`;
   msg += `\nAverage Cost: ₹${avg}`;
 
   alert(msg);
 }
+
 window.showStockHistory = showStockHistory;
 
 /* ==========================================================
@@ -133,8 +114,10 @@ window.showStockHistory = showStockHistory;
 ========================================================== */
 $("#clearStockBtn")?.addEventListener("click", () => {
   if (!confirm("Delete ALL stock?")) return;
+
   window.stock = [];
   window.saveStock();
+
   renderStock();
   window.updateUniversalBar?.();
 });
@@ -145,6 +128,7 @@ $("#clearStockBtn")?.addEventListener("click", () => {
 $("#setLimitBtn")?.addEventListener("click", () => {
   const limit = num($("#globalLimit").value || 2);
   window.stock.forEach(p => p.limit = limit);
+
   window.saveStock();
   renderStock();
 });
@@ -176,9 +160,11 @@ function stockQuickSale(i, mode) {
   const total  = qty * price;
   const profit = total - qty * cost;
 
+  /* Update sold qty */
   p.sold += qty;
   window.saveStock();
 
+  /* Add sale entry */
   window.sales.push({
     id: uid("sale"),
     date: todayDate(),
@@ -197,6 +183,7 @@ function stockQuickSale(i, mode) {
 
   window.saveSales?.();
 
+  /* Auto Wanting */
   if (p.sold >= p.qty && window.autoAddWanting) {
     window.autoAddWanting(p.type, p.name, "Finished");
   }
@@ -281,13 +268,10 @@ $("#productSearch")?.addEventListener("input", renderStock);
 $("#filterType")?.addEventListener("change", renderStock);
 
 /* ==========================================================
-   INIT (AFTER CLOUD SYNC)
+   INIT
 ========================================================== */
 window.addEventListener("load", () => {
-  setTimeout(() => {
-    normalizeStockHistory();
-    renderStock();
-    updateStockInvestment();
-    window.updateUniversalBar?.();
-  }, 600); // ⭐ wait for cloudPullAllIfAvailable()
+  renderStock();
+  updateStockInvestment();
+  window.updateUniversalBar?.();
 });
