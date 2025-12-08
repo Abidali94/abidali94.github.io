@@ -1,5 +1,8 @@
 /* ===========================================================
-   🛠 service.js — FINAL FIXED (Investment, Profit, Offset Safe)
+   🛠 service.js — BUSINESS SAFE VERSION (v13)
+   ⭐ Correct profit tracking
+   ⭐ Safe history clear
+   ⭐ Safe universal offset refresh
 =========================================================== */
 
 (function () {
@@ -13,7 +16,9 @@
 
   let svcPieInstance = null;
 
-  /* ---------------- STORAGE ---------------- */
+  /* ===========================================================
+     STORAGE HELPERS
+  ============================================================ */
   function ensureServices() {
     if (!Array.isArray(window.services)) window.services = [];
     return window.services;
@@ -26,16 +31,26 @@
     localStorage.setItem("service-data", JSON.stringify(window.services || []));
   }
 
+  /* ===========================================================
+     SAFE REFRESH (Correct order always)
+  ============================================================ */
   function fullRefresh() {
     try { renderServiceTables(); }         catch {}
     try { renderSvcPie(); }                catch {}
     try { window.renderAnalytics?.(); }    catch {}
     try { window.updateSummaryCards?.(); } catch {}
-    try { window.updateUniversalBar?.(); } catch {}
     try { window.renderCollection?.(); }   catch {}
+
+    /* ⭐ Delay universal bar ensures TRUE profit after changes */
+    setTimeout(() => {
+      window.updateUniversalBar?.();
+      window.updateTabSummaryBar?.();
+    }, 50);
   }
 
-  /* ---------------- NEW JOB ---------------- */
+  /* ===========================================================
+     ADD NEW JOB
+  ============================================================ */
   function nextJobId() {
     const list = ensureServices();
     const nums = list.map(j => Number(j.jobNum || j.jobId) || 0);
@@ -59,7 +74,7 @@
     const advance  = Number(qs("#svcAdvance")?.value || 0);
 
     if (!customer || !phone || !problem) {
-      alert("Please fill Customer, Phone, Problem");
+      alert("Please fill Customer, Phone & Problem");
       return;
     }
 
@@ -89,7 +104,7 @@
     persistServices();
     fullRefresh();
 
-    /* ⭐ AUTO CLEAR all input fields */
+    /* ⭐ CLEAR FORM UI */
     qs("#svcCustomer").value = "";
     qs("#svcPhone").value = "";
     qs("#svcModel").value = "";
@@ -97,7 +112,9 @@
     qs("#svcAdvance").value = "";
   }
 
-  /* ---------------- COMPLETE ---------------- */
+  /* ===========================================================
+     COMPLETE JOB
+  ============================================================ */
   function markCompleted(id, mode) {
     const job = ensureServices().find(j => j.id === id);
     if (!job) return;
@@ -105,17 +122,15 @@
     const invest = Number(prompt("Parts / Repair Cost ₹:", job.invest || 0) || 0);
     const full   = Number(prompt("Total Bill ₹:", job.paid || 0) || 0);
 
-    if (!full || full <= 0) return alert("Invalid amount");
+    if (!full || full <= 0) return alert("Invalid bill amount");
 
     const profit = full - invest;
     const adv    = Number(job.advance || 0);
 
-    /* ⭐ ALWAYS SAVE TRUE INVEST & PROFIT */
-    job.invest = invest;
-    job.profit = profit;
+    job.invest = invest;     // TRUE investment
+    job.profit = profit;     // TRUE profit
     job.date_out = todayDateFn();
 
-    /* ---------------- PAID MODE ---------------- */
     if (mode === "paid") {
       const collect = full - adv;
 
@@ -126,14 +141,15 @@
       job.status    = "Completed";
 
       if (collect > 0)
-        window.addCollectionEntry("Service (Paid)", `Job ${job.jobId}`, collect);
+        window.addCollectionEntry(
+          "Service (Paid)",
+          `Job ${job.jobId}`,
+          collect
+        );
 
     } else {
-
-      /* ---------------- CREDIT MODE ---------------- */
       const due = full - adv;
-
-      if (!confirm(`Pending Credit: ₹${due}\nProfit added later`)) return;
+      if (!confirm(`Pending Credit: ₹${due}\nProfit added when paid`)) return;
 
       job.paid      = adv;
       job.remaining = due;
@@ -144,7 +160,9 @@
     fullRefresh();
   }
 
-  /* ---------------- FAILED ---------------- */
+  /* ===========================================================
+     FAILED JOB
+  ============================================================ */
   function markFailed(id) {
     const job = ensureServices().find(j => j.id === id);
     if (!job) return;
@@ -163,7 +181,9 @@
     fullRefresh();
   }
 
-  /* ---------------- OPEN ACTION ---------------- */
+  /* ===========================================================
+     OPEN JOB MENU
+  ============================================================ */
   function openJob(id) {
     const j = ensureServices().find(x => x.id === id);
     if (!j) return;
@@ -180,22 +200,27 @@
     if (ch === "3") return markFailed(id);
   }
 
-  /* ---------------- CLEAR ALL JOBS ⭐ ---------------- */
+  /* ===========================================================
+     CLEAR ALL SERVICE JOBS ⭐ SAFE ⭐
+  ============================================================ */
   window.clearAllServiceJobs = function () {
-    if (!confirm("Delete ALL Service Jobs?")) return;
+    if (!confirm("Clear ALL Service Job history?")) return;
 
-    /* Delete entire jobs history */
+    /* 1️⃣ Clear only history */
     window.services = [];
     persistServices();
 
-    /* ⭐ VERY IMPORTANT — reset service offset */
+    /* 2️⃣ Reset ONLY service investment offset — NOT net offset */
     window.collectedServiceTotal = 0;
     window.saveCollectedServiceTotal?.();
 
+    /* 3️⃣ Refresh everything safely */
     fullRefresh();
   };
 
-  /* ---------------- TABLES + PIE ---------------- */
+  /* ===========================================================
+     TABLE + PIE CHART
+  ============================================================ */
   function renderServiceTables() {
     const pendBody = qs("#svcTable tbody");
     const histBody = qs("#svcHistoryTable tbody");
@@ -263,6 +288,9 @@
     });
   }
 
+  /* ===========================================================
+     EVENT LISTENERS
+  ============================================================ */
   document.addEventListener("click", e => {
     if (e.target.classList.contains("svc-view"))
       openJob(e.target.dataset.id);
