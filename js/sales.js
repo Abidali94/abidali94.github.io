@@ -1,5 +1,5 @@
 /* ===========================================================
-   sales.js — BUSINESS VERSION (v17)
+   sales.js — BUSINESS VERSION (v18 FIXED)
 =========================================================== */
 
 function getCurrentTime12hr() {
@@ -20,7 +20,7 @@ function refreshSaleTypeSelector() {
 }
 
 /* ===========================================================
-   ADD SALE ENTRY
+   ADD SALE ENTRY (FIXED: stock deduct + wanting auto add)
 =========================================================== */
 function addSaleEntry({ date, type, product, qty, price, status, customer, phone }) {
 
@@ -50,10 +50,18 @@ function addSaleEntry({ date, type, product, qty, price, status, customer, phone
     profit = total - qty * cost;
   }
 
-  /* STOCK UPDATE */
+  /* ⭐ TRUE STOCK UPDATE (important!) */
   p.sold = Number(p.sold) + qty;
+  p.qty  = Number(p.qty) - qty;       // <— NEW: actual quantity deductions
+
+  /* ⭐ AUTO WANTING WHEN ZERO STOCK */
+  if (p.qty <= 0) {
+    window.autoAddWanting?.(type, product, "Out of Stock");
+  }
+
   window.saveStock?.();
 
+  /* ⭐ ADD SALE ENTRY */
   window.sales.push({
     id: uid("sale"),
     date: date || todayDate(),
@@ -73,16 +81,21 @@ function addSaleEntry({ date, type, product, qty, price, status, customer, phone
 
   window.saveSales?.();
 
+  /* ⭐ FULL UI REFRESH — fixed order */
   renderSales?.();
   renderPendingCollections?.();
   renderCollection?.();
   window.renderAnalytics?.();
   window.updateSummaryCards?.();
-  window.updateUniversalBar?.();
+
+  setTimeout(() => {
+    window.updateUniversalBar?.();
+    window.updateTabSummaryBar?.();
+  }, 50);
 }
 
 /* ===========================================================
-   CREDIT → PAID
+   CREDIT → PAID (no change needed except refresh order)
 =========================================================== */
 function collectCreditSale(id) {
   const s = window.sales.find(x => x.id === id);
@@ -107,6 +120,7 @@ function collectCreditSale(id) {
   s.status = "Paid";
   s.fromCredit = true;
 
+  /* ⭐ recalc true profit */
   s.profit = Number(s.total) - Number(s.qty * s.cost);
   window.saveSales?.();
 
@@ -126,8 +140,11 @@ function collectCreditSale(id) {
   window.renderAnalytics?.();
   window.updateSummaryCards?.();
 
-  /* ⭐ delayed universal refresh gives correct net always */
-  setTimeout(() => window.updateUniversalBar?.(), 50);
+  /* ⭐ delayed universal refresh gives 100% correct net */
+  setTimeout(() => {
+    window.updateUniversalBar?.();
+    window.updateTabSummaryBar?.();
+  }, 50);
 
   alert("Credit Collected Successfully!");
 }
@@ -214,23 +231,13 @@ function renderSales() {
 window.renderSales = renderSales;
 
 /* ===========================================================
-   FILTER EVENTS
-=========================================================== */
-document.getElementById("filterSalesBtn")?.addEventListener("click", () => {
-  renderSales();
-});
-document.getElementById("saleView")?.addEventListener("change", () => {
-  renderSales();
-});
-
-/* ===========================================================
-   CLEAR SALES
+   CLEAR SALES HISTORY (NO OFFSET CHANGE)
 =========================================================== */
 document.getElementById("clearSalesBtn")?.addEventListener("click", () => {
   const view = document.getElementById("saleView")?.value || "all";
 
   if (!(view === "cash" || view === "credit-paid")) {
-    alert("❌ Cannot clear Credit Pending data!");
+    alert("Cannot clear Credit Pending data!");
     return;
   }
 
@@ -253,5 +260,9 @@ document.getElementById("clearSalesBtn")?.addEventListener("click", () => {
   renderCollection?.();
   window.renderAnalytics?.();
   window.updateSummaryCards?.();
-  setTimeout(() => window.updateUniversalBar?.(), 50);
+
+  setTimeout(() => {
+    window.updateUniversalBar?.();
+    window.updateTabSummaryBar?.();
+  }, 50);
 });
