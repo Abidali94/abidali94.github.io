@@ -1,17 +1,17 @@
 /* ===========================================================
-   expenses.js — FINAL AUTO-SAFE VERSION v10.1
-   ✔ Works even if HTML was missing earlier
-   ✔ Auto-creates #expensesTable and #expTotal if not found
-   ✔ Fully compatible with core.js cloud sync
+   expenses.js — BUSINESS FIXED VERSION (v12)
+   ⭐ Safe with Universal Offset Logic
+   ⭐ Clear All does NOT impact collected Net
 =========================================================== */
 
+const qs = s => document.querySelector(s);
 
 /* ===========================================================
    ENSURE REQUIRED DOM EXISTS (AUTO CREATE)
 =========================================================== */
 function ensureExpenseDOM() {
   let section = qs("#expenses");
-  if (!section) return;  // user may hide tab
+  if (!section) return;  // may be hidden
 
   /* ---------- Ensure EXPENSE TABLE ---------- */
   let table = qs("#expensesTable");
@@ -61,6 +61,7 @@ function addExpenseEntry() {
 
   window.expenses = window.expenses || [];
 
+  /* ⭐ Store real raw expense — NO OFFSET */
   window.expenses.push({
     id: uid("exp"),
     date,
@@ -69,44 +70,51 @@ function addExpenseEntry() {
     note
   });
 
-  if (window.saveExpenses) window.saveExpenses();
+  window.saveExpenses?.();
 
+  /* ⭐ REFRESH ORDER FIXED */
   renderExpenses();
   renderAnalytics?.();
   updateSummaryCards?.();
-  updateTabSummaryBar?.();
-  updateUniversalBar?.();
+
+  /* ⭐ DELAYED UNIVERSAL CALC = ALWAYS CORRECT */
+  setTimeout(() => {
+    updateUniversalBar?.();
+    updateTabSummaryBar?.();
+  }, 50);
 
   qs("#expAmount").value = "";
   qs("#expNote").value = "";
 }
 
 /* ===========================================================
-   ❌ DELETE EXPENSE ENTRY
+   ❌ DELETE EXPENSE ENTRY (SAFE)
 =========================================================== */
 function deleteExpense(id) {
   window.expenses = (window.expenses || []).filter(e => e.id !== id);
 
-  if (window.saveExpenses) window.saveExpenses();
+  window.saveExpenses?.();
 
+  /* ⭐ REFRESH ORDER FIXED */
   renderExpenses();
   renderAnalytics?.();
   updateSummaryCards?.();
-  updateTabSummaryBar?.();
-  updateUniversalBar?.();
+
+  setTimeout(() => {
+    updateUniversalBar?.();
+    updateTabSummaryBar?.();
+  }, 50);
 }
 window.deleteExpense = deleteExpense;
 
 /* ===========================================================
-   📊 RENDER EXPENSE TABLE (AUTO DOM SAFE)
+   📊 RENDER EXPENSE TABLE
 =========================================================== */
 function renderExpenses() {
   ensureExpenseDOM();
 
-  const table = qs("#expensesTable");
   const tbody = qs("#expensesTable tbody");
   const totalBox = qs("#expTotal");
-
   if (!tbody) return;
 
   const list = window.expenses || [];
@@ -118,11 +126,11 @@ function renderExpenses() {
 
       return `
         <tr>
-          <td data-label="Date">${toDisplay(e.date)}</td>
-          <td data-label="Category">${esc(e.category)}</td>
-          <td data-label="Amount">₹${esc(e.amount)}</td>
-          <td data-label="Note">${esc(e.note || "-")}</td>
-          <td data-label="Action">
+          <td>${toDisplay(e.date)}</td>
+          <td>${esc(e.category)}</td>
+          <td>₹${esc(e.amount)}</td>
+          <td>${esc(e.note || "-")}</td>
+          <td>
             <button class="small-btn"
                     onclick="deleteExpense('${e.id}')"
                     style="background:#d32f2f;color:white;">
@@ -138,19 +146,24 @@ function renderExpenses() {
 }
 
 /* ===========================================================
-   🗑 CLEAR ALL EXPENSES
+   🗑 CLEAR ALL EXPENSES (SAFE)
 =========================================================== */
 qs("#clearExpensesBtn")?.addEventListener("click", () => {
   if (!confirm("Clear ALL expenses?")) return;
 
+  /* ⭐ ONLY HISTORY CLEARS — NO OFFSET SUBTRACT EVER */
   window.expenses = [];
-  if (window.saveExpenses) window.saveExpenses();
+  window.saveExpenses?.();
 
+  /* ⭐ REFRESH ORDER FIXED */
   renderExpenses();
   renderAnalytics?.();
   updateSummaryCards?.();
-  updateTabSummaryBar?.();
-  updateUniversalBar?.();
+
+  setTimeout(() => {
+    updateUniversalBar?.();
+    updateTabSummaryBar?.();
+  }, 50);
 });
 
 /* ===========================================================
