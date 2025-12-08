@@ -1,20 +1,21 @@
 /* ===========================================================
-   expenses.js — BUSINESS FIXED VERSION (v12)
+   expenses.js — BUSINESS FIXED VERSION (v12 SAFE)
    ⭐ Safe with Universal Offset Logic
    ⭐ Clear All does NOT impact collected Net
+   ⭐ Uses _qs to avoid duplicate identifier conflicts
 =========================================================== */
 
-const qs = s => document.querySelector(s);
+const _qs = s => document.querySelector(s);
 
 /* ===========================================================
    ENSURE REQUIRED DOM EXISTS (AUTO CREATE)
 =========================================================== */
 function ensureExpenseDOM() {
-  let section = qs("#expenses");
+  let section = _qs("#expenses");
   if (!section) return;  // may be hidden
 
   /* ---------- Ensure EXPENSE TABLE ---------- */
-  let table = qs("#expensesTable");
+  let table = _qs("#expensesTable");
   if (!table) {
     table = document.createElement("table");
     table.id = "expensesTable";
@@ -34,7 +35,7 @@ function ensureExpenseDOM() {
   }
 
   /* ---------- Ensure TOTAL SPAN ---------- */
-  let totalBox = qs("#expTotal");
+  let totalBox = _qs("#expTotal");
   if (!totalBox) {
     const box = document.createElement("div");
     box.style.marginTop = "8px";
@@ -49,10 +50,10 @@ function ensureExpenseDOM() {
    ➕ ADD EXPENSE ENTRY
 =========================================================== */
 function addExpenseEntry() {
-  let date = qs("#expDate")?.value || todayDate();
-  const category = qs("#expCat")?.value?.trim();
-  const amount = Number(qs("#expAmount")?.value || 0);
-  const note = qs("#expNote")?.value?.trim();
+  let date = _qs("#expDate")?.value || todayDate();
+  const category = _qs("#expCat")?.value?.trim();
+  const amount = Number(_qs("#expAmount")?.value || 0);
+  const note = _qs("#expNote")?.value?.trim();
 
   if (!category || amount <= 0)
     return alert("Enter category and amount!");
@@ -83,8 +84,8 @@ function addExpenseEntry() {
     updateTabSummaryBar?.();
   }, 50);
 
-  qs("#expAmount").value = "";
-  qs("#expNote").value = "";
+  _qs("#expAmount").value = "";
+  _qs("#expNote").value = "";
 }
 
 /* ===========================================================
@@ -113,8 +114,8 @@ window.deleteExpense = deleteExpense;
 function renderExpenses() {
   ensureExpenseDOM();
 
-  const tbody = qs("#expensesTable tbody");
-  const totalBox = qs("#expTotal");
+  const tbody = _qs("#expensesTable tbody");
+  const totalBox = _qs("#expTotal");
   if (!tbody) return;
 
   const list = window.expenses || [];
@@ -126,11 +127,11 @@ function renderExpenses() {
 
       return `
         <tr>
-          <td>${toDisplay(e.date)}</td>
-          <td>${esc(e.category)}</td>
-          <td>₹${esc(e.amount)}</td>
-          <td>${esc(e.note || "-")}</td>
-          <td>
+          <td data-label="Date">${toDisplay(e.date)}</td>
+          <td data-label="Category">${esc(e.category)}</td>
+          <td data-label="Amount">₹${esc(e.amount)}</td>
+          <td data-label="Note">${esc(e.note || "-")}</td>
+          <td data-label="Action">
             <button class="small-btn"
                     onclick="deleteExpense('${e.id}')"
                     style="background:#d32f2f;color:white;">
@@ -148,7 +149,7 @@ function renderExpenses() {
 /* ===========================================================
    🗑 CLEAR ALL EXPENSES (SAFE)
 =========================================================== */
-qs("#clearExpensesBtn")?.addEventListener("click", () => {
+_qs("#clearExpensesBtn")?.addEventListener("click", () => {
   if (!confirm("Clear ALL expenses?")) return;
 
   /* ⭐ ONLY HISTORY CLEARS — NO OFFSET SUBTRACT EVER */
@@ -169,7 +170,7 @@ qs("#clearExpensesBtn")?.addEventListener("click", () => {
 /* ===========================================================
    ➕ ADD BUTTON
 =========================================================== */
-qs("#addExpenseBtn")?.addEventListener("click", addExpenseEntry);
+_qs("#addExpenseBtn")?.addEventListener("click", addExpenseEntry);
 
 /* ===========================================================
    🚀 INITIAL LOAD
