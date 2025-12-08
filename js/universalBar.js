@@ -27,6 +27,7 @@
     let stockInvestSold         = 0;
     let serviceInvestCompleted  = 0;
 
+    // -------- SALES PROFIT + CREDIT ----------
     sales.forEach(s => {
       const status = String(s.status || "").toLowerCase();
       const qty    = num(s.qty);
@@ -41,6 +42,7 @@
       }
     });
 
+    // -------- SERVICE PROFIT + INVEST ----------
     services.forEach(j => {
       const status = String(j.status || "").toLowerCase();
       if (status === "completed") {
@@ -49,10 +51,12 @@
       }
     });
 
+    // -------- EXPENSES ----------
     expenses.forEach(e => {
       totalExpenses += num(e.amount || e.value);
     });
 
+    // -------- SOLD STOCK INVEST ----------
     stock.forEach(p => {
       const soldQty = num(p.sold);
       const cost    = num(p.cost);
@@ -61,7 +65,7 @@
       }
     });
 
-    /* ⭐ OFFSETS (loaded later from core.js) */
+    /* ⭐ OFFSETS (core.js లో load అయ్యేవి) */
     const netOffset     = num(window.collectedNetTotal     || 0);
     const stockOffset   = num(window.collectedStockTotal   || 0);
     const serviceOffset = num(window.collectedServiceTotal || 0);
@@ -72,9 +76,9 @@
       pendingCreditTotal,
       totalExpenses,
 
-      /* ⭐ Proper ZERO logic */
-      stockInvestSold: stockInvestSold - stockOffset,
-      serviceInvestCompleted: serviceInvestCompleted - serviceOffset,
+      /* ⭐ Proper ZERO logic (negative కాకుండా) */
+      stockInvestSold: Math.max(0, stockInvestSold - stockOffset),
+      serviceInvestCompleted: Math.max(0, serviceInvestCompleted - serviceOffset),
 
       netProfit:
         (saleProfitCollected + serviceProfitCollected - totalExpenses)
@@ -106,6 +110,7 @@
     if (el.servInv) el.servInv.textContent = money(m.serviceInvestCompleted);
     if (el.credit)  el.credit.textContent  = money(m.pendingCreditTotal);
 
+    // snapshot — ఇతర modules (collection.js, dashboard వంటివి) use చేస్తాయి
     window.__unMetrics = m;
   }
 
@@ -115,8 +120,14 @@
      COLLECT HANDLER — ALL OFFSETS
   ============================================================ */
   function handleCollect(kind) {
+
+    if (typeof window.addCollectionEntry !== "function") {
+      alert("Collection module missing.");
+      return;
+    }
+
     updateUniversalBar();
-    const m = window.__unMetrics;
+    const m = window.__unMetrics || {};
 
     const labels = {
       net: [
@@ -135,6 +146,20 @@
 
     if (!labels[kind]) return;
     const [label, approx] = labels[kind];
+
+    // zero లేదా minus ఉంటే collect చేయకూడదు
+    if (kind === "net" && num(m.netProfit) <= 0) {
+      alert("Net profit collect చేయడానికి ఏమీ లేదు.");
+      return;
+    }
+    if (kind === "stock" && num(m.stockInvestSold) <= 0) {
+      alert("Stock investment collect చేయడానికి ఏమీ లేదు.");
+      return;
+    }
+    if (kind === "service" && num(m.serviceInvestCompleted) <= 0) {
+      alert("Service investment collect చేయడానికి ఏమీ లేదు.");
+      return;
+    }
 
     const val = prompt(
       `${label}\nApprox: ₹${Math.round(approx)}\n\nEnter amount:`
@@ -170,7 +195,7 @@
        ⭐ 2) STOCK INVESTMENT OFFSET
     ==================================*/
     if (kind === "stock") {
-      window.addCollectionEntry("Stock Investment", note, amt);
+      window.addCollectionEntry("Stock Investment (Sold Items)", note, amt);
 
       window.collectedStockTotal =
         num(window.collectedStockTotal || 0) + amt;
@@ -190,7 +215,7 @@
        ⭐ 3) SERVICE INVESTMENT OFFSET
     ==================================*/
     if (kind === "service") {
-      window.addCollectionEntry("Service Investment", note, amt);
+      window.addCollectionEntry("Service Investment (Completed)", note, amt);
 
       window.collectedServiceTotal =
         num(window.collectedServiceTotal || 0) + amt;
