@@ -811,16 +811,33 @@
 
 <h4 style="margin-top:14px">Completed / History</h4>
 
-<!-- ⭐ VIEW FILTER BLOCK -->
-<div style="margin:6px 0 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-  <label>View:</label>
-  <select id="svcView"
-    style="padding:6px 8px;border-radius:10px;border:1px solid var(--ks-border-soft);background:var(--ks-bg-card);color:var(--ks-text-main);">
-    <option value="all">All jobs</option>
-    <option value="cash">Cash service</option>
-    <option value="credit-pending">Credit (pending)</option>
-    <option value="credit-paid">Credit paid history</option>
+<!-- ⭐ FILTER BLOCK -->
+<div style="margin:6px 0 8px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+  
+  <!-- STATUS FILTER -->
+  <label>Status:</label>
+  <select id="svcFilterStatus"
+    style="padding:6px 8px;border-radius:10px;border:1px solid var(--ks-border-soft);background:var(--ks-bg-card);">
+    <option value="all">All</option>
+    <option value="pending">Pending</option>
+    <option value="completed">Cash service</option>
+    <option value="credit">Credit (pending)</option>
+    <option value="credit-paid">Credit paid</option>
+    <option value="failed">Failed/Returned</option>
   </select>
+
+  <!-- TYPE FILTER -->
+  <label>Type:</label>
+  <select id="svcFilterType"
+    style="padding:6px 8px;border-radius:10px;border:1px solid var(--ks-border-soft);background:var(--ks-bg-card);">
+    <option value="all">All</option>
+  </select>
+
+  <!-- DATE FILTER -->
+  <label>Date:</label>
+  <input id="svcFilterDate" type="date"
+    style="padding:6px 8px;border-radius:10px;border:1px solid var(--ks-border-soft);background:var(--ks-bg-card);">
+
 </div>
 
 <!-- ⭐ HISTORY TABLE -->
@@ -841,12 +858,16 @@
   <tbody></tbody>
 </table>
 
+<!-- ⭐ DUAL PIE CHARTS -->
+<div style="display:flex;gap:20px;justify-content:center;margin-top:20px;flex-wrap:wrap;">
+  <canvas id="svcPieStatus" width="260" height="260"
+    style="background:white;border-radius:14px;padding:10px;"></canvas>
 
-
-<!-- ⭐ PIE CHART -->
-<div style="max-width:520px;margin:14px auto;">
-  <canvas id="svcPie" height="150"></canvas>
+  <canvas id="svcPieMoney" width="260" height="260"
+    style="background:white;border-radius:14px;padding:10px;"></canvas>
 </div>
+
+
 </section>
 <!-- =============== EXPENSES =============== -->
 <section id="expenses" class="section">
@@ -1051,7 +1072,8 @@ function switchTab(id) {
   try { renderWanting?.(); } catch {}
   try { renderExpenses?.(); } catch {}
   try { renderServiceTables?.(); } catch {}
-  try { renderSvcPie?.(); } catch {}
+  try { renderSvcPieStatus?.(); } catch {}
+try { renderSvcPieMoney?.(); } catch {}
   try { renderCollection?.(); } catch {}
   try { renderAnalytics?.(); } catch {}
   try { updateSummaryCards?.(); } catch {}
