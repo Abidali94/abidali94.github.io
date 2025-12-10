@@ -1,9 +1,9 @@
 /* ===========================================================
-   universal-bar.js — FINAL OFFSET VERSION v10.0
-   ⭐ When NET collected → Sale & Service UI reset to ZERO
-   ⭐ Stock & Service investment offsets unchanged
+   universal-bar.js — FINAL OFFSET VERSION v11.0
+   ⭐ Sale & Service now show REAL values always
+   ⭐ When NET is collected → Sale & Service UI reset to ZERO (only instant UI)
+   ⭐ NET OFFSET affects only netProfit (not sale/service)
    ⭐ Internal accounting data SAFE
-   ⭐ All alerts/messages are now in ENGLISH
 =========================================================== */
 (function () {
 
@@ -31,8 +31,7 @@
     sales.forEach(s => {
       const status = String(s.status || "").toLowerCase();
       const qty    = num(s.qty);
-      const price  = num(s.price);
-      const total  = num(s.total || qty * price);
+      const total  = num(s.total || qty * num(s.price));
       const profit = num(s.profit);
 
       if (status === "credit") {
@@ -71,20 +70,15 @@
     const serviceOffset = num(window.collectedServiceTotal || 0);
 
     /* =======================================================
-       ⭐ NEW FIX — If NET collected, Sale + Service UI = ZERO
-       ✔ Data untouched (only display changed)
+       ⭐ DISPLAY VALUES
+       ✔ Sale & Service = REAL values always
+       ✔ DO NOT depend on netOffset
     ======================================================== */
-
     let saleProfitDisplay     = saleProfitCollected;
     let serviceProfitDisplay  = serviceProfitCollected;
 
-    if (netOffset > 0) {
-      saleProfitDisplay = 0;
-      serviceProfitDisplay = 0;
-    }
-
     /* =======================================================
-       NET PROFIT
+       ⭐ NET PROFIT (offset aware)
     ======================================================== */
     const netProfit =
       (saleProfitCollected + serviceProfitCollected - totalExpenses)
@@ -181,6 +175,12 @@
       window.collectedNetTotal =
         num(window.collectedNetTotal || 0) + amt;
       window.saveCollectedNetTotal?.();
+
+      /* ⭐ UI RESET ONLY FOR THIS MOMENT ⭐ */
+      const elSale = document.getElementById("unSaleProfit");
+      const elServ = document.getElementById("unServiceProfit");
+      if (elSale) elSale.textContent = money(0);
+      if (elServ) elServ.textContent = money(0);
     }
 
     if (kind === "stock") {
