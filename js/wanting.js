@@ -1,9 +1,9 @@
 /* =======================================================
-   🛒 wanting.js — ONLINE REALTIME VERSION (V8.0)
+   🛒 wanting.js — ONLINE REALTIME VERSION (V9.0)
    ✔ Full cloud sync (saveWanting → cloudSaveDebounced)
    ✔ Wanting → Stock instant sync
    ✔ UniversalBar + Collection realtime update
-   ✔ Mobile friendly
+   ✔ FIXED: removed renderPendingCollections crash
 ======================================================= */
 
 const wToDisp = window.toDisplay;
@@ -114,8 +114,7 @@ function wantingToStock(i) {
   renderWanting();
   renderStock?.();
   renderSales?.();
-  renderPendingCollections?.();
-  renderCollection?.();
+  renderCollection?.();          // ⭐ FIX: removed renderPendingCollections
   window.updateUniversalBar?.();
 }
 
