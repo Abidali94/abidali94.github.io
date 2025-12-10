@@ -1,6 +1,7 @@
 /* ===========================================================
-   sales.js — BUSINESS VERSION (v18) ⭐ UPDATED
-   ⭐ Date filter ALWAYS shows all sales from that date
+   sales.js — BUSINESS VERSION (v19) ⭐ FILTER FIX
+   ⭐ Date + Type + View — మూడు filters కలిసి పని చేస్తాయి
+   ⭐ Date filter ఉన్నా కూడా View filter apply అవుతుంది
 =========================================================== */
 
 function getCurrentTime12hr() {
@@ -133,7 +134,7 @@ function collectCreditSale(id) {
 window.collectCreditSale = collectCreditSale;
 
 /* ===========================================================
-   RENDER SALES TABLE
+   RENDER SALES TABLE (FULL FILTER FIX)
 =========================================================== */
 function renderSales() {
   const tbody = document.querySelector("#salesTable tbody");
@@ -145,21 +146,27 @@ function renderSales() {
 
   let list = [...(window.sales || [])];
 
-  /* TYPE FILTER */
-  if (filterType !== "all") list = list.filter(s => s.type === filterType);
+  /* ---------- TYPE FILTER ---------- */
+  if (filterType !== "all") {
+    list = list.filter(s => s.type === filterType);
+  }
 
-  /* DATE FILTER */
-  if (filterDate) list = list.filter(s => s.date === filterDate);
+  /* ---------- DATE FILTER ---------- */
+  if (filterDate) {
+    // internal date already YYYY-MM-DD (core.js normalize చేస్తుంది)
+    list = list.filter(s => s.date === filterDate);
+  }
 
-  /* ⭐ VIEW FILTER — APPLY ONLY IF NO DATE IS SELECTED */
-  if (!filterDate) {
+  /* ---------- VIEW FILTER (ALWAYS APPLY) ---------- */
+  if (view !== "all") {
     list = list.filter(s => {
       const status = String(s.status || "").toLowerCase();
       const fromCredit = Boolean(s.fromCredit);
 
-      if (view === "cash")             return status === "paid" && !fromCredit;
-      if (view === "credit-pending")   return status === "credit";
-      if (view === "credit-paid")      return status === "paid" && fromCredit;
+      if (view === "cash")           return status === "paid"   && !fromCredit;
+      if (view === "credit-pending") return status === "credit";
+      if (view === "credit-paid")    return status === "paid"   &&  fromCredit;
+
       return true;
     });
   }
@@ -169,7 +176,7 @@ function renderSales() {
 
   tbody.innerHTML = list
     .map(s => {
-      const t = Number(s.total);
+      const t = Number(s.total || 0);
       totalSum += t;
 
       if ((s.status || "").toLowerCase() === "paid") {
@@ -217,11 +224,23 @@ function renderSales() {
 window.renderSales = renderSales;
 
 /* ===========================================================
-   FILTER EVENTS
+   FILTER EVENTS (AUTO REFRESH)
 =========================================================== */
 document.getElementById("filterSalesBtn")?.addEventListener("click", () => {
   renderSales();
 });
+
+/* Type మార్చితే వెంటనే filter */
+document.getElementById("saleType")?.addEventListener("change", () => {
+  renderSales();
+});
+
+/* Date మార్చితే వెంటనే filter */
+document.getElementById("saleDate")?.addEventListener("change", () => {
+  renderSales();
+});
+
+/* View మార్చితే వెంటనే filter */
 document.getElementById("saleView")?.addEventListener("change", () => {
   renderSales();
 });
@@ -240,11 +259,11 @@ document.getElementById("clearSalesBtn")?.addEventListener("click", () => {
   if (!confirm("Clear ALL records in this view?")) return;
 
   window.sales = window.sales.filter(s => {
-    const status = s.status.toLowerCase();
+    const status = String(s.status || "").toLowerCase();
     const fromCredit = Boolean(s.fromCredit);
 
-    if (view === "cash")       return !(status === "paid" && !fromCredit);
-    if (view === "credit-paid") return !(status === "paid" && fromCredit);
+    if (view === "cash")        return !(status === "paid" && !fromCredit);
+    if (view === "credit-paid") return !(status === "paid" &&  fromCredit);
 
     return true;
   });
