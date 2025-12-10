@@ -1,5 +1,6 @@
 /* ===========================================================
-   sales.js — BUSINESS VERSION (v17)
+   sales.js — BUSINESS VERSION (v18) ⭐ UPDATED
+   ⭐ Date filter ALWAYS shows all sales from that date
 =========================================================== */
 
 function getCurrentTime12hr() {
@@ -124,7 +125,6 @@ function collectCreditSale(id) {
   window.renderAnalytics?.();
   window.updateSummaryCards?.();
 
-  /* ⭐ delayed universal refresh gives correct net always */
   setTimeout(() => window.updateUniversalBar?.(), 50);
 
   alert("Credit Collected Successfully!");
@@ -145,19 +145,24 @@ function renderSales() {
 
   let list = [...(window.sales || [])];
 
+  /* TYPE FILTER */
   if (filterType !== "all") list = list.filter(s => s.type === filterType);
 
+  /* DATE FILTER */
   if (filterDate) list = list.filter(s => s.date === filterDate);
 
-  list = list.filter(s => {
-    const status = String(s.status || "").toLowerCase();
-    const fromCredit = Boolean(s.fromCredit);
+  /* ⭐ VIEW FILTER — APPLY ONLY IF NO DATE IS SELECTED */
+  if (!filterDate) {
+    list = list.filter(s => {
+      const status = String(s.status || "").toLowerCase();
+      const fromCredit = Boolean(s.fromCredit);
 
-    if (view === "cash")       return status === "paid" && !fromCredit;
-    if (view === "credit-pending") return status === "credit";
-    if (view === "credit-paid")    return status === "paid" && fromCredit;
-    return true;
-  });
+      if (view === "cash")             return status === "paid" && !fromCredit;
+      if (view === "credit-pending")   return status === "credit";
+      if (view === "credit-paid")      return status === "paid" && fromCredit;
+      return true;
+    });
+  }
 
   let totalSum  = 0;
   let profitSum = 0;
