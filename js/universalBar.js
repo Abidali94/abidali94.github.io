@@ -1,17 +1,16 @@
 /* ===========================================================
-   universal-bar.js — FINAL OFFSET VERSION v7.0
-   ✔ Net Profit offset (permanent)
-   ✔ Stock Investment offset (permanent)
-   ✔ Service Investment offset (permanent)
-   ✔ All 3 collections ZERO instantly + after reload
+   universal-bar.js — FINAL OFFSET VERSION v8.0
+   ⭐ NET OFFSET now also reduces sale + service visually
+   ⭐ Stock & Service investment offsets unchanged
+   ⭐ Real internal data SAFE — only UI display adjusted
 =========================================================== */
 (function () {
 
-  const num = v => (isNaN(v = Number(v))) ? 0 : v;
+  const num = v => (isNaN(v = Number(v))) ? 0 : Number(v);
   const money = v => "₹" + Math.round(num(v));
 
   /* ===========================================================
-     CENTRAL METRIC CALCULATOR  (offset aware)
+     CENTRAL METRIC CALCULATOR (offset-aware)
   ============================================================ */
   function computeMetrics() {
 
@@ -65,24 +64,32 @@
       }
     });
 
-    /* ⭐ OFFSETS (core.js లో load అయ్యేవి) */
+    /* ⭐ OFFSETS (loaded from core.js) */
     const netOffset     = num(window.collectedNetTotal     || 0);
     const stockOffset   = num(window.collectedStockTotal   || 0);
     const serviceOffset = num(window.collectedServiceTotal || 0);
 
+    /* =======================================================
+       ⭐ NEW FIX — NET OFFSET ALSO REDUCES SALE & SERVICE
+       ✔ ONLY DISPLAY VALUES CHANGED (data untouched)
+    ======================================================== */
+    const saleProfitDisplay     = Math.max(0, saleProfitCollected     - netOffset);
+    const serviceProfitDisplay  = Math.max(0, serviceProfitCollected  - netOffset);
+
+    const netProfit =
+      (saleProfitCollected + serviceProfitCollected - totalExpenses)
+      - netOffset;
+
     return {
-      saleProfitCollected,
-      serviceProfitCollected,
+      saleProfitCollected:     saleProfitDisplay,
+      serviceProfitCollected:  serviceProfitDisplay,
       pendingCreditTotal,
       totalExpenses,
 
-      /* ⭐ Proper ZERO logic (negative కాకుండా) */
       stockInvestSold: Math.max(0, stockInvestSold - stockOffset),
       serviceInvestCompleted: Math.max(0, serviceInvestCompleted - serviceOffset),
 
-      netProfit:
-        (saleProfitCollected + serviceProfitCollected - totalExpenses)
-        - netOffset
+      netProfit: Math.max(0, netProfit)
     };
   }
 
@@ -110,14 +117,13 @@
     if (el.servInv) el.servInv.textContent = money(m.serviceInvestCompleted);
     if (el.credit)  el.credit.textContent  = money(m.pendingCreditTotal);
 
-    // snapshot — ఇతర modules (collection.js, dashboard వంటివి) use చేస్తాయి
     window.__unMetrics = m;
   }
 
   window.updateUniversalBar = updateUniversalBar;
 
   /* ===========================================================
-     COLLECT HANDLER — ALL OFFSETS
+     COLLECT HANDLER
   ============================================================ */
   function handleCollect(kind) {
 
@@ -130,36 +136,22 @@
     const m = window.__unMetrics || {};
 
     const labels = {
-      net: [
-        "Net Profit (Sale + Service − Expenses)",
-        m.netProfit
-      ],
-      stock: [
-        "Stock Investment (Sold Items)",
-        m.stockInvestSold
-      ],
-      service: [
-        "Service Investment (Completed)",
-        m.serviceInvestCompleted
-      ]
+      net:      ["Net Profit (Sale + Service − Expenses)", m.netProfit],
+      stock:    ["Stock Investment (Sold Items)", m.stockInvestSold],
+      service:  ["Service Investment (Completed)", m.serviceInvestCompleted]
     };
 
     if (!labels[kind]) return;
     const [label, approx] = labels[kind];
 
-    // zero లేదా minus ఉంటే collect చేయకూడదు
-    if (kind === "net" && num(m.netProfit) <= 0) {
-      alert("Net profit collect చేయడానికి ఏమీ లేదు.");
-      return;
-    }
-    if (kind === "stock" && num(m.stockInvestSold) <= 0) {
-      alert("Stock investment collect చేయడానికి ఏమీ లేదు.");
-      return;
-    }
-    if (kind === "service" && num(m.serviceInvestCompleted) <= 0) {
-      alert("Service investment collect చేయడానికి ఏమీ లేదు.");
-      return;
-    }
+    if (kind === "net" && num(m.netProfit) <= 0)
+      return alert("Net profit collect చేయడానికి ఏమీ లేదు.");
+
+    if (kind === "stock" && num(m.stockInvestSold) <= 0)
+      return alert("Stock investment collect చేయడానికి ఏమీ లేదు.");
+
+    if (kind === "service" && num(m.serviceInvestCompleted) <= 0)
+      return alert("Service investment collect చేయడానికి ఏమీ లేదు.");
 
     const val = prompt(
       `${label}\nApprox: ₹${Math.round(approx)}\n\nEnter amount:`
@@ -171,65 +163,40 @@
 
     const note = prompt("Optional note:", "") || "";
 
-    /* ================================
-       ⭐ 1) NET PROFIT OFFSET
-    ==================================*/
+    /* ================================ */
     if (kind === "net") {
       window.addCollectionEntry("Net Profit", note, amt);
-
       window.collectedNetTotal =
         num(window.collectedNetTotal || 0) + amt;
-
       window.saveCollectedNetTotal?.();
-
-      updateUniversalBar();
-      window.renderCollection?.();
-      window.renderAnalytics?.();
-      window.updateSummaryCards?.();
-      window.updateTabSummaryBar?.();
-      alert("Net Profit collected!");
-      return;
     }
 
-    /* ================================
-       ⭐ 2) STOCK INVESTMENT OFFSET
-    ==================================*/
     if (kind === "stock") {
       window.addCollectionEntry("Stock Investment (Sold Items)", note, amt);
-
       window.collectedStockTotal =
         num(window.collectedStockTotal || 0) + amt;
-
       window.saveCollectedStockTotal?.();
-
-      updateUniversalBar();
-      window.renderCollection?.();
-      window.renderAnalytics?.();
-      window.updateSummaryCards?.();
-      window.updateTabSummaryBar?.();
-      alert("Stock Investment collected!");
-      return;
     }
 
-    /* ================================
-       ⭐ 3) SERVICE INVESTMENT OFFSET
-    ==================================*/
     if (kind === "service") {
       window.addCollectionEntry("Service Investment (Completed)", note, amt);
-
       window.collectedServiceTotal =
         num(window.collectedServiceTotal || 0) + amt;
-
       window.saveCollectedServiceTotal?.();
-
-      updateUniversalBar();
-      window.renderCollection?.();
-      window.renderAnalytics?.();
-      window.updateSummaryCards?.();
-      window.updateTabSummaryBar?.();
-      alert("Service Investment collected!");
-      return;
     }
+
+    updateUniversalBar();
+    window.renderCollection?.();
+    window.renderAnalytics?.();
+    window.updateSummaryCards?.();
+    window.updateTabSummaryBar?.();
+
+    alert(kind === "net"
+      ? "Net Profit collected!"
+      : kind === "stock"
+        ? "Stock Investment collected!"
+        : "Service Investment collected!"
+    );
   }
 
   window.handleCollect = handleCollect;
