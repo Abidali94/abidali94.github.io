@@ -8,13 +8,13 @@
   <link rel="icon" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
 
-  <!-- existing global css (keep as it is) -->
+  <!-- keep your global css files -->
   <link rel="stylesheet" href="/css/base.css" />
   <link rel="stylesheet" href="/css/layout.css" />
   <link rel="stylesheet" href="/css/components.css" />
 
-
-    <style>
+  <!-- Inline theme + layout (kept inline for stability) -->
+  <style>
 :root{
   --ks-bg:           #f3f4fb;
   --ks-bg-soft:      #eef1ff;
@@ -32,7 +32,7 @@
   --ks-radius-pill:  999px;
 }
 
-/* ❌ DARK MODE COMPLETELY REMOVED */
+/* ❌ DARK MODE REMOVED on purpose */
 
 /* GLOBAL BODY */
 body{
@@ -234,14 +234,10 @@ body{
   margin:0 auto;
 }
 .section.active{display:block;}
-</style>
-
+  </style>
 </head>
 <body>
-<script>
-  const qs = s => document.querySelector(s);
-  const qsa = s => Array.from(document.querySelectorAll(s));
-</script>
+<script>const qs = s => document.querySelector(s); const qsa = s => Array.from(document.querySelectorAll(s));</script>
 
 <div class="topbar">
   <h1>
@@ -254,7 +250,8 @@ body{
       <span id="clockTime" class="clock-line">--:--:--</span>
       <span id="clockDate" class="clock-line small">--</span>
     </div>
-    <button id="themeBtn" class="theme-btn">🌙</button>
+    <!-- theme button kept as decorative (no dark mode) -->
+    <button id="themeBtn" class="theme-btn" title="Theme (disabled)">🎨</button>
     <a class="small-btn" href="/index.html">🏠 Home</a>
     <button id="logoutBtn" class="small-btn">🔓 Logout</button>
   </div>
@@ -311,11 +308,9 @@ body{
   <div class="tab" data-tab="wanting">🛒 Wanting</div>
   <div class="tab" data-tab="service">🛠 Service</div>
   <div class="tab" data-tab="expenses">💸 Expenses</div>
- 
   <div class="tab" data-tab="dashboard">📊 Dashboard</div>
   <div class="tab" data-tab="collection">🪙 Collection</div>
 </div>
-
 <!-- =============== TYPES =============== -->
 <section id="types" class="section active">
   <h3>🗂 Manage Item Types</h3>
@@ -324,6 +319,7 @@ body{
       style="flex:1;min-width:160px;padding:8px 10px;border-radius:12px;border:1px solid var(--ks-border-soft);background:var(--ks-bg-card);color:var(--ks-text-main);">
     <button id="addTypeBtn" class="small-btn">Add</button>
     <button id="clearTypesBtn" class="small-btn">Clear All</button>
+    <button id="syncTypesBtn" class="small-btn" title="Save types to cloud">☁️ Sync</button>
   </div>
   <ul id="typeList" style="margin-top:10px;padding-left:18px;font-size:13px;"></ul>
 </section>
@@ -338,6 +334,7 @@ body{
       style="width:90px;padding:6px 8px;border-radius:10px;border:1px solid var(--ks-border-soft);background:var(--ks-bg-card);color:var(--ks-text-main);">
     <button id="setLimitBtn" class="small-btn">Set</button>
     <button id="clearStockBtn" class="small-btn" style="background:#fee2e2;border-color:#fecaca;color:#b91c1c;">Clear All</button>
+    <button id="syncStockBtn" class="small-btn" title="Save stock to cloud">☁️ Sync</button>
   </div>
 
   <div class="row-inline" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">
@@ -368,6 +365,10 @@ body{
     style="margin-top:10px;padding:10px;background:#fefce8;border-radius:12px;border:1px solid #facc15;max-width:280px;margin-left:auto;font-weight:600;font-size:13px;box-shadow:var(--ks-shadow-soft);">
     📦 Stock Investment (Before Sale):
     <span id="stockInvValue" style="color:#ca8a04;">₹0</span>
+    <div style="margin-top:8px;">
+      <button id="exportStockBtn" class="small-btn">Export CSV</button>
+      <button id="importStockBtn" class="small-btn">Import</button>
+    </div>
   </div>
 
   <table id="stockTable" style="margin-top:10px;">
@@ -387,7 +388,6 @@ body{
     <tbody></tbody>
   </table>
 </section>
-
 <!-- =============== SALES =============== -->
 <section id="sales" class="section">
   <h3>💰 Sales & Profit</h3>
@@ -413,6 +413,7 @@ body{
     </select>
 
     <button id="filterSalesBtn" class="small-btn" style="margin-left:4px">Filter</button>
+    <button id="syncSalesBtn" class="small-btn" title="Save sales to cloud">☁️ Sync</button>
     <button id="clearSalesBtn" class="small-btn"
       style="background:#fee2e2;color:#b91c1c;border-color:#fecaca;margin-left:8px">🗑️ Clear All</button>
   </div>
@@ -455,6 +456,7 @@ body{
     <button id="addWantBtn" class="small-btn">Add</button>
     <button id="clearWantBtn" class="small-btn">Clear</button>
     <button id="printWantBtn" class="small-btn">Print</button>
+    <button id="syncWantingBtn" class="small-btn" title="Save wanting list">☁️ Sync</button>
   </div>
 
   <table id="wantingTable">
@@ -470,9 +472,7 @@ body{
     <tbody></tbody>
   </table>
 </section>
-
-
-  <!-- =============== SERVICE =============== -->
+<!-- =============== SERVICE =============== -->
 <section id="service" class="section">
 
   <h3>🛠 Service / Repair Manager</h3>
@@ -525,6 +525,7 @@ body{
           border:1px solid var(--ks-border-soft);background:var(--ks-bg-card);">
 
         <button id="addServiceBtn" class="small-btn">Add Job</button>
+        <button id="syncServiceBtn" class="small-btn" title="Save service jobs to cloud">☁️ Sync</button>
       </div>
     </details>
 
@@ -668,10 +669,6 @@ document.addEventListener("click", e => {
 });
 </script>
 
-
-
-
-
 <!-- =============== EXPENSES =============== -->
 <section id="expenses" class="section">
   <h3>🧾 Expenses</h3>
@@ -685,6 +682,7 @@ document.addEventListener("click", e => {
     <input id="expNote" type="text" placeholder="Note"
       style="min-width:200px;padding:6px 8px;border-radius:10px;border:1px solid var(--ks-border-soft);background:var(--ks-bg-card);color:var(--ks-text-main);">
     <button id="addExpenseBtn" class="small-btn">Add Expense</button>
+    <button id="syncExpensesBtn" class="small-btn" title="Save expenses to cloud">☁️ Sync</button>
     <button id="clearExpensesBtn" class="small-btn" style="background:#fee2e2;border-color:#fecaca;color:#b91c1c;">Clear All</button>
   </div>
 
@@ -708,9 +706,6 @@ document.addEventListener("click", e => {
     </tfoot>
   </table>
 </section>
-
-
-
 <!-- =============== DASHBOARD (TODAY + TOTAL) =============== -->
 <section id="dashboard" class="section">
   <h3>📊 Dashboard (Today + Total)</h3>
@@ -824,11 +819,11 @@ document.addEventListener("click", e => {
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
-<!-- =============== AUTO SCRIPT LOADER =============== -->
+
+<!-- =============== AUTO SCRIPT LOADER (keeps load order stable) =============== -->
 <script>
 window.addEventListener("load", () => {
   const v = Date.now();
-
   const files = [
     "/js/core.js",
     "/js/firebase.js",
@@ -849,6 +844,10 @@ window.addEventListener("load", () => {
       const s = document.createElement("script");
       s.src = `${file}?v=${v}`;
       s.onload = () => res();
+      s.onerror = () => {
+        console.warn("Failed to load", file);
+        res();
+      };
       document.body.appendChild(s);
     }));
   }, Promise.resolve()).then(() => {
@@ -858,8 +857,7 @@ window.addEventListener("load", () => {
 });
 </script>
 
-
-<!-- =============== TAB SWITCHER =============== -->
+<!-- =============== TAB SWITCHER + HOOKS =============== -->
 <script>
 function switchTab(id) {
   qsa(".section").forEach(sec => sec.classList.remove("active"));
@@ -870,17 +868,17 @@ function switchTab(id) {
   const tab = qs(`.tab[data-tab="${id}"]`);
   if (tab) tab.classList.add("active");
 
+  // call renderers if present
   try { renderStock?.(); } catch {}
   try { renderSales?.(); } catch {}
   try { renderWanting?.(); } catch {}
   try { renderExpenses?.(); } catch {}
   try { renderServiceTables?.(); } catch {}
   try { renderSvcPieStatus?.(); } catch {}
-try { renderSvcPieMoney?.(); } catch {}
+  try { renderSvcPieMoney?.(); } catch {}
   try { renderCollection?.(); } catch {}
   try { renderAnalytics?.(); } catch {}
   try { updateSummaryCards?.(); } catch {}
-  
 }
 
 document.addEventListener("click", e => {
@@ -903,42 +901,34 @@ setInterval(updateClock, 1000);
 updateClock();
 </script>
 
-<!-- =============== THEME BUTTON =============== -->
+<!-- =============== THEME BUTTON (NO dark mode) — noop to avoid breaking existing UI -->
 <script>
-(function(){
+document.getElementById("themeBtn")?.addEventListener("click", () => {
+  // intentionally noop — dark mode removed, button kept for backward compatibility
   const btn = document.getElementById("themeBtn");
-  if(!btn) return;
-  const saved = localStorage.getItem("ks-theme");
-  if(saved === "dark"){
-    document.body.classList.add("dark");
-    btn.textContent = "☀️";
-  }
-  btn.addEventListener("click",()=>{
-    const dark = document.body.classList.toggle("dark");
-    localStorage.setItem("ks-theme", dark ? "dark" : "light");
-    btn.textContent = dark ? "☀️" : "🌙";
-  });
-})();
+  btn.textContent = "🎨";
+  btn.title = "Theme disabled (online-only build)";
+});
 </script>
 
-<!-- =============== LOGOUT BUTTON =============== -->
+<!-- =============== LOGOUT BUTTON (tries firebase logout then fallback) =============== -->
 <script>
 document.getElementById("logoutBtn")?.addEventListener("click", async () => {
   try {
     if (window.fsLogout) {
       await window.fsLogout();
-    } else {
-      localStorage.removeItem("ks-user-email");
-      window.location.href = "/login.html";
+      return;
     }
   } catch (e) {
-    console.error("Logout failed:", e);
-    localStorage.removeItem("ks-user-email");
-    window.location.href = "/login.html";
+    console.error("Logout error:", e);
   }
+  try { localStorage.removeItem("ks-user-email"); } catch {}
+  window.location.href = "/login.html";
 });
 </script>
-  <script>
+
+<!-- =============== LATE REFRESH (run renders after scripts loaded) =============== -->
+<script>
 window.addEventListener("load", () => {
   function lateRefresh() {
     if (!window.__allScriptsLoaded) return setTimeout(lateRefresh, 100);
@@ -951,5 +941,6 @@ window.addEventListener("load", () => {
   lateRefresh();
 });
 </script>
+
 </body>
 </html>
