@@ -744,6 +744,7 @@
 <section id="service" class="section">
   <h3>🛠 Service / Repair Manager</h3>
 
+  <!-- ADD JOB FORM -->
   <div class="row-inline"
     style="margin:10px 0;align-items:center;gap:8px;display:flex;flex-wrap:wrap;">
 
@@ -789,11 +790,11 @@
     <button id="addServiceBtn" class="small-btn">Add Job</button>
   </div>
 
+  <!-- CARDS -->
   <div class="flex-row"
     style="margin:8px 0;display:flex;gap:10px;flex-wrap:wrap;">
 
-    <div class="card"
-      style="flex:1;min-width:120px;padding:8px 10px;">
+    <div class="card" style="flex:1;min-width:120px;padding:8px 10px;">
       <small>Pending</small>
       <div id="svcPendingCount" style="font-size:18px;font-weight:700;">0</div>
     </div>
@@ -815,6 +816,7 @@
     </div>
   </div>
 
+  <!-- PENDING TABLE -->
   <h4>Pending / Active Jobs</h4>
 
   <table id="svcTable">
@@ -836,8 +838,7 @@
 
   <button id="clearServiceBtn"
     class="small-btn"
-    style="background:#fee2e2;color:#b91c1c;margin:10px 0;
-    border-color:#fecaca;">
+    style="background:#fee2e2;color:#b91c1c;margin:10px 0;border-color:#fecaca;">
     🗑️ Clear All Jobs
   </button>
 
@@ -846,7 +847,7 @@
   <!-- FILTER BLOCK -->
   <div style="margin:6px 0 8px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
 
-    <!-- STATUS FILTER -->
+    <!-- STATUS -->
     <label>Status:</label>
     <select id="svcFilterStatus"
       style="width:130px;padding:6px 8px;border-radius:10px;
@@ -859,7 +860,7 @@
       <option value="failed">Failed/Returned</option>
     </select>
 
-    <!-- TYPE FILTER (STATIC TO AVOID EXTERNAL TYPE INJECTION) -->
+    <!-- TYPE -->
     <label>Type:</label>
     <select id="svcFilterType"
       style="width:140px;padding:6px 8px;border-radius:10px;
@@ -870,13 +871,13 @@
       <option value="Other">Other</option>
     </select>
 
-    <!-- DATE FILTER: SELECT so 'All Dates' is an option -->
+    <!-- DATE -->
     <label>Date:</label>
     <select id="svcFilterDate"
       style="width:150px;padding:6px 8px;border-radius:10px;
       border:1px solid var(--ks-border-soft);background:var(--ks-bg-card);">
       <option value="">All Dates</option>
-      <!-- JS will append available dates here on load -->
+      <!-- JS auto-inserts actual job dates -->
     </select>
   </div>
 
@@ -898,7 +899,7 @@
     <tbody></tbody>
   </table>
 
-  <!-- PIE CHARTS (responsive canvases — no fixed width/height) -->
+  <!-- PIE CHARTS -->
   <div style="display:flex;gap:25px;justify-content:center;align-items:flex-start;
       flex-wrap:wrap;margin-top:20px;">
 
@@ -915,6 +916,8 @@
   </div>
 
 </section>
+
+
 
 
 <!-- =============== EXPENSES =============== -->
