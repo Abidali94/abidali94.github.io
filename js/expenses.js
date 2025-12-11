@@ -1,19 +1,41 @@
 /* ===========================================================
-   expenses.js — FINAL AUTO-SAFE VERSION v10.1
-   ✔ Works even if HTML was missing earlier
-   ✔ Auto-creates #expensesTable and #expTotal if not found
-   ✔ Fully compatible with core.js cloud sync
+   expenses.js — ONLINE MODE (Cloud Master) — FINAL v12
+   ✔ Cloud-first save (Firestore)
+   ✔ Local = cache only for fast UI
+   ✔ Auto-create table & total box if missing
 =========================================================== */
 
+const qs = s => document.querySelector(s);
+
+/* ===========================================================
+   CLOUD + LOCAL SAVE WRAPPER (MASTER = CLOUD)
+=========================================================== */
+function saveExpensesOnline() {
+
+  // 1️⃣ LOCAL CACHE (fast UI)
+  try {
+    localStorage.setItem("expenses-data", JSON.stringify(window.expenses));
+  } catch {}
+
+  // 2️⃣ CLOUD SAVE (MASTER)
+  if (typeof cloudSaveDebounced === "function") {
+    cloudSaveDebounced("expenses", window.expenses);
+  }
+
+  // 3️⃣ CLOUD → LOCAL auto-sync update
+  if (typeof cloudPullAllIfAvailable === "function") {
+    setTimeout(() => cloudPullAllIfAvailable(), 200);
+  }
+}
 
 /* ===========================================================
    ENSURE REQUIRED DOM EXISTS (AUTO CREATE)
 =========================================================== */
 function ensureExpenseDOM() {
   let section = qs("#expenses");
-  if (!section) return;  // user may hide tab
+  if (!section) return;
 
-  /* ---------- Ensure EXPENSE TABLE ---------- */
+  /* ---------- Expense Table ---------- */
   let table = qs("#expensesTable");
   if (!table) {
     table = document.createElement("table");
@@ -33,20 +55,18 @@ function ensureExpenseDOM() {
     section.appendChild(table);
   }
 
-  /* ---------- Ensure TOTAL SPAN ---------- */
+  /* ---------- Total Section ---------- */
   let totalBox = qs("#expTotal");
   if (!totalBox) {
     const box = document.createElement("div");
     box.style.marginTop = "8px";
-    box.innerHTML = `
-      <b>Total: ₹<span id="expTotal">0</span></b>
-    `;
+    box.innerHTML = `<b>Total: ₹<span id="expTotal">0</span></b>`;
     section.appendChild(box);
   }
 }
 
 /* ===========================================================
-   ➕ ADD EXPENSE ENTRY
+   ➕ ADD EXPENSE ENTRY (CLOUD MODE)
 =========================================================== */
 function addExpenseEntry() {
   let date = qs("#expDate")?.value || todayDate();
@@ -55,7 +75,7 @@ function addExpenseEntry() {
   const note = qs("#expNote")?.value?.trim();
 
   if (!category || amount <= 0)
-    return alert("Enter category and amount!");
+    return alert("Enter category and valid amount!");
 
   date = toInternalIfNeeded(date);
 
@@ -69,7 +89,8 @@ function addExpenseEntry() {
     note
   });
 
-  if (window.saveExpenses) window.saveExpenses();
+  // CLOUD + LOCAL
+  saveExpensesOnline();
 
   renderExpenses();
   renderAnalytics?.();
@@ -82,12 +103,12 @@ function addExpenseEntry() {
 }
 
 /* ===========================================================
-   ❌ DELETE EXPENSE ENTRY
+   ❌ DELETE EXPENSE ENTRY (CLOUD MODE)
 =========================================================== */
 function deleteExpense(id) {
   window.expenses = (window.expenses || []).filter(e => e.id !== id);
 
-  if (window.saveExpenses) window.saveExpenses();
+  saveExpensesOnline();
 
   renderExpenses();
   renderAnalytics?.();
@@ -98,12 +119,11 @@ function deleteExpense(id) {
 window.deleteExpense = deleteExpense;
 
 /* ===========================================================
-   📊 RENDER EXPENSE TABLE (AUTO DOM SAFE)
+   📊 RENDER EXPENSE TABLE
 =========================================================== */
 function renderExpenses() {
   ensureExpenseDOM();
 
-  const table = qs("#expensesTable");
   const tbody = qs("#expensesTable tbody");
   const totalBox = qs("#expTotal");
 
@@ -124,8 +144,8 @@ function renderExpenses() {
           <td data-label="Note">${esc(e.note || "-")}</td>
           <td data-label="Action">
             <button class="small-btn"
-                    onclick="deleteExpense('${e.id}')"
-                    style="background:#d32f2f;color:white;">
+              onclick="deleteExpense('${e.id}')"
+              style="background:#d32f2f;color:white;">
               🗑 Delete
             </button>
           </td>
@@ -141,10 +161,10 @@ function renderExpenses() {
    🗑 CLEAR ALL EXPENSES
 =========================================================== */
 qs("#clearExpensesBtn")?.addEventListener("click", () => {
-  if (!confirm("Clear ALL expenses?")) return;
+  if (!confirm("Delete ALL expenses?")) return;
 
   window.expenses = [];
-  if (window.saveExpenses) window.saveExpenses();
+  saveExpensesOnline();
 
   renderExpenses();
   renderAnalytics?.();
@@ -159,7 +179,7 @@ qs("#clearExpensesBtn")?.addEventListener("click", () => {
 qs("#addExpenseBtn")?.addEventListener("click", addExpenseEntry);
 
 /* ===========================================================
-   🚀 INITIAL LOAD
+   🚀 ON PAGE LOAD
 =========================================================== */
 window.addEventListener("load", () => {
   renderExpenses();
