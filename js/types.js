@@ -1,9 +1,9 @@
 /* ======================================================
-   🗂 types.js — Product Type Manager (FINAL ONLINE v9.0)
-   • Fully compatible with new core.js cloud system
-   • Instant UI update (no refresh delay)
-   • Prevents duplicate types
-   • Updates Stock + Sales + Wanting dropdowns automatically
+   🗂 types.js — Product Type Manager (FINAL ONLINE v10.0)
+   • Fully compatible with ONLINE core.js (cloudSync)
+   • Instant UI update + guaranteed dropdown sync
+   • Prevents duplicates (same as before)
+   • Clean and safe for Firestore syncing
 ====================================================== */
 
 /* ------------------------------------------------------
@@ -16,25 +16,25 @@ function addType() {
   const name = input.value.trim();
   if (!name) return alert("Enter a valid type name.");
 
-  // Prevent duplicates
+  // Prevent duplicate type names
   if ((window.types || []).find(t => t.name.toLowerCase() === name.toLowerCase())) {
     return alert("Type already exists!");
   }
 
-  // Push new object
+  // Add new type
   window.types.push({
     id: uid("type"),
     name
   });
 
-  // Save (Local + Cloud)
+  // Save → LOCAL + CLOUD (handled inside saveTypes)
   if (window.saveTypes) window.saveTypes();
 
-  // Immediate UI refresh
+  // UI refresh
   renderTypes();
   updateTypeDropdowns();
 
-  // ⭐ EXTRA GUARANTEED REFRESH (fixes post-clear issues)
+  // Extra guaranteed refresh (fixes race condition after cloud sync)
   setTimeout(() => {
     renderTypes();
     updateTypeDropdowns();
@@ -49,18 +49,21 @@ function addType() {
 function clearTypes() {
   if (!confirm("Delete ALL types?")) return;
 
+  // Reset array
   window.types = [];
+
+  // Save to cloud + local
   if (window.saveTypes) window.saveTypes();
 
-  // Immediate refresh
+  // UI refresh
   renderTypes();
   updateTypeDropdowns();
 
-  // ⭐ EXTRA GUARANTEED REFRESH (fixes new-type add after clear)
+  // Extra refresh
   setTimeout(() => {
     renderTypes();
     updateTypeDropdowns();
-  }, 100);
+  }, 120);
 }
 
 /* ------------------------------------------------------
@@ -83,7 +86,8 @@ function renderTypes() {
 }
 
 /* ------------------------------------------------------
-   🔽 UPDATE DROPDOWNS (Stock + Sales + Wanting)
+   🔽 UPDATE ALL TYPE DROPDOWNS
+   (Stock / Sales / Wanting)
 ------------------------------------------------------ */
 function updateTypeDropdowns() {
 
@@ -94,28 +98,28 @@ function updateTypeDropdowns() {
   const saleType     = document.getElementById("saleType");
   const wantType     = document.getElementById("wantType");
 
-  /* STOCK → Add stock selector */
+  /* Stock – add stock selector */
   if (addStockType) {
     addStockType.innerHTML =
       `<option value="">Select</option>` +
       types.map(t => `<option value="${esc(t.name)}">${esc(t.name)}</option>`).join("");
   }
 
-  /* STOCK FILTER */
+  /* Stock filter */
   if (filterStock) {
     filterStock.innerHTML =
       `<option value="all">All Types</option>` +
       types.map(t => `<option value="${esc(t.name)}">${esc(t.name)}</option>`).join("");
   }
 
-  /* SALES FILTER */
+  /* Sales filter */
   if (saleType) {
     saleType.innerHTML =
       `<option value="all">All Types</option>` +
       types.map(t => `<option value="${esc(t.name)}">${esc(t.name)}</option>`).join("");
   }
 
-  /* WANTING → Type selector */
+  /* Wanting selector */
   if (wantType) {
     wantType.innerHTML =
       `<option value="">Select Type</option>` +
@@ -124,7 +128,7 @@ function updateTypeDropdowns() {
 }
 
 /* ------------------------------------------------------
-   🖱 EVENTS
+   🖱 EVENT LISTENERS
 ------------------------------------------------------ */
 document.addEventListener("click", e => {
   if (e.target.id === "addTypeBtn") addType();
@@ -138,7 +142,7 @@ window.addEventListener("load", () => {
   renderTypes();
   updateTypeDropdowns();
 
-  // ⭐ startup guaranteed sync
+  // Extra startup sync
   setTimeout(() => {
     renderTypes();
     updateTypeDropdowns();
