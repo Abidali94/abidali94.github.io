@@ -1,9 +1,8 @@
 /* ===========================================================
-   service.js — FINAL 2025 PERFECT VERSION (ERROR-FREE)
-   ✔ Calendar + Dropdown date filter
-   ✔ Global-safe refresh()
-   ✔ Pie charts always load
-   ✔ No ReferenceError possible
+   service.js — ONLINE MODE (Cloud Master) — FINAL v21
+   ✔ Cloud-first (Firestore master)
+   ✔ Local cache only for fast UI
+   ✔ Full sync via core.js cloudSync / cloudPullAllIfAvailable()
 =========================================================== */
 
 (function () {
@@ -14,23 +13,38 @@
   const toInternal = window.toInternalIfNeeded || (d => d);
   const today = () => new Date().toISOString().slice(0, 10);
 
-  let pieStatus = null;
-  let pieMoney = null;
+  /* --------------------------------------------------
+        ONLINE SAVE WRAPPER
+        (Local cache + Cloud save)
+  -------------------------------------------------- */
+  function saveServicesOnline() {
+
+    // 1️⃣ LOCAL CACHE (fast UI refresh)
+    try {
+      localStorage.setItem("service-data", JSON.stringify(window.services));
+    } catch {}
+
+    // 2️⃣ CLOUD SAVE (MASTER)
+    if (typeof cloudSaveDebounced === "function") {
+      cloudSaveDebounced("services", window.services);
+    }
+
+    // 3️⃣ AUTO CLOUD-PULL to sync all modules/UI
+    if (typeof cloudPullAllIfAvailable === "function") {
+      setTimeout(() => cloudPullAllIfAvailable(), 200);
+    }
+  }
 
   /* --------------------------------------------------
-        STORAGE
+        ENSURE ARRAY
   -------------------------------------------------- */
   function ensureServices() {
     if (!Array.isArray(window.services)) window.services = [];
     return window.services;
   }
 
-  function save() {
-    localStorage.setItem("service-data", JSON.stringify(window.services));
-  }
-
   /* --------------------------------------------------
-        DATE FILTER (DROPDOWN + CALENDAR)
+        DATE FILTER (Dropdown + Calendar)
   -------------------------------------------------- */
   function buildDateFilter() {
     const sel = qs("#svcFilterDate");
@@ -60,13 +74,13 @@
   }
 
   /* --------------------------------------------------
-        FILTERED DATA
+        FILTERED RESULTS
   -------------------------------------------------- */
   function getFiltered() {
     const list = ensureServices();
+
     const typeVal = qs("#svcFilterType")?.value || "all";
     const statusVal = (qs("#svcFilterStatus")?.value || "all").toLowerCase();
-
     const dropDate = qs("#svcFilterDate")?.value || "";
     const calendarDate = qs("#svcFilterCalendar")?.value || "";
     const dateVal = calendarDate || dropDate;
@@ -79,12 +93,14 @@
     // STATUS
     out = out.filter(j => {
       const s = (j.status || "").toLowerCase();
+
       if (statusVal === "all") return true;
       if (statusVal === "pending") return s === "pending";
       if (statusVal === "completed") return s === "completed" && !j.fromCredit;
       if (statusVal === "credit") return s === "credit";
       if (statusVal === "credit-paid") return s === "completed" && j.fromCredit;
       if (statusVal === "failed") return s.includes("failed");
+
       return true;
     });
 
@@ -112,7 +128,7 @@
   }
 
   /* --------------------------------------------------
-        TABLE RENDERER
+        TABLE RENDER
   -------------------------------------------------- */
   function renderTables() {
     const pendBody = qs("#svcTable tbody");
@@ -166,6 +182,9 @@
   /* --------------------------------------------------
         PIE CHARTS
   -------------------------------------------------- */
+  let pieStatus = null;
+  let pieMoney = null;
+
   function drawPieStatus() {
     const el = qs("#svcPieStatus");
     if (!el || typeof Chart === "undefined") return;
@@ -215,7 +234,7 @@
   }
 
   /* --------------------------------------------------
-        GLOBAL SAFE REFRESH WRAPPER
+        GLOBAL REFRESH
   -------------------------------------------------- */
   function refresh() {
     renderCounts();
@@ -224,11 +243,10 @@
     drawPieMoney();
   }
 
-  // EXPOSE SAFE WRAPPER
   window.__svcRefresh = () => refresh();
 
   /* --------------------------------------------------
-        JOB ACTIONS
+        JOB ADD / UPDATE
   -------------------------------------------------- */
   function nextId() {
     const nums = ensureServices().map(j => Number(j.jobNum) || 0);
@@ -240,6 +258,7 @@
   }
 
   function addJob() {
+
     const rcv = toInternal(qs("#svcReceivedDate")?.value || today());
     const customer = esc(qs("#svcCustomer")?.value || "").trim();
     const phone = esc(qs("#svcPhone")?.value || "").trim();
@@ -251,6 +270,7 @@
     if (!customer || !phone || !prob) return alert("Fill all fields");
 
     const id = nextId();
+
     const job = {
       id: "svc_" + Math.random().toString(36).slice(2),
       jobNum: id.jobNum,
@@ -272,9 +292,9 @@
     };
 
     ensureServices().push(job);
-    save();
+    saveServicesOnline();
     buildDateFilter();
-    window.__svcRefresh();
+    __svcRefresh();
   }
 
   function completeJob(id, mode) {
@@ -285,7 +305,6 @@
     const full = Number(prompt("Total Bill ₹:", job.paid || 0) || 0);
     if (!full) return alert("Invalid amount");
 
-    const adv = Number(job.advance || 0);
     const profit = full - invest;
 
     job.invest = invest;
@@ -298,15 +317,15 @@
       job.status = "Completed";
       job.fromCredit = false;
     } else {
-      job.paid = adv;
-      job.remaining = full - adv;
+      job.paid = job.advance;
+      job.remaining = full - job.advance;
       job.status = "Credit";
       job.fromCredit = false;
     }
 
-    save();
+    saveServicesOnline();
     buildDateFilter();
-    window.__svcRefresh();
+    __svcRefresh();
   }
 
   window.collectServiceCredit = function (id) {
@@ -320,8 +339,8 @@
     job.status = "Completed";
     job.fromCredit = true;
 
-    save();
-    window.__svcRefresh();
+    saveServicesOnline();
+    __svcRefresh();
   };
 
   function failJob(id) {
@@ -338,8 +357,8 @@
     job.remaining = 0;
     job.profit = 0;
 
-    save();
-    window.__svcRefresh();
+    saveServicesOnline();
+    __svcRefresh();
   }
 
   /* --------------------------------------------------
@@ -366,22 +385,22 @@
   qs("#clearServiceBtn")?.addEventListener("click", () => {
     if (!confirm("Delete ALL service entries?")) return;
     window.services = [];
-    save();
+    saveServicesOnline();
     buildDateFilter();
-    window.__svcRefresh();
+    __svcRefresh();
   });
 
-  qs("#svcFilterStatus")?.addEventListener("change", () => window.__svcRefresh());
-  qs("#svcFilterType")?.addEventListener("change", () => window.__svcRefresh());
+  qs("#svcFilterStatus")?.addEventListener("change", __svcRefresh);
+  qs("#svcFilterType")?.addEventListener("change", __svcRefresh);
 
   qs("#svcFilterDate")?.addEventListener("change", () => {
     clearCalendar();
-    window.__svcRefresh();
+    __svcRefresh();
   });
 
   qs("#svcFilterCalendar")?.addEventListener("change", () => {
     clearDropdown();
-    window.__svcRefresh();
+    __svcRefresh();
   });
 
   /* --------------------------------------------------
@@ -389,7 +408,7 @@
   -------------------------------------------------- */
   window.addEventListener("load", () => {
     buildDateFilter();
-    window.__svcRefresh();
+    __svcRefresh();
   });
 
 })();
