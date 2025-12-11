@@ -1,5 +1,9 @@
 /* ==========================================================
-   stock.js — ONLINE REALTIME VERSION (v6 FINAL)
+   stock.js — ONLINE ONLY (Option-B Cloud Master) — FINAL v11
+   • Cloud is primary source of truth
+   • Local is only temporary UI cache
+   • All writes → cloudSync
+   • Auto-resync → cloudPullAllIfAvailable()
 ========================================================== */
 
 const $  = s => document.querySelector(s);
@@ -7,22 +11,31 @@ const num = v => isNaN(Number(v)) ? 0 : Number(v);
 const toDisp = d => (typeof window.toDisplay === "function" ? toDisplay(d) : d);
 
 /* ==========================================================
-   SAVE STOCK (LOCAL + CLOUD)
+   SAVE STOCK (Cloud Master)
 ========================================================== */
 window.saveStock = function () {
+
+  // 1️⃣ Local temporary cache (for instant UI only)
   try {
     localStorage.setItem("stock-data", JSON.stringify(window.stock));
   } catch {}
 
+  // 2️⃣ Cloud Master Save
   if (typeof cloudSaveDebounced === "function") {
     cloudSaveDebounced("stock", window.stock);
+  }
+
+  // 3️⃣ Trigger global resync (other devices)
+  if (typeof cloudPullAllIfAvailable === "function") {
+    setTimeout(() => cloudPullAllIfAvailable(), 200);
   }
 };
 
 /* ==========================================================
-   ADD STOCK  (WITH HISTORY)
+   ADD STOCK (WITH HISTORY)
 ========================================================== */
 $("#addStockBtn")?.addEventListener("click", () => {
+
   let date = $("#pdate").value || todayDate();
   date = toInternalIfNeeded(date);
 
@@ -36,13 +49,12 @@ $("#addStockBtn")?.addEventListener("click", () => {
     return;
   }
 
-  // Find existing product
   const p = (window.stock || []).find(
     x => x.type === type && x.name.toLowerCase() === name.toLowerCase()
   );
 
   if (!p) {
-    // NEW product
+    // New product
     window.stock.push({
       id: uid("stk"),
       type,
@@ -56,7 +68,7 @@ $("#addStockBtn")?.addEventListener("click", () => {
     });
 
   } else {
-    // EXISTING product — update qty + cost and append history
+    // Update existing product
     p.qty += qty;
     p.cost = cost;
 
@@ -65,21 +77,22 @@ $("#addStockBtn")?.addEventListener("click", () => {
   }
 
   window.saveStock();
+
   renderStock();
   window.updateUniversalBar?.();
 
-  /* ⭐ CLEAR INPUTS AFTER ADD */
+  // Clear input fields
   $("#pname").value = "";
   $("#pqty").value = "";
   $("#pcost").value = "";
 });
 
 /* ==========================================================
-   SHOW PURCHASE HISTORY (POPUP)
+   SHOW PURCHASE HISTORY
 ========================================================== */
 function showStockHistory(id) {
   const p = (window.stock || []).find(x => x.id === id);
-  if (!p || !p.history || !p.history.length) {
+  if (!p || !p.history?.length) {
     alert("No history available.");
     return;
   }
@@ -88,8 +101,7 @@ function showStockHistory(id) {
   let totalCost = 0, totalQty = 0;
 
   p.history.forEach(h => {
-    const q  = num(h.qty);
-    const c  = num(h.cost);
+    const q = num(h.qty), c = num(h.cost);
     const dt = h.date ? toDisp(h.date) : "-";
 
     totalCost += q * c;
@@ -100,7 +112,6 @@ function showStockHistory(id) {
 
   const avg = totalQty ? (totalCost / totalQty).toFixed(2) : 0;
 
-  /* ⭐ LABEL FIX HERE */
   msg += `\nTotal Purchased Qty: ${totalQty}`;
   msg += `\nAverage Cost: ₹${avg}`;
 
@@ -122,7 +133,7 @@ $("#clearStockBtn")?.addEventListener("click", () => {
 });
 
 /* ==========================================================
-   SET GLOBAL LIMIT
+   SET GLOBAL LIMIT FOR ALL ITEMS
 ========================================================== */
 $("#setLimitBtn")?.addEventListener("click", () => {
   const limit = num($("#globalLimit").value || 2);
@@ -140,7 +151,7 @@ function stockQuickSale(i, mode) {
   if (!p) return;
 
   const remain = num(p.qty) - num(p.sold);
-  if (remain <= 0) { alert("No stock left."); return; }
+  if (remain <= 0) return alert("No stock left.");
 
   const qty = num(prompt(`Enter Qty (Available: ${remain})`));
   if (!qty || qty <= 0 || qty > remain) return;
@@ -149,7 +160,6 @@ function stockQuickSale(i, mode) {
   if (!price || price <= 0) return;
 
   let customer = "", phone = "";
-
   if (mode === "Credit") {
     customer = prompt("Customer Name:") || "";
     phone    = prompt("Phone Number:") || "";
@@ -165,7 +175,7 @@ function stockQuickSale(i, mode) {
   window.sales.push({
     id: uid("sale"),
     date: todayDate(),
-    time: (new Date()).toLocaleTimeString("en-IN", {hour: "2-digit", minute: "2-digit"}),
+    time: new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}),
     type: p.type,
     product: p.name,
     qty,
@@ -203,16 +213,12 @@ function renderStock() {
 
   let data = window.stock || [];
 
-  if (filterType !== "all") {
-    data = data.filter(p => p.type === filterType);
-  }
-
-  if (searchTxt) {
+  if (filterType !== "all") data = data.filter(p => p.type === filterType);
+  if (searchTxt)
     data = data.filter(p =>
       p.name.toLowerCase().includes(searchTxt) ||
       p.type.toLowerCase().includes(searchTxt)
     );
-  }
 
   tbody.innerHTML = data.map((p, i) => {
     const remain = num(p.qty) - num(p.sold);
@@ -232,21 +238,19 @@ function renderStock() {
           <button class="small-btn"
                   style="background:#555;color:#fff;"
                   onclick="showStockHistory('${p.id}')">📜</button>
-
           <button class="small-btn" onclick="stockQuickSale(${i}, 'Paid')">Cash</button>
-
-          <button class="small-btn" onclick="stockQuickSale(${i}, 'Credit')"
-            style="background:#facc15;color:black;">Credit</button>
+          <button class="small-btn"
+                  onclick="stockQuickSale(${i}, 'Credit')"
+                  style="background:#facc15;color:black;">Credit</button>
         </td>
-      </tr>
-    `;
+      </tr>`;
   }).join("");
 
   updateStockInvestment();
 }
 
 /* ==========================================================
-   STOCK INVESTMENT (Before sale)
+   STOCK INVESTMENT (Remaining stock value)
 ========================================================== */
 function updateStockInvestment() {
   const total = (window.stock || []).reduce((sum, p) => {
@@ -258,7 +262,7 @@ function updateStockInvestment() {
 }
 
 /* ==========================================================
-   EVENTS
+   FILTER EVENTS
 ========================================================== */
 $("#productSearch")?.addEventListener("input", renderStock);
 $("#filterType")?.addEventListener("change", renderStock);
@@ -270,4 +274,10 @@ window.addEventListener("load", () => {
   renderStock();
   updateStockInvestment();
   window.updateUniversalBar?.();
+
+  // 🔥 Safe re-sync after cloud pull
+  setTimeout(() => {
+    renderStock();
+    updateStockInvestment();
+  }, 250);
 });
