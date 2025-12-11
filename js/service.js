@@ -1,6 +1,7 @@
 /* ===========================================================
-   service.js — FIXED VERSION
+   service.js — FINAL STABLE VERSION (No UI changes)
    - Correct service TYPE filter (Mobile/Laptop/Other only)
+   - Filters populate ONLY on page load (fixes dropdown disappearing issue)
    - Status + Type + Date filters (AND mode)
    - Dual Pie Charts
    - Full Refresh logic
@@ -32,12 +33,10 @@
   }
 
   /* =======================================================
-     FILTER HELPERS
+     FILTER HELPERS (RUN ONLY ON PAGE LOAD)
   ======================================================= */
   function populateSvcFilters() {
-    /* ⭐ FIXED: SERVICE TYPES SHOULD BE ONLY:
-       Mobile / Laptop / Other
-    */
+    /* SERVICE TYPES = FIXED (Mobile / Laptop / Other) */
     const typeEl = qs("#svcFilterType");
     if (typeEl) {
       const svcTypes = ["Mobile", "Laptop", "Other"];
@@ -46,7 +45,7 @@
         svcTypes.map(t => `<option value="${t}">${t}</option>`).join("");
     }
 
-    /* --- Date Filter --- */
+    /* DATE FILTER */
     const dateEl = qs("#svcFilterDate");
     if (dateEl) {
       const list = ensureServices();
@@ -67,6 +66,7 @@
     }
   }
 
+  /* FILTER VALUES */
   function getCurrentFilters() {
     return {
       filterType: qs("#svcFilterType")?.value || "all",
@@ -75,6 +75,7 @@
     };
   }
 
+  /* FILTERED LIST */
   function getFilteredServices() {
     const list = ensureServices();
     const { filterType, filterStatus, filterDate } = getCurrentFilters();
@@ -108,10 +109,9 @@
   }
 
   /* =======================================================
-     FULL REFRESH
+     FULL REFRESH (NO FILTER RESET HERE)
   ======================================================= */
   function fullRefresh() {
-    populateSvcFilters();
     renderServiceTables();
 
     setTimeout(() => {
@@ -121,10 +121,12 @@
       window.updateSummaryCards?.();
       window.updateUniversalBar?.();
       window.renderCollection?.();
-    }, 60);
+    }, 50);
   }
 
-  /* ---------------- NEW JOB ---------------- */
+  /* =======================================================
+     NEW JOB
+  ======================================================= */
   function nextJobId() {
     const list = ensureServices();
     const nums = list.map(j => Number(j.jobNum || j.jobId) || 0);
@@ -175,7 +177,9 @@
     fullRefresh();
   }
 
-  /* ---------------- COMPLETE ---------------- */
+  /* =======================================================
+     COMPLETE JOB (PAID / CREDIT)
+  ======================================================= */
   function markCompleted(id, mode) {
     const job = ensureServices().find(j => j.id === id);
     if (!job) return;
@@ -221,7 +225,9 @@
     fullRefresh();
   }
 
-  /* ---------------- COLLECT CREDIT ---------------- */
+  /* =======================================================
+     COLLECT CREDIT
+  ======================================================= */
   function collectServiceCredit(id) {
     const job = ensureServices().find(j => j.id === id);
     if (!job) return;
@@ -232,6 +238,7 @@
     }
 
     const due = Number(job.remaining || 0);
+
     if (!confirm(`Collect ₹${due}?`)) return;
 
     job.paid += due;
@@ -251,7 +258,9 @@
 
   window.collectServiceCredit = collectServiceCredit;
 
-  /* ---------------- FAILED ---------------- */
+  /* =======================================================
+     FAILED JOB
+  ======================================================= */
   function markFailed(id) {
     const job = ensureServices().find(j => j.id === id);
     if (!job) return;
@@ -281,30 +290,30 @@
     const pending = filtered.filter(j => j.status === "Pending");
     const history = filtered.filter(j => j.status !== "Pending");
 
+    /* ---- Pending Table ---- */
     pendBody.innerHTML =
       pending.length
         ? pending
             .map(
               j => `
-          <tr>
-            <td>${j.jobId}</td>
-            <td>${toDisplay(j.date_in)}</td>
-            <td>${escSafe(j.customer)}</td>
-            <td>${escSafe(j.phone)}</td>
-            <td>${escSafe(j.item)}</td>
-            <td>${escSafe(j.model)}</td>
-            <td>${escSafe(j.problem)}</td>
-            <td>Pending</td>
-            <td>
-              <button class="btn btn-xs svc-view" data-id="${j.id}">
-                View / Update
-              </button>
-            </td>
-          </tr>`
+        <tr>
+          <td>${j.jobId}</td>
+          <td>${toDisplay(j.date_in)}</td>
+          <td>${escSafe(j.customer)}</td>
+          <td>${escSafe(j.phone)}</td>
+          <td>${escSafe(j.item)}</td>
+          <td>${escSafe(j.model)}</td>
+          <td>${escSafe(j.problem)}</td>
+          <td>Pending</td>
+          <td><button class="btn btn-xs svc-view" data-id="${j.id}">
+              View / Update
+          </button></td>
+        </tr>`
             )
             .join("")
         : `<tr><td colspan="9">No pending jobs</td></tr>`;
 
+    /* ---- History Table ---- */
     histBody.innerHTML =
       history.length
         ? history
@@ -312,20 +321,22 @@
               let st = j.status;
               if (j.status === "Credit") {
                 st =
-                  `Credit <button class="btn btn-xs" onclick="collectServiceCredit('${j.id}')">Collect</button>`;
+                  `Credit <button class="btn btn-xs" onclick="collectServiceCredit('${j.id}')">
+                     Collect
+                   </button>`;
               }
               return `
-          <tr>
-            <td>${j.jobId}</td>
-            <td>${toDisplay(j.date_in)}</td>
-            <td>${j.date_out ? toDisplay(j.date_out) : "-"}</td>
-            <td>${escSafe(j.customer)}</td>
-            <td>${escSafe(j.item)}</td>
-            <td>₹${j.invest}</td>
-            <td>₹${j.paid}</td>
-            <td>₹${j.profit}</td>
-            <td>${st}</td>
-          </tr>`;
+        <tr>
+          <td>${j.jobId}</td>
+          <td>${toDisplay(j.date_in)}</td>
+          <td>${j.date_out ? toDisplay(j.date_out) : "-"}</td>
+          <td>${escSafe(j.customer)}</td>
+          <td>${escSafe(j.item)}</td>
+          <td>₹${j.invest}</td>
+          <td>₹${j.paid}</td>
+          <td>₹${j.profit}</td>
+          <td>${st}</td>
+        </tr>`;
             })
             .join("")
         : `<tr><td colspan="9">No history</td></tr>`;
@@ -356,7 +367,7 @@
   }
 
   /* =======================================================
-     PIE — MONEY
+     PIE — MONEY STATUS
   ======================================================= */
   function renderSvcPieMoney() {
     const canvas = qs("#svcPieMoney");
@@ -417,9 +428,12 @@
   qs("#svcFilterStatus")?.addEventListener("change", fullRefresh);
   qs("#svcFilterDate")?.addEventListener("change", fullRefresh);
 
-  window.addEventListener("load", fullRefresh);
+  /* ----------------------------------------------------
+     RUN FILTER POPULATION ONCE ON PAGE LOAD 
+  ---------------------------------------------------- */
+  window.addEventListener("load", () => {
+    populateSvcFilters(); // run ONCE
+    fullRefresh();        // never resets filter options again
+  });
 
-  window.renderServiceTables = renderServiceTables;
-  window.renderSvcPieStatus = renderSvcPieStatus;
-  window.renderSvcPieMoney = renderSvcPieMoney;
 })();
