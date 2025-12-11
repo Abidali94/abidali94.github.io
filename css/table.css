@@ -1,80 +1,108 @@
-/* ============================
-   table.css
-   Corporate Excel-style tables
-=============================== */
+/* ============================================================
+   table.css — CLEAN CORPORATE TABLES (AURORA LIGHT 2025)
+   Pure professional look: white + soft grey + smooth borders
+=========================================================== */
 
+/* BASE TABLE */
 table {
   width: 100%;
-  border-collapse: collapse;      /* full grid */
-  font-size: 13px;
+  border-collapse: collapse;
+  font-size: 14px;
   background: #ffffff;
   border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(15,23,42,0.06);
+  box-shadow: 0 4px 14px rgba(0,0,0,.06);
 }
 
-/* wrap table in container if needed */
+/* Table spacing inside sections */
 .section table {
-  margin-top: 8px;
+  margin-top: 12px;
 }
 
-/* HEADER */
+/* --------------------------------------------
+   TABLE HEADER
+-------------------------------------------- */
 table thead {
-  background: linear-gradient(90deg, #1e88e5, #42a5f5);
-  color: #ffffff;
+  background: #f1f3f4;
+  border-bottom: 2px solid #e1e4e8;
 }
+
 table thead th {
-  padding: 8px 10px;
-  font-weight: 600;
+  padding: 10px 12px;
+  font-weight: 700;
+  color: #444;
   text-align: left;
-  border-right: 1px solid rgba(255,255,255,0.35);
-  border-bottom: 1px solid rgba(0,0,0,0.08);
+  border-right: 1px solid #e5e7eb;
+  font-size: 13px;
 }
 table thead th:last-child {
   border-right: none;
 }
 
-/* BODY */
+/* --------------------------------------------
+   TABLE BODY
+-------------------------------------------- */
 table tbody tr {
   background: #ffffff;
+  transition: background .15s;
 }
+
 table tbody td {
-  padding: 7px 10px;
-  border-right: 1px solid var(--border-soft);
-  border-bottom: 1px solid var(--border-soft);
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f2f5;
+  border-right: 1px solid #f0f2f5;
   vertical-align: middle;
+  font-size: 13px;
 }
-table tbody tr:last-child td {
-  border-bottom: none;
-}
+
 table tbody td:last-child {
   border-right: none;
 }
 
-/* footer */
-table tfoot td {
-  padding: 7px 10px;
-  border-top: 1px solid var(--border-soft);
-  font-weight: 600;
+table tbody tr:last-child td {
+  border-bottom: none;
 }
 
-/* zebra & hover */
+/* Soft zebra */
 table tbody tr:nth-child(even) {
-  background: #f7f9ff;
+  background: #fafafa;
 }
+
+/* Hover highlight */
 table tbody tr:hover {
-  background: #e9f1ff;
+  background: #f1f3f4;
 }
 
-/* ACTION BUTTONS INSIDE TABLES */
+/* --------------------------------------------
+   TABLE FOOTER
+-------------------------------------------- */
+table tfoot td {
+  padding: 10px 12px;
+  font-weight: 700;
+  background: #f6f7f9;
+  border-top: 1px solid #e1e4e8;
+}
+
+/* --------------------------------------------
+   ACTION BUTTONS INSIDE TABLES
+-------------------------------------------- */
 table .small-btn {
-  border-radius: 999px;
-  font-size: 11px;
-  padding: 4px 10px !important;
+  border-radius: 20px;
+  font-size: 12px;
+  padding: 5px 12px !important;
+  background: #ffffff;
+  border: 1px solid #dadce0;
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
 }
 
-/* MOBILE: card-like rows with labels */
-@media (max-width: 600px) {
+table .small-btn:hover {
+  background: #f1f3f4;
+}
+
+/* --------------------------------------------
+   MOBILE VIEW — CARD ROWS
+-------------------------------------------- */
+@media (max-width: 650px) {
 
   table {
     border-radius: 16px;
@@ -84,34 +112,37 @@ table .small-btn {
     display: none;
   }
 
-  table tbody,
-  table tfoot {
+  table tbody {
     display: block;
   }
 
   table tbody tr {
     display: block;
-    margin: 8px 10px;
+    background: white;
+    margin: 10px 0;
+    padding: 12px;
     border-radius: 14px;
-    border: 1px solid var(--border-soft);
-    box-shadow: 0 6px 16px rgba(15,23,42,0.06);
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 16px rgba(0,0,0,.06);
   }
 
   table tbody td {
     display: flex;
     justify-content: space-between;
+    padding: 10px 6px;
     border: none;
-    border-bottom: 1px dashed var(--border-soft);
+    border-bottom: 1px dashed #e5e7eb;
   }
 
   table tbody tr td:last-child {
     border-bottom: none;
   }
 
+  /* Left label */
   table tbody td::before {
     content: attr(data-label);
     font-weight: 600;
-    color: var(--text-soft);
+    color: #777;
     margin-right: 10px;
   }
 }
