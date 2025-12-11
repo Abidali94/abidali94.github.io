@@ -1,10 +1,9 @@
 /* ===========================================================
-   service.js — FULL FILTER + DUAL PIE CHARTS
-   - Safe investment / profit
-   - Service credit → collect later
+   service.js — FIXED VERSION
+   - Correct service TYPE filter (Mobile/Laptop/Other only)
    - Status + Type + Date filters (AND mode)
-   - Pie-1: Pending / Completed / Failed
-   - Pie-2: Cash / Credit pending / Credit collected
+   - Dual Pie Charts
+   - Full Refresh logic
 =========================================================== */
 (function () {
   const qs = sel => document.querySelector(sel);
@@ -24,12 +23,6 @@
   }
 
   function persistServices() {
-    if (typeof window.saveServices === "function") {
-      try {
-        window.saveServices();
-        return;
-      } catch (e) {}
-    }
     try {
       localStorage.setItem(
         "service-data",
@@ -42,37 +35,44 @@
      FILTER HELPERS
   ======================================================= */
   function populateSvcFilters() {
-    // Populate Type dropdown with "All Types" + window.types
+    /* ⭐ FIXED: SERVICE TYPES SHOULD BE ONLY:
+       Mobile / Laptop / Other
+    */
     const typeEl = qs("#svcFilterType");
     if (typeEl) {
-      const types = Array.isArray(window.types) ? window.types : [];
+      const svcTypes = ["Mobile", "Laptop", "Other"];
       typeEl.innerHTML =
         `<option value="all">All Types</option>` +
-        types.map(t => `<option value="${escSafe(t.name)}">${escSafe(t.name)}</option>`).join("");
+        svcTypes.map(t => `<option value="${t}">${t}</option>`).join("");
     }
 
-    // Populate Date dropdown with "All Dates" + unique dates from services (date_in/date_out)
+    /* --- Date Filter --- */
     const dateEl = qs("#svcFilterDate");
     if (dateEl) {
       const list = ensureServices();
       const set = new Set();
+
       list.forEach(j => {
         if (j.date_in) set.add(j.date_in);
         if (j.date_out) set.add(j.date_out);
       });
 
-      // sort dates descending (newest first)
-      const dates = Array.from(set).filter(Boolean).sort((a,b) => b.localeCompare(a));
-      dateEl.innerHTML = `<option value="">All Dates</option>` +
+      const dates = Array.from(set)
+        .filter(Boolean)
+        .sort((a, b) => b.localeCompare(a));
+
+      dateEl.innerHTML =
+        `<option value="">All Dates</option>` +
         dates.map(d => `<option value="${d}">${toDisplay(d)}</option>`).join("");
     }
   }
 
   function getCurrentFilters() {
-    const filterType = qs("#svcFilterType")?.value || "all";
-    const filterStatus = qs("#svcFilterStatus")?.value || "all";
-    const filterDate = qs("#svcFilterDate")?.value || "";
-    return { filterType, filterStatus, filterDate };
+    return {
+      filterType: qs("#svcFilterType")?.value || "all",
+      filterStatus: qs("#svcFilterStatus")?.value || "all",
+      filterDate: qs("#svcFilterDate")?.value || ""
+    };
   }
 
   function getFilteredServices() {
@@ -86,9 +86,9 @@
     }
 
     if (filterStatus !== "all") {
-      const v = String(filterStatus || "").toLowerCase();
+      const v = filterStatus.toLowerCase();
       filtered = filtered.filter(j => {
-        const s = String(j.status || "").toLowerCase();
+        const s = (j.status || "").toLowerCase();
         if (v === "pending") return s === "pending";
         if (v === "completed") return s === "completed";
         if (v === "credit") return s === "credit";
@@ -108,31 +108,27 @@
   }
 
   /* =======================================================
-     FULL REFRESH (tables, filters, charts, summary)
-     Ensures filters are re-populated before rendering tables/charts
+     FULL REFRESH
   ======================================================= */
   function fullRefresh() {
-    try { populateSvcFilters(); } catch (e) {}
-    try { renderServiceTables(); } catch (e) {}
-    // charts sometimes need a tiny delay to avoid race with DOM/Chart libs
-    try {
-      setTimeout(() => {
-        try { renderSvcPieStatus(); } catch (e) {}
-        try { renderSvcPieMoney(); } catch (e) {}
-        try { window.renderAnalytics?.(); } catch (e) {}
-        try { window.updateSummaryCards?.(); } catch (e) {}
-        try { window.updateUniversalBar?.(); } catch (e) {}
-        try { window.renderCollection?.(); } catch (e) {}
-      }, 60);
-    } catch (e) {}
+    populateSvcFilters();
+    renderServiceTables();
+
+    setTimeout(() => {
+      renderSvcPieStatus();
+      renderSvcPieMoney();
+      window.renderAnalytics?.();
+      window.updateSummaryCards?.();
+      window.updateUniversalBar?.();
+      window.renderCollection?.();
+    }, 60);
   }
 
   /* ---------------- NEW JOB ---------------- */
   function nextJobId() {
     const list = ensureServices();
     const nums = list.map(j => Number(j.jobNum || j.jobId) || 0);
-    const max = nums.length ? Math.max(...nums) : 0;
-    const n = max + 1;
+    const n = (nums.length ? Math.max(...nums) : 0) + 1;
     return { jobNum: n, jobId: String(n).padStart(2, "0") };
   }
 
@@ -177,28 +173,17 @@
     ensureServices().push(job);
     persistServices();
     fullRefresh();
-
-    qs("#svcCustomer").value = "";
-    qs("#svcPhone").value = "";
-    qs("#svcModel").value = "";
-    qs("#svcProblem").value = "";
-    qs("#svcAdvance").value = "";
   }
 
-  /* ---------------- COMPLETE (PAID / CREDIT) ---------------- */
+  /* ---------------- COMPLETE ---------------- */
   function markCompleted(id, mode) {
     const job = ensureServices().find(j => j.id === id);
     if (!job) return;
 
-    const invest = Number(
-      prompt("Parts / Repair Cost ₹:", job.invest || 0) || 0
-    );
+    const invest = Number(prompt("Parts / Repair Cost ₹:", job.invest || 0) || 0);
     const full = Number(prompt("Total Bill ₹:", job.paid || 0) || 0);
 
-    if (!full || full <= 0) {
-      alert("Invalid amount");
-      return;
-    }
+    if (!full) return alert("Invalid amount");
 
     const profit = full - invest;
     const adv = Number(job.advance || 0);
@@ -225,42 +210,31 @@
       }
     } else {
       const due = full - adv;
-      if (!confirm(`Pending Credit: ₹${due}\nProfit added after collect`)) {
-        return;
-      }
+      if (!confirm(`Pending Credit: ₹${due}\nProfit added after collect`)) return;
 
       job.paid = adv;
       job.remaining = due;
       job.status = "Credit";
-      job.fromCredit = false;
     }
 
     persistServices();
     fullRefresh();
   }
 
-  /* ---------------- CREDIT → PAID ---------------- */
+  /* ---------------- COLLECT CREDIT ---------------- */
   function collectServiceCredit(id) {
     const job = ensureServices().find(j => j.id === id);
     if (!job) return;
 
-    const status = String(job.status || "").toLowerCase();
-    if (status !== "credit") {
-      alert("Already collected / not in credit.");
+    if (String(job.status).toLowerCase() !== "credit") {
+      alert("Not in credit.");
       return;
     }
 
     const due = Number(job.remaining || 0);
-    if (due <= 0) {
-      job.status = "Completed";
-      persistServices();
-      fullRefresh();
-      return;
-    }
+    if (!confirm(`Collect ₹${due}?`)) return;
 
-    if (!confirm(`Collect pending amount ₹${due}?`)) return;
-
-    job.paid = Number(job.paid || 0) + due;
+    job.paid += due;
     job.remaining = 0;
     job.status = "Completed";
     job.fromCredit = true;
@@ -282,9 +256,7 @@
     const job = ensureServices().find(j => j.id === id);
     if (!job) return;
 
-    const ret = Number(
-      prompt("Advance Returned ₹:", job.advance || 0) || 0
-    );
+    const ret = Number(prompt("Advance Returned ₹:", job.advance || 0) || 0);
 
     job.returnedAdvance = ret;
     job.invest = 0;
@@ -293,81 +265,74 @@
     job.profit = 0;
     job.status = "Failed/Returned";
     job.date_out = todayDateFn();
-    job.fromCredit = false;
 
     persistServices();
     fullRefresh();
   }
 
   /* =======================================================
-     TABLES + FILTERS
+     TABLE RENDERING
   ======================================================= */
   function renderServiceTables() {
     const pendBody = qs("#svcTable tbody");
     const histBody = qs("#svcHistoryTable tbody");
-    if (!pendBody || !histBody) return;
 
     const filtered = getFilteredServices();
+    const pending = filtered.filter(j => j.status === "Pending");
+    const history = filtered.filter(j => j.status !== "Pending");
 
-    const pending = filtered.filter(j => String(j.status || "").toLowerCase() === "pending");
-    const history = filtered.filter(j => String(j.status || "").toLowerCase() !== "pending");
-
-    /* ---------- PENDING TABLE ---------- */
     pendBody.innerHTML =
       pending.length
         ? pending
             .map(
               j => `
-        <tr>
-          <td>${j.jobId}</td>
-          <td>${toDisplay(j.date_in)}</td>
-          <td>${escSafe(j.customer)}</td>
-          <td>${escSafe(j.phone)}</td>
-          <td>${escSafe(j.item)}</td>
-          <td>${escSafe(j.model)}</td>
-          <td>${escSafe(j.problem)}</td>
-          <td>Pending</td>
-          <td><button class="btn btn-xs svc-view" data-id="${j.id}">
-              View / Update
-          </button></td>
-        </tr>`
+          <tr>
+            <td>${j.jobId}</td>
+            <td>${toDisplay(j.date_in)}</td>
+            <td>${escSafe(j.customer)}</td>
+            <td>${escSafe(j.phone)}</td>
+            <td>${escSafe(j.item)}</td>
+            <td>${escSafe(j.model)}</td>
+            <td>${escSafe(j.problem)}</td>
+            <td>Pending</td>
+            <td>
+              <button class="btn btn-xs svc-view" data-id="${j.id}">
+                View / Update
+              </button>
+            </td>
+          </tr>`
             )
             .join("")
         : `<tr><td colspan="9">No pending jobs</td></tr>`;
 
-    /* ---------- HISTORY TABLE ---------- */
     histBody.innerHTML =
       history.length
         ? history
             .map(j => {
-              const s = String(j.status || "").toLowerCase();
-              let st = escSafe(j.status);
-
-              if (s === "credit") {
+              let st = j.status;
+              if (j.status === "Credit") {
                 st =
-                  `Credit <button class="btn btn-xs" onclick="collectServiceCredit('${j.id}')">
-                    Collect
-                  </button>`;
+                  `Credit <button class="btn btn-xs" onclick="collectServiceCredit('${j.id}')">Collect</button>`;
               }
               return `
-        <tr>
-          <td>${j.jobId}</td>
-          <td>${toDisplay(j.date_in)}</td>
-          <td>${j.date_out ? toDisplay(j.date_out) : "-"}</td>
-          <td>${escSafe(j.customer)}</td>
-          <td>${escSafe(j.item)}</td>
-          <td>₹${j.invest}</td>
-          <td>₹${j.paid}</td>
-          <td>₹${j.profit}</td>
-          <td>${st}</td>
-        </tr>`;
+          <tr>
+            <td>${j.jobId}</td>
+            <td>${toDisplay(j.date_in)}</td>
+            <td>${j.date_out ? toDisplay(j.date_out) : "-"}</td>
+            <td>${escSafe(j.customer)}</td>
+            <td>${escSafe(j.item)}</td>
+            <td>₹${j.invest}</td>
+            <td>₹${j.paid}</td>
+            <td>₹${j.profit}</td>
+            <td>${st}</td>
+          </tr>`;
             })
             .join("")
         : `<tr><td colspan="9">No history</td></tr>`;
   }
 
   /* =======================================================
-     PIE — STATUS (uses current filters)
+     PIE — STATUS
   ======================================================= */
   function renderSvcPieStatus() {
     const canvas = qs("#svcPieStatus");
@@ -375,27 +340,23 @@
 
     const list = getFilteredServices();
 
-    const P = list.filter(j => String(j.status || "").toLowerCase() === "pending").length;
-    const C = list.filter(j => String(j.status || "").toLowerCase() === "completed").length;
-    const F = list.filter(j => String(j.status || "").toLowerCase() === "failed/returned").length;
+    const P = list.filter(j => j.status === "Pending").length;
+    const C = list.filter(j => j.status === "Completed").length;
+    const F = list.filter(j => j.status === "Failed/Returned").length;
 
-    if (pieStatus) try { pieStatus.destroy(); } catch (e) {}
+    if (pieStatus) pieStatus.destroy();
 
     pieStatus = new Chart(canvas, {
       type: "pie",
       data: {
         labels: ["Pending", "Completed", "Failed/Returned"],
         datasets: [{ data: [P, C, F] }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
       }
     });
   }
 
   /* =======================================================
-     PIE — MONEY STATUS (uses current filters)
+     PIE — MONEY
   ======================================================= */
   function renderSvcPieMoney() {
     const canvas = qs("#svcPieMoney");
@@ -403,29 +364,17 @@
 
     const list = getFilteredServices();
 
-    const cash = list.filter(
-      j => String(j.status || "").toLowerCase() === "completed" && !j.fromCredit
-    ).length;
+    const cash = list.filter(j => j.status === "Completed" && !j.fromCredit).length;
+    const creditPending = list.filter(j => j.status === "Credit").length;
+    const creditPaid = list.filter(j => j.status === "Completed" && j.fromCredit).length;
 
-    const creditPending = list.filter(
-      j => String(j.status || "").toLowerCase() === "credit"
-    ).length;
-
-    const creditPaid = list.filter(
-      j => String(j.status || "").toLowerCase() === "completed" && j.fromCredit
-    ).length;
-
-    if (pieMoney) try { pieMoney.destroy(); } catch (e) {}
+    if (pieMoney) pieMoney.destroy();
 
     pieMoney = new Chart(canvas, {
       type: "pie",
       data: {
         labels: ["Cash service", "Credit (pending)", "Credit paid"],
         datasets: [{ data: [cash, creditPending, creditPaid] }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
       }
     });
   }
@@ -464,14 +413,12 @@
     fullRefresh();
   });
 
-  /* ⭐ FILTER EVENTS (AUTO REFRESH) */
   qs("#svcFilterType")?.addEventListener("change", fullRefresh);
   qs("#svcFilterStatus")?.addEventListener("change", fullRefresh);
   qs("#svcFilterDate")?.addEventListener("change", fullRefresh);
 
   window.addEventListener("load", fullRefresh);
 
-  /* Expose renderers for external use / debugging */
   window.renderServiceTables = renderServiceTables;
   window.renderSvcPieStatus = renderSvcPieStatus;
   window.renderSvcPieMoney = renderSvcPieMoney;
