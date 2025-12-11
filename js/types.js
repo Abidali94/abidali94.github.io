@@ -1,9 +1,8 @@
 /* ======================================================
-   🗂 types.js — Product Type Manager (FINAL ONLINE v10.0)
-   • Fully compatible with ONLINE core.js (cloudSync)
-   • Instant UI update + guaranteed dropdown sync
-   • Prevents duplicates (same as before)
-   • Clean and safe for Firestore syncing
+   🗂 types.js — Product Type Manager (FINAL ONLINE v11)
+   • Pure Option-B Architecture (Cloud Master + Local Cache)
+   • Cloud always overwrites local → same data on all devices
+   • race-condition fixes added
 ====================================================== */
 
 /* ------------------------------------------------------
@@ -16,8 +15,8 @@ function addType() {
   const name = input.value.trim();
   if (!name) return alert("Enter a valid type name.");
 
-  // Prevent duplicate type names
-  if ((window.types || []).find(t => t.name.toLowerCase() === name.toLowerCase())) {
+  // Prevent duplicate
+  if ((window.types || []).some(t => t.name.toLowerCase() === name.toLowerCase())) {
     return alert("Type already exists!");
   }
 
@@ -27,18 +26,18 @@ function addType() {
     name
   });
 
-  // Save → LOCAL + CLOUD (handled inside saveTypes)
-  if (window.saveTypes) window.saveTypes();
+  // Save → local cache + cloud push
+  window.saveTypes?.();
 
-  // UI refresh
+  // UI refresh immediately
   renderTypes();
   updateTypeDropdowns();
 
-  // Extra guaranteed refresh (fixes race condition after cloud sync)
+  // 🔥 Ensure UI sync after cloudPull (race-condition fix)
   setTimeout(() => {
     renderTypes();
     updateTypeDropdowns();
-  }, 100);
+  }, 180);
 
   input.value = "";
 }
@@ -49,25 +48,21 @@ function addType() {
 function clearTypes() {
   if (!confirm("Delete ALL types?")) return;
 
-  // Reset array
   window.types = [];
+  window.saveTypes?.();
 
-  // Save to cloud + local
-  if (window.saveTypes) window.saveTypes();
-
-  // UI refresh
   renderTypes();
   updateTypeDropdowns();
 
-  // Extra refresh
+  // Extra cloud-sync UI correction
   setTimeout(() => {
     renderTypes();
     updateTypeDropdowns();
-  }, 120);
+  }, 200);
 }
 
 /* ------------------------------------------------------
-   📋 RENDER TYPE LIST
+   📋 RENDER TYPES
 ------------------------------------------------------ */
 function renderTypes() {
   const list = document.getElementById("typeList");
@@ -86,11 +81,9 @@ function renderTypes() {
 }
 
 /* ------------------------------------------------------
-   🔽 UPDATE ALL TYPE DROPDOWNS
-   (Stock / Sales / Wanting)
+   🔽 UPDATE DROPDOWNS
 ------------------------------------------------------ */
 function updateTypeDropdowns() {
-
   const types = window.types || [];
 
   const addStockType = document.getElementById("ptype");
@@ -98,37 +91,29 @@ function updateTypeDropdowns() {
   const saleType     = document.getElementById("saleType");
   const wantType     = document.getElementById("wantType");
 
-  /* Stock – add stock selector */
-  if (addStockType) {
+  const options = types
+    .map(t => `<option value="${esc(t.name)}">${esc(t.name)}</option>`)
+    .join("");
+
+  if (addStockType)
     addStockType.innerHTML =
-      `<option value="">Select</option>` +
-      types.map(t => `<option value="${esc(t.name)}">${esc(t.name)}</option>`).join("");
-  }
+      `<option value="">Select</option>` + options;
 
-  /* Stock filter */
-  if (filterStock) {
+  if (filterStock)
     filterStock.innerHTML =
-      `<option value="all">All Types</option>` +
-      types.map(t => `<option value="${esc(t.name)}">${esc(t.name)}</option>`).join("");
-  }
+      `<option value="all">All Types</option>` + options;
 
-  /* Sales filter */
-  if (saleType) {
+  if (saleType)
     saleType.innerHTML =
-      `<option value="all">All Types</option>` +
-      types.map(t => `<option value="${esc(t.name)}">${esc(t.name)}</option>`).join("");
-  }
+      `<option value="all">All Types</option>` + options;
 
-  /* Wanting selector */
-  if (wantType) {
+  if (wantType)
     wantType.innerHTML =
-      `<option value="">Select Type</option>` +
-      types.map(t => `<option value="${esc(t.name)}">${esc(t.name)}</option>`).join("");
-  }
+      `<option value="">Select Type</option>` + options;
 }
 
 /* ------------------------------------------------------
-   🖱 EVENT LISTENERS
+   🖱 EVENTS
 ------------------------------------------------------ */
 document.addEventListener("click", e => {
   if (e.target.id === "addTypeBtn") addType();
@@ -136,15 +121,15 @@ document.addEventListener("click", e => {
 });
 
 /* ------------------------------------------------------
-   🚀 INIT
+   🚀 INIT (After cloudPull)
 ------------------------------------------------------ */
 window.addEventListener("load", () => {
   renderTypes();
   updateTypeDropdowns();
 
-  // Extra startup sync
+  // 🔥 Guaranteed sync after online cloud load
   setTimeout(() => {
     renderTypes();
     updateTypeDropdowns();
-  }, 150);
+  }, 250);
 });
