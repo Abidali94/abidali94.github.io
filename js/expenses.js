@@ -5,7 +5,7 @@
    ✔ Auto-create table & total box if missing
 =========================================================== */
 
-const qs = s => document.querySelector(s);
+
 
 /* ===========================================================
    CLOUD + LOCAL SAVE WRAPPER (MASTER = CLOUD)
