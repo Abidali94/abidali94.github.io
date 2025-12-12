@@ -1,30 +1,33 @@
 /* ===========================================================
-   login-utils.js — CLEAN FINAL VERSION (NO ERRORS)
-   Uses ONLY window.auth from firebase.js
+   login-utils.js — SAFE COMPAT VERSION (no local `auth` variable)
+   Always uses window.auth (set by firebase.js)
 =========================================================== */
 
-// ALWAYS use auth from firebase.js — do NOT redeclare
-// use global auth – DO NOT declare again
-const auth = window.auth || null;
+/* --------------- HELPERS ---------------- */
+function _getAuth() {
+  return window.auth || null;
+}
 
-/* ---------------- CURRENT USER ---------------- */
+/* --------------- CURRENT USER ---------------- */
 function getFirebaseUser() {
-  return auth?.currentUser || null;
+  const a = _getAuth();
+  return a?.currentUser || null;
 }
 window.getFirebaseUser = getFirebaseUser;
 
 /* ---------------- LOGIN ---------------- */
 async function loginUser(email, password) {
   try {
-    if (!email || !password) throw new Error("Missing email or password.");
+    if (!email || !password) throw new Error("Missing email or password");
 
-    const r = await auth.signInWithEmailAndPassword(email, password);
+    const a = _getAuth();
+    if (!a) throw new Error("Auth not ready. Try reloading the page.");
 
+    const r = await a.signInWithEmailAndPassword(email, password);
     localStorage.setItem("ks-user-email", r.user.email);
-
     return { success: true };
   } catch (err) {
-    return { success: false, error: err.message };
+    return { success: false, error: err?.message || String(err) };
   }
 }
 window.loginUser = loginUser;
@@ -32,15 +35,16 @@ window.loginUser = loginUser;
 /* ---------------- SIGNUP ---------------- */
 async function signupUser(email, password) {
   try {
-    if (!email || !password) throw new Error("Missing email or password.");
+    if (!email || !password) throw new Error("Missing email or password");
 
-    const r = await auth.createUserWithEmailAndPassword(email, password);
+    const a = _getAuth();
+    if (!a) throw new Error("Auth not ready. Try reloading the page.");
 
+    const r = await a.createUserWithEmailAndPassword(email, password);
     localStorage.setItem("ks-user-email", r.user.email);
-
     return { success: true };
   } catch (err) {
-    return { success: false, error: err.message };
+    return { success: false, error: err?.message || String(err) };
   }
 }
 window.signupUser = signupUser;
@@ -48,13 +52,15 @@ window.signupUser = signupUser;
 /* ---------------- RESET PASSWORD ---------------- */
 async function resetPassword(email) {
   try {
-    if (!email) throw new Error("Email required.");
+    if (!email) throw new Error("Email required");
 
-    await auth.sendPasswordResetEmail(email);
+    const a = _getAuth();
+    if (!a) throw new Error("Auth not ready. Try reloading the page.");
 
+    await a.sendPasswordResetEmail(email);
     return { success: true };
   } catch (err) {
-    return { success: false, error: err.message };
+    return { success: false, error: err?.message || String(err) };
   }
 }
 window.resetPassword = resetPassword;
@@ -62,32 +68,53 @@ window.resetPassword = resetPassword;
 /* ---------------- LOGOUT ---------------- */
 async function logoutUser() {
   try {
-    await auth.signOut();
+    const a = _getAuth();
+    if (!a) throw new Error("Auth not ready. Try reloading the page.");
+
+    await a.signOut();
     localStorage.removeItem("ks-user-email");
     return { success: true };
   } catch (err) {
-    return { success: false, error: err.message };
+    return { success: false, error: err?.message || String(err) };
   }
 }
 window.logoutUser = logoutUser;
 
-/* ---------------- AUTH LISTENER ---------------- */
-auth.onAuthStateChanged(user => {
-  try {
-    if (user) {
-      localStorage.setItem("ks-user-email", user.email);
-      if (typeof cloudPullAllIfAvailable === "function") {
-        cloudPullAllIfAvailable();
+/* --------------- AUTH STATE LISTENER ---------------- */
+(function attachAuthListener() {
+  const a = _getAuth();
+  if (!a) {
+    // If auth not ready now, wait briefly and retry attach once
+    setTimeout(()=> {
+      const a2 = _getAuth();
+      if (a2 && typeof a2.onAuthStateChanged === "function") {
+        a2.onAuthStateChanged(handleAuthState);
       }
-    } else {
-      localStorage.removeItem("ks-user-email");
-    }
-
-    if (typeof updateEmailTag === "function") {
-      updateEmailTag();
-    }
-
-  } catch (e) {
-    console.warn("Auth listener error:", e);
+    }, 500);
+    return;
   }
-});
+  if (typeof a.onAuthStateChanged === "function") {
+    a.onAuthStateChanged(handleAuthState);
+  }
+
+  function handleAuthState(user) {
+    try {
+      if (user) {
+        localStorage.setItem("ks-user-email", user.email);
+        if (typeof cloudPullAllIfAvailable === "function") {
+          cloudPullAllIfAvailable();
+        }
+      } else {
+        localStorage.removeItem("ks-user-email");
+        if (typeof clearLocalUI === "function") {
+          clearLocalUI();
+        }
+      }
+      if (typeof updateEmailTag === "function") {
+        updateEmailTag();
+      }
+    } catch (e) {
+      console.warn("Auth listener error:", e);
+    }
+  }
+})();
