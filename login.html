@@ -134,17 +134,21 @@ a{
   </div>
 </div>
 
-<!-- Firebase compat scripts -->
+<!-- Firebase COMPAT scripts -->
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
 
+<!-- Your fixed compat firebase.js -->
 <script src="/js/firebase.js"></script>
+
+<!-- Your compat login-utils.js -->
 <script src="/js/login-utils.js"></script>
 
 <script>
 const qs = s => document.querySelector(s);
 
+// Toggle password display
 qs("#togglePw").addEventListener("click", () => {
   const pw = qs("#password");
   pw.type = pw.type === "password" ? "text" : "password";
