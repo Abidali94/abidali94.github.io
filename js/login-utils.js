@@ -1,17 +1,16 @@
 /* ==========================================================
    login-utils.js — ONLINE MODE (Firebase v9 COMPAT API)
-   FINAL FIXED VERSION v9 — NO DUPLICATE AUTH DECLARATION
+   FINAL FIXED VERSION v10 — NO DUPLICATE AUTH, NO ERRORS
 ========================================================== */
 
-/* Firebase Auth reference (compat mode)
-   Fix: use global auth from firebase.js */
+/* Get global auth from firebase.js (DO NOT REDECLARE!) */
 const auth = window.auth;
 
 /* ----------------------------------------------------------
    CURRENT USER
 ---------------------------------------------------------- */
 function getFirebaseUser() {
-  return auth.currentUser || null;
+  return auth?.currentUser || null;
 }
 window.getFirebaseUser = getFirebaseUser;
 
@@ -22,11 +21,11 @@ async function loginUser(email, password) {
   try {
     if (!email || !password) throw new Error("Missing email or password.");
 
-    await auth.signInWithEmailAndPassword(email, password);
+    const res = await auth.signInWithEmailAndPassword(email, password);
 
     localStorage.setItem("ks-user-email", email);
 
-    return { success: true };
+    return { success: true, user: res.user };
   } catch (err) {
     return { success: false, error: err.message };
   }
@@ -40,11 +39,11 @@ async function signupUser(email, password) {
   try {
     if (!email || !password) throw new Error("Missing email or password.");
 
-    await auth.createUserWithEmailAndPassword(email, password);
+    const res = await auth.createUserWithEmailAndPassword(email, password);
 
     localStorage.setItem("ks-user-email", email);
 
-    return { success: true };
+    return { success: true, user: res.user };
   } catch (err) {
     return { success: false, error: err.message };
   }
@@ -56,7 +55,7 @@ window.signupUser = signupUser;
 ---------------------------------------------------------- */
 async function resetPassword(email) {
   try {
-    if (!email) throw new Error("Email required.");
+    if (!email) throw new Error("Email required");
 
     await auth.sendPasswordResetEmail(email);
 
@@ -68,21 +67,13 @@ async function resetPassword(email) {
 window.resetPassword = resetPassword;
 
 /* ----------------------------------------------------------
-   LOGOUT (also clears local cache)
+   LOGOUT
 ---------------------------------------------------------- */
 async function logoutUser() {
   try {
     await auth.signOut();
 
     localStorage.removeItem("ks-user-email");
-
-    // Optional cleanup
-    localStorage.removeItem("stock-data");
-    localStorage.removeItem("sales-data");
-    localStorage.removeItem("expenses-data");
-    localStorage.removeItem("service-data");
-    localStorage.removeItem("ks-collections");
-    localStorage.removeItem("item-types");
 
     return { success: true };
   } catch (err) {
@@ -95,20 +86,20 @@ window.logoutUser = logoutUser;
    IS LOGGED IN?
 ---------------------------------------------------------- */
 function isLoggedIn() {
-  return !!auth.currentUser;
+  return !!auth?.currentUser;
 }
 window.isLoggedIn = isLoggedIn;
 
 /* ----------------------------------------------------------
-   AUTH STATE LISTENER (online mode)
+   AUTH STATE LISTENER
 ---------------------------------------------------------- */
 auth.onAuthStateChanged(user => {
   try {
     if (user) {
       localStorage.setItem("ks-user-email", user.email);
 
-      if (typeof window.cloudPull === "function") {
-        window.cloudPull();
+      if (typeof window.cloudPullAllIfAvailable === "function") {
+        window.cloudPullAllIfAvailable();
       }
 
     } else {
