@@ -1,11 +1,10 @@
 /* ==========================================================
    login-utils.js — ONLINE MODE (Firebase v9 COMPAT API)
-   FINAL VERSION v7 — NO IMPORTS, NO EXPORTS
+   FINAL VERSION v8 — NO IMPORTS, NO EXPORTS
    ----------------------------------------------------------
-   ✔ Works with firebase-app-compat.js
-   ✔ Email Login / Signup / Logout
+   ✔ Works with firebase-app-compat.js + firebase-auth-compat.js
+   ✔ Login / Signup / Logout
    ✔ Password Reset
-   ✔ Current User Helper
    ✔ Auth Listener
 ========================================================== */
 
@@ -73,7 +72,7 @@ async function resetPassword(email) {
 window.resetPassword = resetPassword;
 
 /* ----------------------------------------------------------
-   LOGOUT (also clears local unused cache)
+   LOGOUT (also clears local cache)
 ---------------------------------------------------------- */
 async function logoutUser() {
   try {
@@ -112,7 +111,6 @@ auth.onAuthStateChanged(user => {
     if (user) {
       localStorage.setItem("ks-user-email", user.email);
 
-      // Auto cloud-to-local sync (if implemented)
       if (typeof window.cloudPull === "function") {
         window.cloudPull();
       }
@@ -120,7 +118,6 @@ auth.onAuthStateChanged(user => {
     } else {
       localStorage.removeItem("ks-user-email");
 
-      // Clear UI to prevent stale data
       if (typeof window.clearLocalUI === "function") {
         window.clearLocalUI();
       }
@@ -129,6 +126,7 @@ auth.onAuthStateChanged(user => {
     if (typeof updateEmailTag === "function") {
       updateEmailTag();
     }
+
   } catch (e) {
     console.warn("Auth listener error:", e);
   }
