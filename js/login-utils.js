@@ -1,34 +1,42 @@
 /* ==========================================================
-   LOGIN UTILS (ONLINE MODE ONLY) — Firebase Authentication
-   FINAL VERSION v5
+   login-utils.js — ONLINE MODE (Firebase v9 Modular API)
+   FINAL VERSION v6
    ----------------------------------------------------------
-   ✔ Email + Password login
-   ✔ Signup
-   ✔ Logout
+   ✔ Email Login / Signup / Logout
    ✔ Password Reset
    ✔ Current User Helper
+   ✔ Auth State Listener (updates UI + clears local data safely)
    ----------------------------------------------------------
-   Requires: firebase.js (Firebase initialized)
+   Requires: firebase.js (exports: auth)
 ========================================================== */
+
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+import { auth } from "./firebase.js";   // <-- YOUR firebase.js must export { auth }
 
 /* ----------------------------------------------------------
    CURRENT USER
 ---------------------------------------------------------- */
-function getFirebaseUser() {
-  return firebase.auth().currentUser || null;
+export function getFirebaseUser() {
+  return auth.currentUser || null;
 }
 window.getFirebaseUser = getFirebaseUser;
 
 /* ----------------------------------------------------------
    LOGIN (Email + Password)
 ---------------------------------------------------------- */
-async function loginUser(email, password) {
+export async function loginUser(email, password) {
   try {
     if (!email || !password) throw new Error("Missing email or password.");
 
-    await firebase.auth().signInWithEmailAndPassword(email, password);
+    await signInWithEmailAndPassword(auth, email, password);
 
-    // store email for UI topbar
     localStorage.setItem("ks-user-email", email);
 
     return { success: true };
@@ -41,11 +49,11 @@ window.loginUser = loginUser;
 /* ----------------------------------------------------------
    SIGNUP (Create Account)
 ---------------------------------------------------------- */
-async function signupUser(email, password) {
+export async function signupUser(email, password) {
   try {
     if (!email || !password) throw new Error("Missing email or password.");
 
-    await firebase.auth().createUserWithEmailAndPassword(email, password);
+    await createUserWithEmailAndPassword(auth, email, password);
 
     localStorage.setItem("ks-user-email", email);
 
@@ -59,11 +67,11 @@ window.signupUser = signupUser;
 /* ----------------------------------------------------------
    PASSWORD RESET
 ---------------------------------------------------------- */
-async function resetPassword(email) {
+export async function resetPassword(email) {
   try {
     if (!email) throw new Error("Email required.");
 
-    await firebase.auth().sendPasswordResetEmail(email);
+    await sendPasswordResetEmail(auth, email);
 
     return { success: true };
   } catch (err) {
@@ -73,14 +81,22 @@ async function resetPassword(email) {
 window.resetPassword = resetPassword;
 
 /* ----------------------------------------------------------
-   LOGOUT
+   LOGOUT (Also clear local caches)
 ---------------------------------------------------------- */
-async function logoutUser() {
+export async function logoutUser() {
   try {
-    await firebase.auth().signOut();
+    await signOut(auth);
 
-    // local cleanup
+    // remove local caches (this prevents old data flashing)
     localStorage.removeItem("ks-user-email");
+
+    // optional: clear local data copies too
+    localStorage.removeItem("stock-data");
+    localStorage.removeItem("sales-data");
+    localStorage.removeItem("expenses-data");
+    localStorage.removeItem("service-data");
+    localStorage.removeItem("ks-collections");
+    localStorage.removeItem("item-types");
 
     return { success: true };
   } catch (err) {
@@ -90,23 +106,36 @@ async function logoutUser() {
 window.logoutUser = logoutUser;
 
 /* ----------------------------------------------------------
-   IS LOGGED IN? (Sync with Firebase)
+   IS LOGGED IN?
 ---------------------------------------------------------- */
-function isLoggedIn() {
-  const u = firebase.auth().currentUser;
-  return !!u;
+export function isLoggedIn() {
+  return !!auth.currentUser;
 }
 window.isLoggedIn = isLoggedIn;
 
 /* ----------------------------------------------------------
-   AUTH STATE LISTENER (Auto redirect helpers)
+   AUTH STATE LISTENER
+   - Saves logged-in email
+   - Clears UI on logout
+   - Optional: triggers cloudPull() to load online data
 ---------------------------------------------------------- */
-firebase.auth().onAuthStateChanged(user => {
+onAuthStateChanged(auth, user => {
   try {
     if (user) {
       localStorage.setItem("ks-user-email", user.email || "");
+
+      // ⭐ USER LOGGED IN → LOAD DATA FROM CLOUD
+      if (typeof window.cloudPull === "function") {
+        window.cloudPull();
+      }
+
     } else {
       localStorage.removeItem("ks-user-email");
+
+      // ⭐ USER LOGGED OUT → CLEAR UI to avoid stale data
+      if (typeof window.clearLocalUI === "function") {
+        window.clearLocalUI();
+      }
     }
 
     if (typeof updateEmailTag === "function") {
