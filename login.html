@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Login — KharchaSaathi</title>
 
-<!-- FONT -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
 
 <style>
@@ -19,7 +18,6 @@
   --shadow:0 6px 18px rgba(0,0,0,0.08);
 }
 
-/* BODY */
 body{
   margin:0;
   padding:0;
@@ -31,7 +29,6 @@ body{
   justify-content:center;
 }
 
-/* CARD */
 .card{
   width:92%;
   max-width:420px;
@@ -50,7 +47,6 @@ h2{
   color:var(--blue);
 }
 
-/* INPUT */
 input{
   width:100%;
   padding:12px 14px;
@@ -59,17 +55,14 @@ input{
   border:1px solid #d1d5db;
   font-size:15px;
 }
-
 input:focus{
   border-color:var(--blue);
   outline:none;
 }
 
-/* Password wrapper */
 .pw-wrapper{
   position:relative;
 }
-
 .pw-eye{
   position:absolute;
   right:14px;
@@ -80,7 +73,6 @@ input:focus{
   color:#777;
 }
 
-/* BUTTON */
 button{
   padding:14px;
   width:100%;
@@ -93,13 +85,11 @@ button{
   cursor:pointer;
   transition:.25s;
 }
-
 button:hover{
   opacity:.95;
   transform:translateY(-2px);
 }
 
-/* FOOTER TEXT */
 .muted{
   margin-top:12px;
   font-size:13px;
@@ -113,7 +103,6 @@ a{
   font-weight:600;
 }
 
-/* ERROR MESSAGE */
 #msg{
   font-size:13px;
   margin-top:6px;
@@ -145,7 +134,7 @@ a{
   </div>
 </div>
 
-<!-- Firebase Required Scripts -->
+<!-- Firebase compat scripts -->
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
@@ -156,13 +145,12 @@ a{
 <script>
 const qs = s => document.querySelector(s);
 
-// Password visibility
 qs("#togglePw").addEventListener("click", () => {
   const pw = qs("#password");
   pw.type = pw.type === "password" ? "text" : "password";
 });
 
-// Login action
+// LOGIN BUTTON
 qs("#loginBtn").addEventListener("click", async () => {
   const email = qs("#email").value.trim();
   const pw = qs("#password").value.trim();
@@ -179,7 +167,7 @@ qs("#loginBtn").addEventListener("click", async () => {
   if (res.success) {
     window.location.href = "/tools/business-dashboard.html";
   } else {
-    qs("#msg").textContent = "Login failed: " + res.error;
+    qs("#msg").textContent = res.error;
   }
 });
 </script>
