@@ -1,29 +1,21 @@
 /* ==========================================================
-   login-utils.js — ONLINE MODE (Firebase v9 Modular API)
-   FINAL VERSION v6
+   login-utils.js — ONLINE MODE (Firebase v9 COMPAT API)
+   FINAL VERSION v7 — NO IMPORTS, NO EXPORTS
    ----------------------------------------------------------
+   ✔ Works with firebase-app-compat.js
    ✔ Email Login / Signup / Logout
    ✔ Password Reset
    ✔ Current User Helper
-   ✔ Auth State Listener (updates UI + clears local data safely)
-   ----------------------------------------------------------
-   Requires: firebase.js (exports: auth)
+   ✔ Auth Listener
 ========================================================== */
 
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  signOut,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-
-import { auth } from "./firebase.js";   // <-- YOUR firebase.js must export { auth }
+/* Firebase Auth reference (compat mode) */
+const auth = firebase.auth();
 
 /* ----------------------------------------------------------
    CURRENT USER
 ---------------------------------------------------------- */
-export function getFirebaseUser() {
+function getFirebaseUser() {
   return auth.currentUser || null;
 }
 window.getFirebaseUser = getFirebaseUser;
@@ -31,11 +23,11 @@ window.getFirebaseUser = getFirebaseUser;
 /* ----------------------------------------------------------
    LOGIN (Email + Password)
 ---------------------------------------------------------- */
-export async function loginUser(email, password) {
+async function loginUser(email, password) {
   try {
     if (!email || !password) throw new Error("Missing email or password.");
 
-    await signInWithEmailAndPassword(auth, email, password);
+    await auth.signInWithEmailAndPassword(email, password);
 
     localStorage.setItem("ks-user-email", email);
 
@@ -49,11 +41,11 @@ window.loginUser = loginUser;
 /* ----------------------------------------------------------
    SIGNUP (Create Account)
 ---------------------------------------------------------- */
-export async function signupUser(email, password) {
+async function signupUser(email, password) {
   try {
     if (!email || !password) throw new Error("Missing email or password.");
 
-    await createUserWithEmailAndPassword(auth, email, password);
+    await auth.createUserWithEmailAndPassword(email, password);
 
     localStorage.setItem("ks-user-email", email);
 
@@ -67,11 +59,11 @@ window.signupUser = signupUser;
 /* ----------------------------------------------------------
    PASSWORD RESET
 ---------------------------------------------------------- */
-export async function resetPassword(email) {
+async function resetPassword(email) {
   try {
     if (!email) throw new Error("Email required.");
 
-    await sendPasswordResetEmail(auth, email);
+    await auth.sendPasswordResetEmail(email);
 
     return { success: true };
   } catch (err) {
@@ -81,16 +73,15 @@ export async function resetPassword(email) {
 window.resetPassword = resetPassword;
 
 /* ----------------------------------------------------------
-   LOGOUT (Also clear local caches)
+   LOGOUT (also clears local unused cache)
 ---------------------------------------------------------- */
-export async function logoutUser() {
+async function logoutUser() {
   try {
-    await signOut(auth);
+    await auth.signOut();
 
-    // remove local caches (this prevents old data flashing)
     localStorage.removeItem("ks-user-email");
 
-    // optional: clear local data copies too
+    // Optional cleanup
     localStorage.removeItem("stock-data");
     localStorage.removeItem("sales-data");
     localStorage.removeItem("expenses-data");
@@ -108,23 +99,20 @@ window.logoutUser = logoutUser;
 /* ----------------------------------------------------------
    IS LOGGED IN?
 ---------------------------------------------------------- */
-export function isLoggedIn() {
+function isLoggedIn() {
   return !!auth.currentUser;
 }
 window.isLoggedIn = isLoggedIn;
 
 /* ----------------------------------------------------------
-   AUTH STATE LISTENER
-   - Saves logged-in email
-   - Clears UI on logout
-   - Optional: triggers cloudPull() to load online data
+   AUTH STATE LISTENER (online mode)
 ---------------------------------------------------------- */
-onAuthStateChanged(auth, user => {
+auth.onAuthStateChanged(user => {
   try {
     if (user) {
-      localStorage.setItem("ks-user-email", user.email || "");
+      localStorage.setItem("ks-user-email", user.email);
 
-      // ⭐ USER LOGGED IN → LOAD DATA FROM CLOUD
+      // Auto cloud-to-local sync (if implemented)
       if (typeof window.cloudPull === "function") {
         window.cloudPull();
       }
@@ -132,7 +120,7 @@ onAuthStateChanged(auth, user => {
     } else {
       localStorage.removeItem("ks-user-email");
 
-      // ⭐ USER LOGGED OUT → CLEAR UI to avoid stale data
+      // Clear UI to prevent stale data
       if (typeof window.clearLocalUI === "function") {
         window.clearLocalUI();
       }
@@ -142,6 +130,6 @@ onAuthStateChanged(auth, user => {
       updateEmailTag();
     }
   } catch (e) {
-    console.warn("Auth state listener error:", e);
+    console.warn("Auth listener error:", e);
   }
 });
