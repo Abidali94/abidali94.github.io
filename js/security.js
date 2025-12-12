@@ -1,35 +1,64 @@
 /* ==========================================================
-   🔐 security.js — Login + Logout + Email + Admin Password
-   ========================================================== */
+   🔐 security.js — ONLINE MODE (Firebase Auth)
+   FINAL VERSION v10
+   ----------------------------------------------------------
+   ✔ Uses Firebase login state instead of localStorage
+   ✔ Email auto-refresh from Firebase user
+   ✔ Admin Password safe (local-only security)
+   ✔ Works with new login-utils.js (online)
+========================================================== */
 
-/* --------------------------
-   🔐 LOGIN SYSTEM
---------------------------- */
-function isLoggedIn() {
-  return !!localStorage.getItem("ks-user-email");
-}
-
-function loginUser(email) {
-  if (!email) return false;
-  localStorage.setItem("ks-user-email", email);
-  return true;
-}
-
-function getUserEmail() {
-  return localStorage.getItem("ks-user-email") || "";
-}
-
-function logoutUser() {
-  localStorage.removeItem("ks-user-email");
-}
+console.log("🔐 security.js loaded (ONLINE MODE)");
 
 /* ==========================================================
-   🔐 ADMIN PASSWORD (for Profit Lock)
+   🔵 FIREBASE USER HELPERS
+========================================================== */
+
+function getUserEmail() {
+  try {
+    const user = window.auth?.currentUser;
+    return user?.email || "";
+  } catch {
+    return "";
+  }
+}
+window.getUserEmail = getUserEmail;
+
+function isLoggedIn() {
+  try {
+    return !!window.auth?.currentUser;
+  } catch {
+    return false;
+  }
+}
+window.isLoggedIn = isLoggedIn;
+
+
+/* ==========================================================
+   🔵 LOGIN + LOGOUT (ONLINE MODE)
+   (Handled in login-utils.js)
+========================================================== */
+
+function loginUser(email) {
+  console.warn("⚠ loginUser() is handled by Firebase. Use login-utils.js");
+  return false;
+}
+window.loginUser = loginUser;
+
+function logoutUser() {
+  console.warn("⚠ logoutUser() is handled by Firebase. Use login-utils.js");
+  return false;
+}
+window.logoutUser = logoutUser;
+
+
+/* ==========================================================
+   🔐 ADMIN PASSWORD (Local Secure Password)
 ========================================================== */
 
 const ADMIN_KEY = "ks-admin-pw";
 
-/* Set default password if not exists */
+/* Ensure Default Password Exists */
 function ensureAdminPassword() {
   let pw = localStorage.getItem(ADMIN_KEY);
 
@@ -59,6 +88,7 @@ function updateAdminPassword() {
   localStorage.setItem(ADMIN_KEY, newPw);
   alert("Admin password updated!");
 }
+window.updateAdminPassword = updateAdminPassword;
 
 /* Ask password for unlocking */
 function askAdminPassword() {
@@ -68,7 +98,7 @@ function askAdminPassword() {
   return pw === localStorage.getItem(ADMIN_KEY);
 }
 
-/* Secure Toggle (if needed) */
+/* Secure Toggle UI */
 function secureToggle(elementId) {
   if (!askAdminPassword()) {
     alert("Wrong password!");
@@ -80,8 +110,9 @@ function secureToggle(elementId) {
 
   el.style.display = el.style.display === "none" ? "" : "none";
 }
+window.secureToggle = secureToggle;
 
-/* Unlock profit column */
+/* Unlock Profit Column */
 function unlockProfitWithPassword() {
   if (askAdminPassword()) {
     window.profitLocked = false;
@@ -95,6 +126,7 @@ function unlockProfitWithPassword() {
     alert("Incorrect password.");
   }
 }
+window.unlockProfitWithPassword = unlockProfitWithPassword;
 
 /* Reset admin password */
 function resetAdminPassword() {
@@ -108,7 +140,7 @@ function resetAdminPassword() {
   }
 
   const newPw = prompt("Enter new password:");
- 	if (!newPw || newPw.length < 4) {
+  if (!newPw || newPw.length < 4) {
     alert("Invalid new password.");
     return;
   }
@@ -116,9 +148,11 @@ function resetAdminPassword() {
   localStorage.setItem(ADMIN_KEY, newPw);
   alert("Password successfully reset.");
 }
+window.resetAdminPassword = resetAdminPassword;
+
 
 /* ==========================================================
-   🔵 EMAIL TAG UPDATE (Fixes "Loading...")
+   🔵 EMAIL TAG UPDATE (Firebase Sync)
 ========================================================== */
 
 window.updateEmailTag = function () {
@@ -131,27 +165,26 @@ window.updateEmailTag = function () {
     if (email) {
       tag.textContent = email;
     } else {
-      tag.textContent = "Offline (Local mode)";
+      tag.textContent = "Not logged in";
     }
+
   } catch (err) {
     console.error("updateEmailTag error:", err);
     tag.textContent = "Offline";
   }
 };
 
-/* Auto-update email badge */
+/* Auto-update on:
+   - Page load
+   - Firebase login change
+   - Storage change (rare case)
+*/
 window.addEventListener("load", updateEmailTag);
 window.addEventListener("storage", updateEmailTag);
 
-/* EXPORTS */
-window.isLoggedIn = isLoggedIn;
-window.loginUser = loginUser;
-window.logoutUser = logoutUser;
-window.getUserEmail = getUserEmail;
-
-window.updateAdminPassword = updateAdminPassword;
-window.unlockProfitWithPassword = unlockProfitWithPassword;
-window.secureToggle = secureToggle;
-window.resetAdminPassword = resetAdminPassword;
-
-console.log("🔐 security.js loaded");
+/* Firebase Listener */
+if (window.auth) {
+  window.auth.onAuthStateChanged(() => {
+    updateEmailTag();
+  });
+}
