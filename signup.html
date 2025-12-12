@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Create Account — KharchaSaathi</title>
 
-<!-- FONT -->
 <link rel="stylesheet"
   href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
 
@@ -46,9 +45,7 @@
     border-radius:10px;
     border:1px solid #c7cce1;
     font-size:15px;
-    transition:.2s;
   }
-
   input:focus{
     border-color:#2563eb;
     outline:none;
@@ -83,7 +80,7 @@
   }
 
   button:disabled{
-    opacity:0.7;
+    opacity:0.6;
     cursor:not-allowed;
   }
 
@@ -92,9 +89,9 @@
   }
 
   #msg{
-    text-align:center;
     margin-top:10px;
     min-height:18px;
+    text-align:center;
     font-size:13px;
     color:#444;
   }
@@ -134,20 +131,20 @@
   </div>
 </div>
 
-<!-- Firebase -->
+<!-- Firebase compat scripts -->
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
 
 <!-- Firebase Init -->
 <script src="/js/firebase.js"></script>
 
-<!-- Auth Utils -->
+<!-- Auth Utils (compat) -->
 <script src="/js/login-utils.js"></script>
 
 <script>
 const qs = s => document.querySelector(s);
 
-// Eye toggle
+// Show / hide password
 qs("#pwEye").addEventListener("click", () => {
   const pw = qs("#password");
   pw.type = pw.type === "password" ? "text" : "password";
