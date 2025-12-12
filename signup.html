@@ -5,92 +5,114 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Create Account — KharchaSaathi</title>
 
+<!-- FONT -->
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+
 <style>
   body{
     margin:0;
-    font-family:Poppins,Arial,sans-serif;
-    background:#f2f2f2;
+    padding:0;
+    font-family:'Poppins',sans-serif;
+    background:#eef2ff;
     display:flex;
     justify-content:center;
     align-items:center;
-    height:100vh;
+    min-height:100vh;
   }
 
   .card{
-    background:white;
+    width:92%;
+    max-width:380px;
     padding:28px;
-    width:320px;
-    border-radius:14px;
-    box-shadow:0 6px 30px rgba(0,0,0,0.15);
-    border:2px solid #ddd;
+    border-radius:16px;
+    background:#fff;
+    box-shadow:0 8px 30px rgba(0,0,0,0.10);
+    border:1px solid #dbe1f0;
   }
 
   h2{
     margin:0 0 16px;
-    color:#ff7a00;
     text-align:center;
+    font-weight:700;
+    color:#2563eb;
+    font-size:26px;
   }
 
   input{
     width:100%;
-    padding:10px;
-    margin:8px 0;
-    border-radius:8px;
-    border:1.8px solid #ccc;
+    padding:12px 14px;
+    margin:10px 0;
+    border-radius:10px;
+    border:1px solid #c7cce1;
     font-size:15px;
+    transition:.2s;
+  }
+
+  input:focus{
+    border-color:#2563eb;
+    outline:none;
   }
 
   .pass-wrap{
     position:relative;
   }
 
-  .pass-wrap .eye{
+  .eye{
     position:absolute;
-    right:12px;
+    right:14px;
     top:50%;
     transform:translateY(-50%);
-    cursor:pointer;
     font-size:18px;
-    color:#888;
+    cursor:pointer;
+    color:#666;
   }
 
   button{
     width:100%;
-    padding:10px;
-    background:#28a745;
-    color:white;
+    padding:14px;
     border:none;
-    border-radius:8px;
+    border-radius:12px;
+    background:linear-gradient(135deg,#3b82f6,#2563eb);
+    color:white;
     font-size:16px;
+    font-weight:600;
     cursor:pointer;
-    margin-top:10px;
+    margin-top:6px;
+    transition:.2s;
   }
 
-  button:hover{
-    background:#1f8b39;
+  button:disabled{
+    opacity:0.7;
+    cursor:not-allowed;
+  }
+
+  button:hover:not(:disabled){
+    transform:translateY(-2px);
+  }
+
+  #msg{
+    text-align:center;
+    margin-top:10px;
+    min-height:18px;
+    font-size:13px;
+    color:#444;
   }
 
   .login-link{
-    margin-top:12px;
+    margin-top:14px;
     font-size:14px;
     text-align:center;
   }
 
   .login-link a{
-    color:#ff7a00;
+    color:#2563eb;
+    font-weight:600;
     text-decoration:none;
   }
-
-  #msg{
-    text-align:center;
-    color:#444;
-    font-size:13px;
-    margin-top:8px;
-    min-height:18px;
-  }
 </style>
-</head>
 
+</head>
 <body>
 
 <div class="card">
@@ -112,68 +134,69 @@
   </div>
 </div>
 
-<!-- Firebase Core -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
 
-<!-- Firebase init -->
+<!-- Firebase Init -->
 <script src="/js/firebase.js"></script>
 
-<!-- login-utils.js (MANDATORY) -->
+<!-- Auth Utils -->
 <script src="/js/login-utils.js"></script>
 
 <script>
-  const qs = s => document.querySelector(s);
+const qs = s => document.querySelector(s);
 
-  // Toggle eye icon
-  qs("#pwEye").addEventListener("click", () => {
-    const pw = qs("#password");
-    pw.type = pw.type === "password" ? "text" : "password";
-  });
+// Eye toggle
+qs("#pwEye").addEventListener("click", () => {
+  const pw = qs("#password");
+  pw.type = pw.type === "password" ? "text" : "password";
+});
 
-  // SIGNUP BUTTON
-  qs("#signupBtn").addEventListener("click", async () => {
+// SIGNUP
+qs("#signupBtn").addEventListener("click", async () => {
 
-    const email = qs("#email").value.trim();
-    const pass  = qs("#password").value.trim();
-    const msg   = qs("#msg");
+  const email = qs("#email").value.trim();
+  const pass  = qs("#password").value.trim();
+  const msg   = qs("#msg");
+  const btn   = qs("#signupBtn");
 
-    msg.textContent = "";
+  msg.textContent = "";
 
-    if (!email || !pass) {
-      msg.textContent = "Enter email & password.";
-      return;
-    }
+  if (!email || !pass){
+    msg.style.color = "red";
+    msg.textContent = "Enter email & password.";
+    return;
+  }
 
-    if (pass.length < 6) {
-      msg.textContent = "Password must be at least 6 characters.";
-      return;
-    }
+  if (pass.length < 6){
+    msg.style.color = "red";
+    msg.textContent = "Password must be at least 6 characters.";
+    return;
+  }
 
-    qs("#signupBtn").disabled = true;
-    qs("#signupBtn").textContent = "Please wait…";
+  btn.disabled = true;
+  btn.textContent = "Creating…";
 
-    // Use login-utils.js
-    const res = await signupUser(email, pass);
+  const res = await signupUser(email, pass);
 
-    if (res.success) {
-      msg.style.color = "green";
-      msg.textContent = "Account created successfully!";
+  if (res.success){
+    msg.style.color = "green";
+    msg.textContent = "Account created! Redirecting…";
 
-      localStorage.setItem("ks-user-email", email);
+    localStorage.setItem("ks-user-email", email);
 
-      setTimeout(() => {
-        window.location.href = "/tools/business-dashboard.html";
-      }, 300);
+    setTimeout(() => {
+      window.location.href = "/tools/business-dashboard.html";
+    }, 300);
 
-    } else {
-      msg.style.color = "red";
-      msg.textContent = res.error.replace("Firebase:", "").trim();
-      qs("#signupBtn").disabled = false;
-      qs("#signupBtn").textContent = "Create Account";
-    }
-  });
+  } else {
+    msg.style.color = "red";
+    msg.textContent = res.error;
+    btn.disabled = false;
+    btn.textContent = "Create Account";
+  }
+});
 </script>
 
 </body>
