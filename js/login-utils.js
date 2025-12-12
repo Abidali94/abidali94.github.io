@@ -4,7 +4,8 @@
 =========================================================== */
 
 // ALWAYS use auth from firebase.js — do NOT redeclare
-const auth = window.auth;
+// use global auth – DO NOT declare again
+const auth = window.auth || null;
 
 /* ---------------- CURRENT USER ---------------- */
 function getFirebaseUser() {
