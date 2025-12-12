@@ -1,17 +1,28 @@
-/* login-utils.js — CLEAN V11 (NO BOM, NO DUPLICATE AUTH, NO HIDDEN CHARACTERS) */
+/* ===========================================================
+   login-utils.js — CLEAN V12 (NO DUPLICATE AUTH, FULLY COMPAT)
+   Works with firebase.js (compat mode)
+=========================================================== */
 
-const auth = window.auth;
+// auth already exists in firebase.js → use it directly
+var auth = window.auth;
 
+/* -----------------------------------------------------------
+   Get Current User
+----------------------------------------------------------- */
 function getFirebaseUser() {
   return auth.currentUser || null;
 }
 window.getFirebaseUser = getFirebaseUser;
 
+/* -----------------------------------------------------------
+   LOGIN
+----------------------------------------------------------- */
 async function loginUser(email, password) {
   try {
     if (!email || !password) throw new Error("Missing email or password.");
 
     const res = await auth.signInWithEmailAndPassword(email, password);
+
     localStorage.setItem("ks-user-email", email);
 
     return { success: true, user: res.user };
@@ -21,11 +32,15 @@ async function loginUser(email, password) {
 }
 window.loginUser = loginUser;
 
+/* -----------------------------------------------------------
+   SIGNUP
+----------------------------------------------------------- */
 async function signupUser(email, password) {
   try {
     if (!email || !password) throw new Error("Missing email or password.");
 
     const res = await auth.createUserWithEmailAndPassword(email, password);
+
     localStorage.setItem("ks-user-email", email);
 
     return { success: true, user: res.user };
@@ -35,10 +50,15 @@ async function signupUser(email, password) {
 }
 window.signupUser = signupUser;
 
+/* -----------------------------------------------------------
+   RESET PASSWORD
+----------------------------------------------------------- */
 async function resetPassword(email) {
   try {
     if (!email) throw new Error("Email required.");
+
     await auth.sendPasswordResetEmail(email);
+
     return { success: true };
   } catch (err) {
     return { success: false, error: err.message };
@@ -46,10 +66,14 @@ async function resetPassword(email) {
 }
 window.resetPassword = resetPassword;
 
+/* -----------------------------------------------------------
+   LOGOUT
+----------------------------------------------------------- */
 async function logoutUser() {
   try {
     await auth.signOut();
     localStorage.removeItem("ks-user-email");
+
     return { success: true };
   } catch (err) {
     return { success: false, error: err.message };
@@ -57,22 +81,37 @@ async function logoutUser() {
 }
 window.logoutUser = logoutUser;
 
+/* -----------------------------------------------------------
+   Logged-in Check
+----------------------------------------------------------- */
 function isLoggedIn() {
   return !!auth.currentUser;
 }
 window.isLoggedIn = isLoggedIn;
 
+/* -----------------------------------------------------------
+   AUTH STATE LISTENER
+----------------------------------------------------------- */
 auth.onAuthStateChanged(user => {
   try {
     if (user) {
       localStorage.setItem("ks-user-email", user.email);
-      if (typeof cloudPullAllIfAvailable === "function") cloudPullAllIfAvailable();
+
+      if (typeof cloudPullAllIfAvailable === "function") {
+        cloudPullAllIfAvailable();
+      }
+
     } else {
       localStorage.removeItem("ks-user-email");
-      if (typeof clearLocalUI === "function") clearLocalUI();
+
+      if (typeof clearLocalUI === "function") {
+        clearLocalUI();
+      }
     }
 
-    if (typeof updateEmailTag === "function") updateEmailTag();
+    if (typeof updateEmailTag === "function") {
+      updateEmailTag();
+    }
 
   } catch (e) {
     console.warn("Auth listener error:", e);
