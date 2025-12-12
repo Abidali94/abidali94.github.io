@@ -824,20 +824,24 @@ document.addEventListener("click", e => {
 <script>
 window.addEventListener("load", () => {
   const v = Date.now();
-  const files = [
-    "/js/core.js",
-    "/js/firebase.js",
-    "/js/types.js",
-    "/js/stock.js",
-    "/js/sales.js",
-    "/js/service.js",
-    "/js/wanting.js",
-    "/js/expenses.js",
-    "/js/collection.js",
-    "/js/analytics.js",
-    "/js/universalBar.js",
-    "/js/security.js"
-  ];
+const files = [
+  "/js/core.js",
+  "/js/firebase.js",
+
+  // AUTH UTILITIES SHOULD LOAD IMMEDIATELY AFTER FIREBASE
+  "/js/login-utils.js",
+
+  "/js/types.js",
+  "/js/stock.js",
+  "/js/sales.js",
+  "/js/service.js",
+  "/js/wanting.js",
+  "/js/expenses.js",
+  "/js/collection.js",
+  "/js/analytics.js",
+  "/js/universalBar.js",
+  "/js/security.js"
+];
 
   files.reduce((p, file) => {
     return p.then(() => new Promise(res => {
