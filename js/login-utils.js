@@ -1,12 +1,12 @@
 /* ===========================================================
-   login-utils.js — FINAL CLEAN VERSION (FULL COMPAT)
-   Uses ONLY window.auth from firebase.js
+   login-utils.js — FINAL FIXED VERSION (FULL COMPAT)
+   Uses ONLY window.auth from firebase.js (NO REDECLARATION ERROR)
 =========================================================== */
 
-// get firebase auth instance (DO NOT redeclare auth again)
-const auth = window.auth;
+/* Use firebase.js auth instance — IMPORTANT → var, not const */
+var auth = window.auth;
 
-/* --------------- CURRENT USER ---------------- */
+/* ---------------- CURRENT USER ---------------- */
 function getFirebaseUser() {
   return auth?.currentUser || null;
 }
@@ -70,7 +70,7 @@ async function logoutUser() {
 }
 window.logoutUser = logoutUser;
 
-/* --------------- AUTH STATE LISTENER ---------------- */
+/* ---------------- AUTH STATE LISTENER ---------------- */
 auth.onAuthStateChanged(user => {
   try {
     if (user) {
